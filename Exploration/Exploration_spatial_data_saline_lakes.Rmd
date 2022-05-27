@@ -1,0 +1,284 @@
+---
+title: "Exploration of Available Spatial Data for Focal Saline Lakes"
+author: "Margaux Sleckman"
+date: "5/20/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+#### Context
+
+The following report gathers the spatial data available for the 19 focal saline lakes that will be used to conduct the salines lakes data gap analysis.   
+
+We review three databases and queried to our selected saline lakes. In addition we pulled the huc8 and huc 12 catchments surrounding each lake. 
+
+|Database: | Focal Lakes Count | Use: |
+| ---------|----------|---------------|
+|[LAGO US LOCUS database](https://portal.edirepository.org/nis/mapbrowse?packageid=edi.854.1) | 14/19 | No
+|
+|[HydroLAKES](https://www.hydrosheds.org/products/hydrolakes) | - 11/19 | No
+|
+|[National Hydrological Dataset - high res](https://www.usgs.gov/national-hydrography/nhdplus-high-resolution) - water body attributes | 18/19 (Carson sink missing) | Yes 
+
+* Carson Sink - does not exist in any of our database Will add afterwards
+
+#### Libraries
+```{r libs, echo=FALSE, message=FALSE}
+
+library(sf)
+library(sp)
+library(dplyr)
+library(rgdal)         
+library(readr)
+library(readxl)
+library(mapview)
+library(rgdal)
+library(RColorBrewer)
+library(data.table)
+library(nhdplusTools)
+library(snakecase)
+library(stringr)
+library(kableExtra)
+
+```
+
+### Set Up
+
+Lakes excel found in sharepoint folder under [Exploration/Data/Lakes_list.xlsx](https://doimspp.sharepoint.com/:x:/r/sites/IIDDStaff/_layouts/15/Doc.aspx?sourcedoc=%7BDC11027F-CD61-4240-9972-654EFEF8C401%7D&file=Lakes_list.xlsx&action=default&mobileredirect=true&cid=f49bdfe8-b10e-485c-86d0-48d02dd93a75) 
+
+```{r get lakes from databases, include=FALSE, message = FALSE}
+
+## CRS: keeping crs at 4326 for now 
+selected_crs = 4326
+
+## list of lakes
+lakes_excel <- readxl::read_xlsx('Data/Lakes_list.xlsx', col_types = 'text')
+
+## Turning lakes into SF obj
+lakes <- lakes_excel %>% 
+  ## note - lon comes first in st_as_sf() 
+  st_as_sf(coords = c('Lon','Lat'), crs = 4326) %>% 
+  rename(Point_geometry = geometry, lake = `Lake Ecosystem`) %>% 
+  mutate(lake = str_to_title(lake)) %>% 
+  mutate(lake_name_shrt = trimws(str_replace(lake, pattern = 'Lake', replacement = "")))
+
+## Get huc08 for focal lakes
+huc08_df <- get_huc8(AOI = lakes$Point_geometry)
+huc04_comids_for_download <- substr(huc08_df$huc8, start = 1, stop = 4) %>% unique()
+
+## Define temp dir in Data folder
+nhdhr_dir <- file.path('Data', "nhdhr_lakes")
+
+```
+
+##### Focal Saline Lakes
+
+```{r table, echo = FALSE}
+
+lakes %>%
+  select(lake, lake_name_shrt, State) %>% 
+  kbl(caption = 'Selected Saline Lakes') %>%
+   kable_styling(bootstrap_options = "striped",
+                 full_width = F,
+                 position = "center")
+
+```
+
+
+```{r nhdhr, include=FALSE}
+
+# ## nhdplustools download data if you have not done so.
+# # nhdplusTools::download_nhdplushr(nhdhr_dir, huc04_comids_for_download)
+# source('Data/Download_nhd.R')
+# 
+# nhd_hr <- nhdplusTools::get_nhdplushr(hr_dir = 'Data/nhdhr_lakes', layer = 'NHDWaterbody')
+# 
+# nhdhr_saline_lakes <- hr$NHDWaterbody %>%
+#   filter(GNIS_Name %in% lakes$lake) %>% 
+#   st_zm() %>% 
+#   st_make_valid() %>% 
+#   st_transform(crs = st_crs(lakes))
+#   
+# nhdhr_saline_lakes %>% select(GNIS_Name, GNIS_ID, Shape)
+
+```
+
+```{r lagos_hydrolakes, include=FALSE}
+
+## LOCUS
+## read in lake information csv (no spatial info) - manually downloaded
+locus_lake_info_west <- read.csv('Data/lake_information.csv') %>% 
+  filter(lake_states %in% c('CA', 'NV','UT','OR'))
+
+## gdb read-in - can match with lake info w/ lake_id
+#print(st_layers('Data/gis_locus_v1.0.gdb/'))
+locus_lakes_gdb <- st_read('Data/gis_locus_v1.0.gdb/', layer = 'lake')
+
+## HydroLAKES read in (manually downloaded)
+hydro_lakes_us <- st_read("Data/HydroLAKES_polys_v10.gdb/HydroLAKES_polys_v10.gdb/",
+                          layer = 'HydroLAKES_polys_v10') %>%
+  filter(Country == 'United States of America')
+
+```
+
+
+### NHDPlusTools med res - Get Lake and tributary catchment Polygons - w/ nhdplus
+```{r fetch_nhd, warning=FALSE, message=FALSE}
+
+## Testing fetch of waterbody w/ nhdplustools
+wtrbdy1 <- get_waterbodies(AOI = st_sfc(lakes$geom_point[1], crs = selected_crs))
+wtrbdy2 <- get_waterbodies(AOI = st_sfc(lakes$geom_point[2], crs = selected_crs))
+
+## Create new df with output from nhd 
+lakes_nhd_lst <- list()
+
+for(i in 1:length(lakes$Point_geometry)){
+  print(paste(i, ':', lakes$lake[i], sep = ' '))
+  ## grab lakes polygons
+  wtrbdy <- get_waterbodies(AOI = st_sfc(lakes$Point_geometry[i], crs = selected_crs))
+  ## handling invalid returns 
+  if(is.character(wtrbdy)){
+    message(wtrbdy)
+    wtrbdy <- data.frame(id = c('invalid'))
+  }
+  lakes_nhd_lst[[i]] <- wtrbdy %>%
+    dplyr::mutate(lake_name = lakes$lake[i])
+}
+
+## Rbind output + transform to sf 
+lakes_sf <- data.table::rbindlist(lakes_nhd_lst, fill = TRUE) %>% st_as_sf()
+
+```
+
+```{r summary, echo = FALSE}
+
+nhd_saline_lakes_sf_valid <- lakes_sf %>% 
+  filter(id != 'invalid') %>%
+  ## Adding Lat Lon col for label positioning later
+  left_join(lakes_excel[c('Lake Ecosystem', 'Lat','Lon')],by = c('lake_name' = 'Lake Ecosystem'))
+
+## Invalid Lakes
+nhd_saline_lakes_sf_invalid <- lakes_sf %>%
+  st_drop_geometry() %>% 
+  filter(id == 'invalid') %>%
+  dplyr::select(lake_name)
+
+message('Lakes with valid NHD record:') 
+print(paste(nhd_saline_lakes_sf_valid$lake_name, nhd_saline_lakes_sf_valid$comid, sep = ' - comid:'))
+
+message('Lakes with invalid NHD record:')
+print(nhd_saline_lakes_sf_invalid$lake_name)
+
+```
+
+```{r nhd_att, echo=FALSE}
+
+message('Available attributes w/ nhdplus')
+
+str(nhd_saline_lakes_sf_valid %>% st_drop_geometry() %>% select(-c(Lat,Lon)))
+
+```
+
+```{r labelled_leaflet_map, echo=FALSE}
+
+library(leaflet)
+## valid lakes labelled on w/ leaflet
+leaflet(as(nhd_saline_lakes_sf_valid, 'Spatial')) %>%
+  addProviderTiles("CartoDB.Positron") %>% 
+  addPolygons() %>% 
+  addLabelOnlyMarkers(~as.numeric(Lon),
+                      ~as.numeric(Lat),
+                      label =  ~lake_name, 
+                      labelOptions = labelOptions(noHide = TRUE, direction = 'right',
+                                                  textOnly = TRUE,
+                                                  textsize = '8px'))
+
+```
+
+#### NHD huc12 and huc8 catchments for valid lakes
+```{r extract_huc, echo = FALSE, warning=FALSE, message = FALSE}
+
+lakes_huc12_valid <- get_huc12(AOI = nhd_saline_lakes_sf_valid, buffer = 1) %>% 
+  select(id,huc12,name,geometry)
+
+lakes_huc8_valid <- get_huc8(AOI = nhd_saline_lakes_sf_valid, buffer = 1) %>% 
+  select(id,huc8,name,geometry)
+
+huc8_flines <- get_nhdplus(AOI = lakes_huc8_valid, realization = 'flowline')
+
+saline_lakes_nhd <- nhd_saline_lakes_sf_valid %>% select(comid,lake_name, ftype, geometry)
+
+mapview(huc8_flines, color = 'blue', lwd = 0.3)+
+  mapview(lakes_huc12_valid, col.regions = 'transparent', color = 'red') +
+  mapview(lakes_huc8_valid, col.regions = 'transparent', color = 'green') + 
+  mapview(saline_lakes_nhd)
+
+```
+
+_Change basemap with layers widget on interactive map_
+
+### LAGOS-US LOCUS - get lakes from LAGOS-US portal
+
+```{r lake_info, echo = FALSE}
+
+locus_saline_lakes_filtered <- locus_lake_info_west %>% 
+  mutate(lake_namegnis = str_to_title(lake_namegnis)) %>% 
+  filter(lake_namegnis %in% lakes$lake)
+
+colnames(locus_saline_lakes_filtered)
+
+```
+
+```{r gdb_read_in, ehco = FALSE, warning=FALSE, message=FALSE}
+
+# Join geom data with filtered lakes dataset from Locus portal
+locus_saline_lakes_sf <- locus_saline_lakes_filtered %>%
+  left_join(locus_lakes_gdb, by = 'lagoslakeid') %>% st_as_sf()
+
+## group by unique lake 
+locus_saline_lakes_sf_gped <- locus_saline_lakes_sf %>%
+dplyr::select(lagoslakeid, lake_namegnis, Shape) %>%
+group_by(lake_namegnis) %>% 
+summarize(geometry = st_union(Shape)) %>% st_as_sf() 
+
+```
+
+
+```{r lakes_not_in_our_data, echo =FALSE}
+
+message('lakes shp not in nhd:')
+nhd_saline_lakes_sf_invalid$lake_name
+
+message('lakes shp not in locus:')
+lakes$lake[!lakes$lake %in% locus_lake_info_west$lake_namegnis]
+
+message('Missing lakes')
+intersect(lakes$lake[!lakes$lake %in% locus_lake_info_west$lake_namegnis], nhd_saline_lakes_sf_invalid$lake_name)
+
+```
+
+
+#### HydroLAKES
+```{r hydroLAKES, echo = FALSE}
+
+hydro_saline_lakes_sf <- hydro_lakes_us %>%
+  filter(Lake_name %in% lakes$lake | Lake_name %in% lakes$lake_name_shrt)
+
+mapview(hydro_saline_lakes_sf)
+
+```
+
+### Combining Lakes from NHD, Locus, and Hydrolakes
+```{r compare, echo = FALSE}
+
+mapview(nhd_saline_lakes_sf_valid[c('lake_name','geometry')], col.regions = 'transparent', color = 'blue', lwd = 1,legend =FALSE)+
+mapview(locus_saline_lakes_sf_gped, col.regions = 'red', color = 'red', alpha.regions = 0.06, legend =FALSE)+
+  mapview(hydro_saline_lakes_sf, col.regions = 'green', color = 'green', alpha.regions = 0.03, legend =FALSE)
+
+```
+
