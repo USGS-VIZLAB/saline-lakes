@@ -15,17 +15,23 @@ knitr::opts_chunk$set(echo = TRUE)
 
 The following report gathers the spatial data available for the 19 focal saline lakes that will be used to conduct the salines lakes data gap analysis.   
 
+Spatial data gathered: 
+ * Lakes polygon shapefiles
+ * HUC08 and HUC12 catchment boundary shapefiles  
+ * Flowlines within huc 8 boundary associated with lake, as polyline shapefiles 
+
 We review three databases and queried to our selected saline lakes. In addition we pulled the huc8 and huc 12 catchments surrounding each lake. 
 
 |Database: | Focal Lakes Count | Use: |
 | ---------|----------|---------------|
 |[LAGO US LOCUS database](https://portal.edirepository.org/nis/mapbrowse?packageid=edi.854.1) | 14/19 | No
 |
-|[HydroLAKES](https://www.hydrosheds.org/products/hydrolakes) | - 11/19 | No
+|[HydroLAKES](https://www.hydrosheds.org/products/hydrolakes) |  11/19 | No
 |
 |[National Hydrological Dataset - high res](https://www.usgs.gov/national-hydrography/nhdplus-high-resolution) - water body attributes | 18/19 (Carson sink missing) | Yes 
 
-* Carson Sink - does not exist in any of our database Will add afterwards
+
+Note: Carson Sink - does not exist in any of our database Will added to the list of lakes fetched from NHD
 
 #### Libraries
 ```{r libs, echo=FALSE, message=FALSE}
