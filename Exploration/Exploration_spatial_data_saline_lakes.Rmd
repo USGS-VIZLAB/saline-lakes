@@ -190,6 +190,8 @@ str(nhd_saline_lakes_sf_valid %>% st_drop_geometry() %>% select(-c(Lat,Lon)))
 
 ```
 
+#### Mapping selected waterbodies from NHD med res
+
 ```{r labelled_leaflet_map, echo=FALSE}
 
 library(leaflet)
@@ -236,11 +238,11 @@ locus_saline_lakes_filtered <- locus_lake_info_west %>%
   mutate(lake_namegnis = str_to_title(lake_namegnis)) %>% 
   filter(lake_namegnis %in% lakes$lake)
 
-colnames(locus_saline_lakes_filtered)
+# colnames(locus_saline_lakes_filtered)
 
 ```
 
-```{r gdb_read_in, ehco = FALSE, warning=FALSE, message=FALSE}
+```{r gdb_read_in, echo = FALSE, warning=FALSE, message=FALSE}
 
 # Join geom data with filtered lakes dataset from Locus portal
 locus_saline_lakes_sf <- locus_saline_lakes_filtered %>%
