@@ -20,12 +20,10 @@ lakes <- lakes_excel %>%
 ## Define temp dir in Data folder
 nhdhr_dir <- file.path('Data', "nhdhr_lakes")
 
-## Get huc08 for focal lakes
-huc8 <- get_huc8(AOI = lakes$Point_geometry) %>% unique()
+## Get huc08 for focal lakes and extract comids
+huc8 <- get_huc8(AOI = lakes$Point_geometry)
+huc8_comids <- substr(huc8$huc8, start = 1, stop = 4) %>% unique()
 
-## huc8 for download
-huc8_cmids_for_download <- substr(huc8$huc8, start = 1, stop = 4) %>% unique()
-
-## nhdplustools 
-nhdplusTools::download_nhdplushr(nhdhr_dir, huc8_cmids_for_download)
+## nhdplustools
+nhdplusTools::download_nhdplushr(nhdhr_dir, huc8_comids)
 
