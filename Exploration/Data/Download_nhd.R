@@ -9,6 +9,7 @@ selected_crs = 4326
 ## list of lakes
 lakes_excel <- readxl::read_xlsx('Data/Lakes_list.xlsx', col_types = 'text')
 
+
 ## Turning lakes into SF obj
 lakes <- lakes_excel %>% 
   ## note - lon comes first in st_as_sf() 
