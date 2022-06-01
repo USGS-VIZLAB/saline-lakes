@@ -1,0 +1,257 @@
+---
+title: "Exploration of Available Spatial Data for Focal Saline Lakes"
+author: "Margaux Sleckman"
+date: "5/20/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+#### Context
+
+The following report gathers the spatial data available for the 19 focal saline lakes that will be used to conduct the salines lakes data gap analysis.   
+
+Spatial data gathered: 
+ * Lakes polygon shapefiles
+ * HUC08 and HUC12 catchment boundary shapefiles  
+ * Flowlines within huc 8 boundary associated with lake, as polyline shapefiles 
+
+We review three databases and queried to our selected saline lakes. In addition we pulled the huc8 and huc 12 catchments surrounding each lake. 
+
+|Database: | Focal Lakes Count | Use: |
+| ---------|----------|---------------|
+|[LAGO US LOCUS database](https://portal.edirepository.org/nis/mapbrowse?packageid=edi.854.1) | 14/19 | No
+|
+|[HydroLAKES](https://www.hydrosheds.org/products/hydrolakes) |  11/19 | No
+|
+|[National Hydrological Dataset - high res](https://www.usgs.gov/national-hydrography/nhdplus-high-resolution) - water body attributes | 18/19 (Carson sink missing) | Yes 
+
+Notes on specific lakes: 
+
+* Lake Winnemucca NV was not available in high resolution NHD database. Lake spatial data was retrieved from non-high res.
+* Warner Lake looks to be in fact a collection of shallow lakes  
+* Carson Sink - does not exist in any of our database Will added to the list of lakes fetched from NHD
+
+#### Libraries
+```{r libs, echo=FALSE, message=FALSE}
+
+library(sf)
+library(sp)
+library(dplyr)
+library(rgdal)         
+library(readr)
+library(readxl)
+library(mapview)
+library(rgdal)
+library(RColorBrewer)
+library(data.table)
+library(nhdplusTools)
+library(snakecase)
+library(stringr)
+library(kableExtra)
+library(leaflet)
+
+```
+
+### Set Up
+
+Lakes excel found in sharepoint folder under [Exploration/Data/Lakes_list.xlsx](https://doimspp.sharepoint.com/:x:/r/sites/IIDDStaff/_layouts/15/Doc.aspx?sourcedoc=%7BDC11027F-CD61-4240-9972-654EFEF8C401%7D&file=Lakes_list.xlsx&action=default&mobileredirect=true&cid=f49bdfe8-b10e-485c-86d0-48d02dd93a75) 
+
+```{r get lakes from databases, include=FALSE, message = FALSE}
+
+## CRS: keeping crs at 4326 for now
+selected_crs = 4326
+
+## List of lakes
+lakes_excel <- readxl::read_xlsx('Data/Lakes_list.xlsx', col_types = 'text')
+
+## Turning lakes into SF obj
+lakes <- lakes_excel %>% 
+  ## Note - lon comes first in st_as_sf()
+  st_as_sf(coords = c('Lon','Lat'), crs = 4326) %>% 
+  rename(Point_geometry = geometry, lake = `Lake Ecosystem`) %>% 
+  mutate(State_abbr = case_when(State == 'California' ~ 'CA',
+                                State == 'Nevada' ~ 'NV',
+                                State == 'Utah' ~ 'UT',
+                                State == 'Oregon' ~ 'OR',
+                                State == 'California/Oregon' ~ 'CA',
+                                TRUE ~ 'NA'),
+         lake = str_to_title(lake),
+         lake_w_state = paste(lake,State_abbr, sep = ','),
+         lake_name_shrt = trimws(str_replace(lake,
+                                             pattern = 'Lake',
+                                             replacement = "")))
+         
+## Get huc08 for focal lakes
+huc08_df <- get_huc8(AOI = lakes$Point_geometry)
+huc04_comids_for_download <- substr(huc08_df$huc8, start = 1, stop = 4) %>% unique()
+
+## Define temp dir in data folder
+nhdhr_dir <- file.path('Data', "nhdhr_lakes")
+
+# States
+states <- st_read('Data/statesp010g.shp_nt00938/statesp010g.shp') %>%
+  filter(STATE_ABBR %in% c('CA',"NV",'UT','OR')) %>% 
+  st_transform(crs = st_crs(lakes)) %>% 
+  select(NAME,STATE_ABBR, geometry)
+
+```
+
+##### Focal Saline Lakes
+
+```{r table, echo = FALSE}
+
+lakes %>%
+  select(lake, State) %>% 
+  kbl(caption = 'Selected Saline Lakes') %>%
+   kable_styling(bootstrap_options = "striped",
+                 full_width = F,
+                 position = "center")
+
+```
+
+```{r nhdhr, include=FALSE}
+
+# ## nhdplustools download data if you have not done so.
+# source('Data/Download_nhd.R')
+nhd_hr <- nhdplusTools::get_nhdplushr(hr_dir = 'Data/temp_hr_lakes/',
+                                      layer= 'NHDWaterbody')
+
+nhdhr_saline_lakes <- nhd_hr$NHDWaterbody %>%
+  filter(GNIS_Name %in% lakes$lake) %>%
+  st_zm() %>%
+  st_make_valid() %>%
+  st_transform(crs = st_crs(lakes)) %>% 
+  st_join(x = ., y = states) %>% 
+  mutate(lake_w_state = paste(GNIS_Name, STATE_ABBR, sep = ',')) %>% 
+  filter(lake_w_state %in% lakes$lake_w_state)
+
+lakes_nhdhr <- nhdhr_saline_lakes %>%
+  group_by(lake_w_state,GNIS_Name) %>%
+  summarize(geometry = st_union(Shape)) %>% 
+  ungroup()
+
+```
+
+```{r special handling, include=FALSE}
+
+Winnemucca <- get_waterbodies(AOI = st_sfc(lakes$Point_geometry[lakes$lake =='Winnemucca Lake'],
+                                        crs = selected_crs))
+
+Warner_lakes <- c('Pelican Lake',
+                  'Crump Lake',
+                  'Hart Lake',
+                  'Anderson Lake',
+                  'Swamp Lake',
+                  'Mugwump Lake',
+                  'Flagstaff Lake',
+                  'Upper Campbell Lake',
+                  'Campbell Lake',
+                  'Stone Corral Lake',
+                  'Turpin Lake', 
+                  'Bluejoint Lake')
+
+wrong_swamp_lake_id <- 
+
+Warner <-  nhd_hr$NHDWaterbody %>% 
+  filter(GNIS_Name %in% Warner_lakes) %>% 
+  filter()
+  st_zm() %>% 
+  st_make_valid() %>%
+  st_transform(crs = st_crs(lakes)) %>% 
+  st_join(x = ., y = states) %>% 
+  mutate(lake_w_state = paste('Warner Lake', STATE_ABBR, sep = ',')) %>% 
+  filter(lake_w_state %in% lakes$lake_w_state) 
+
+Warner_lakes <- Warner %>%
+  group_by(lake_w_state) %>%
+  summarize(geometry = st_union(Shape)) %>% 
+  ungroup()
+
+```
+
+```{r Combining_all_lakes}
+
+lakes_map <- lakes_nhdhr %>% 
+  add_row(lake_w_state = 'Winnemucca Lake,NV',
+          GNIS_Name = 'Winnemucca Lake',
+          geometry = Winnemucca$geometry[1]) %>%
+  filter(GNIS_Name != 'Warner Lake') %>% 
+  add_row(lake_w_state = Warner_lakes$lake_w_state[1],
+          GNIS_Name = 'Warner Lakes',
+          geometry = Warner_lakes$geometry[1]) %>%
+  mutate(X = st_coordinates(st_centroid(geometry))[,1],
+         Y = st_coordinates(st_centroid(geometry))[,2]) %>% 
+  mutate(flag = ifelse(GNIS_Name == 'Winnemucca Lake','nhd',
+                       ifelse(GNIS_Name == 'Warner Lakes',
+                              'From nhd hr. Warner lakes Wetlands consists of 12 shallow lakes in south least region of oregon, and includes Pelican, Crump, Hart Lakes, among others', 'From nhd hr')))
+
+```
+
+
+```{r leaflet, echo =FALSE}
+
+pal <- colorFactor(
+  palette = c('skyblue','firebrick', 'firebrick'),
+  domain = lakes_map$flag)
+
+## valid lakes labelled on w/ leaflet
+leaflet(lakes_map) %>%
+  addProviderTiles("CartoDB.VoyagerNoLabels") %>% 
+  addPolygons(data = lakes_map, weight=2, color = 'grey', opacity = 0.3,
+              fillColor = ~pal(flag), fillOpacity = 0.8,
+              highlightOptions = highlightOptions(color='darkblue',weight=0.5,
+                                                  bringToFront = TRUE)) %>% 
+  addLabelOnlyMarkers(~as.numeric(X),
+                      ~as.numeric(Y),
+                      label =  ~GNIS_Name, 
+                      labelOptions = labelOptions(noHide = TRUE,
+                                                  direction = 'right',
+                                                  textOnly = TRUE,
+                                                  textsize = '6px'))
+
+```
+
+```{r huc12 and huc8}
+
+lakes_huc12 <- get_huc12(AOI = lakes_map, buffer = 1) %>% 
+  select(id, huc12, name, states, geometry)
+
+
+lakes_huc8 <- get_huc8(AOI = lakes_map, buffer = 1) %>% 
+  select(id, huc8, name, states, geometry)
+
+huc8_flines_CA <- get_nhdplus(AOI = lakes_huc8 %>%
+                                filter(str_detect(states, 'CA')),
+                              realization = 'flowline')
+
+huc8_flines_OR <- get_nhdplus(AOI = lakes_huc8 %>%
+                                filter(str_detect(states, 'OR')),
+                              realization = 'flowline')
+
+huc8_flines_NV <- get_nhdplus(AOI = lakes_huc8 %>%
+                                filter(str_detect(states, 'NV')),
+                              realization = 'flowline')
+
+huc8_flines_UT <- get_nhdplus(AOI = lakes_huc8 %>%
+                                filter(str_detect(states, 'UT')),
+                              realization = 'flowline')
+
+all_flowlines <- rbind(huc8_flines_CA,
+                       huc8_flines_OR, 
+                       huc8_flines_NV,
+                       huc8_flines_UT)
+
+
+mapview(lakes_huc12, col.regions = 'transparent', color = 'red')
+
+mapview(lakes_huc8, col.regions = 'transparent', color = 'green')+
+
+mapview(huc8_flines)
+
+```
+
