@@ -2,25 +2,30 @@
 title: "Exploration of Available Spatial Data for Focal Saline Lakes"
 author: "Margaux Sleckman"
 date: "5/20/2022"
-output: html_document
+output:
+  html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
 
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE)
 
 ```
 
 #### Context
 
-The following report gathers the spatial data available for the 19 focal saline lakes that will be used to conduct the salines lakes data gap analysis.   
+The following document gathers the spatial data immediately available for the 19 focal saline lakes that will be used to conduct the salines lakes data gap analysis.   
 
-Spatial data gathered: 
- * Lakes polygon shapefiles
- * HUC08 and HUC12 catchment boundary shapefiles  
- * Flowlines within huc 8 boundary associated with lake, as polyline shapefiles 
+**Spatial data gathered:** 
 
-We review three databases and queried to our selected saline lakes. In addition we pulled the huc8 and huc 12 catchments surrounding each lake. 
+* Lakes polygon shapefiles
+
+* HUC08 and HUC12 catchment boundary shapefiles attached to our lake boundaries 
+
+* Flowlines within HUC08 boundaries, as polyline shapefiles 
+
+We reviewed three databases, querying our selected saline lakes (see table below). In addition we pulled the HUC08 and HUC12 water catchment boundaries surrounding each lake. 
 
 |Database: | Focal Lakes Count | Use: |
 | ---------|----------|---------------|
@@ -30,13 +35,16 @@ We review three databases and queried to our selected saline lakes. In addition 
 |
 |[National Hydrological Dataset - high res](https://www.usgs.gov/national-hydrography/nhdplus-high-resolution) - water body attributes | 18/19 (Carson sink missing) | Yes 
 
-Notes on specific lakes: 
+NHD (high resolution/non-high resolution) will used for the majority of spatial data gathering for our focal saline lakes.
 
-* Lake Winnemucca NV was not available in high resolution NHD database. Lake spatial data was retrieved from non-high res.
-* Warner Lake looks to be in fact a collection of shallow lakes  
-* Carson Sink - does not exist in any of our database Will added to the list of lakes fetched from NHD
+**Notes on specific lakes:** 
 
-#### Libraries
+* Lake Winnemucca, NV is not available in high resolution NHD database. Spatial data for this lake was therefore retrieved from non-high res NHD.
+
+* 'Warner Lake' looks to be in fact a collection chain of 12 shallow lakes in South East Oregon. This needs to be confirmed. 
+
+* Carson Sink does not exist in any of our databases. It's point location has been added to the lake map below. The spatial data for the Carson Sink will likely be handled separately.  
+
 ```{r libs, echo=FALSE, message=FALSE}
 
 library(sf)
@@ -57,7 +65,7 @@ library(leaflet)
 
 ```
 
-### Set Up
+#### Lakes
 
 Lakes excel found in sharepoint folder under [Exploration/Data/Lakes_list.xlsx](https://doimspp.sharepoint.com/:x:/r/sites/IIDDStaff/_layouts/15/Doc.aspx?sourcedoc=%7BDC11027F-CD61-4240-9972-654EFEF8C401%7D&file=Lakes_list.xlsx&action=default&mobileredirect=true&cid=f49bdfe8-b10e-485c-86d0-48d02dd93a75) 
 
@@ -90,9 +98,6 @@ lakes <- lakes_excel %>%
 huc08_df <- get_huc8(AOI = lakes$Point_geometry)
 huc04_comids_for_download <- substr(huc08_df$huc8, start = 1, stop = 4) %>% unique()
 
-## Define temp dir in data folder
-nhdhr_dir <- file.path('Data', "nhdhr_lakes")
-
 # States
 states <- st_read('Data/statesp010g.shp_nt00938/statesp010g.shp') %>%
   filter(STATE_ABBR %in% c('CA',"NV",'UT','OR')) %>% 
@@ -101,7 +106,7 @@ states <- st_read('Data/statesp010g.shp_nt00938/statesp010g.shp') %>%
 
 ```
 
-##### Focal Saline Lakes
+#### Focal Saline Lakes
 
 ```{r table, echo = FALSE}
 
@@ -116,9 +121,14 @@ lakes %>%
 
 ```{r nhdhr, include=FALSE}
 
-# ## nhdplustools download data if you have not done so.
+# Note - added my local path because i had everything downloaded already
+## in Download_nhd.R, nhdhr_dir is created and would overwrite mine if that script is sourced
+nhdhr_dir <- 'Data/temp_hr_lakes/'
+
+## nhdplustools download data if you have not done so.
 # source('Data/Download_nhd.R')
-nhd_hr <- nhdplusTools::get_nhdplushr(hr_dir = 'Data/temp_hr_lakes/',
+
+nhd_hr <- nhdplusTools::get_nhdplushr(hr_dir = nhdhr_dir,
                                       layer= 'NHDWaterbody')
 
 nhdhr_saline_lakes <- nhd_hr$NHDWaterbody %>%
@@ -200,7 +210,7 @@ lakes_map <- lakes_nhdhr %>%
 
 ```
 
-
+#### Map of all focal saline lakes 
 ```{r leaflet, echo =FALSE}
 
 pal <- colorFactor(
@@ -228,7 +238,7 @@ leaflet(lakes_map) %>%
 
 ```
 
-```{r huc12 and huc8}
+```{r huc12 and huc8,echo =FALSE, message=FALSE, warning=FALSE}
 
 lakes_huc12 <- get_huc12(AOI = lakes_map, buffer = 1) %>% 
   select(id, huc12, name, states, geometry)
@@ -236,20 +246,16 @@ lakes_huc12 <- get_huc12(AOI = lakes_map, buffer = 1) %>%
 lakes_huc8 <- get_huc8(AOI = lakes_map, buffer = 1) %>% 
   select(id, huc8, name, states, geometry)
 
-huc8_flines_CA <- get_nhdplus(AOI = lakes_huc8 %>%
-                                filter(str_detect(states, 'CA')),
+huc8_flines_CA <- get_nhdplus(AOI = lakes_huc8 %>% filter(str_detect(states, 'CA')),
                               realization = 'flowline')
 
-huc8_flines_OR <- get_nhdplus(AOI = lakes_huc8 %>%
-                                filter(str_detect(states, 'OR')),
+huc8_flines_OR <- get_nhdplus(AOI = lakes_huc8 %>% filter(str_detect(states, 'OR')),
                               realization = 'flowline')
 
-huc8_flines_NV <- get_nhdplus(AOI = lakes_huc8 %>%
-                                filter(str_detect(states, 'NV')),
+huc8_flines_NV <- get_nhdplus(AOI = lakes_huc8 %>% filter(str_detect(states, 'NV')),
                               realization = 'flowline')
 
-huc8_flines_UT <- get_nhdplus(AOI = lakes_huc8 %>%
-                                filter(str_detect(states, 'UT')),
+huc8_flines_UT <- get_nhdplus(AOI = lakes_huc8 %>% filter(str_detect(states, 'UT')),
                               realization = 'flowline')
 
 all_flowlines <- rbind(huc8_flines_CA,
@@ -257,11 +263,22 @@ all_flowlines <- rbind(huc8_flines_CA,
                        huc8_flines_NV,
                        huc8_flines_UT)
 
+```
 
-mapview(lakes_huc12, col.regions = 'transparent', color = 'red')
-mapview(lakes_huc8, col.regions = 'transparent', color = 'green')+
+#### Map of HUC08 (green) HUC08 (red) regions surrounding focal lakes
+```{r mapview_huc, echo=FALSE}
 
-mapview(huc8_flines)
+mapview(lakes_huc8, col.regions = 'transparent', color = 'red')+
+  mapview(lakes_huc12, col.regions = 'transparent', color = 'green')+
+  mapview(lakes_map)
 
 ```
 
+#### Map of HUC08 region around lakes and all HUC08 flowlines 
+```{r mapview_flowlines, echo=FALSE}
+
+mapview(all_flowlines,  color = 'lightblue')+
+  mapview(lakes_huc8, col.regions = 'transparent', color = 'red')+
+  mapview(lakes_map)
+
+```
