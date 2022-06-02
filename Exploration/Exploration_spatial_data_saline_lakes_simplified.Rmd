@@ -11,8 +11,10 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 
 ```
+
 <br>
 <br>
+
 #### Summary
 
 The following document gathers the spatial data immediately available for the 19 focal saline lakes that will be used to conduct the salines lakes data gap analysis.   
@@ -34,7 +36,9 @@ We reviewed three databases, querying our selected saline lakes (see table below
 |[National Hydrological Dataset - high res](https://www.usgs.gov/national-hydrography/nhdplus-high-resolution) - water body attributes | 18/19 (Carson sink missing) | Yes 
 
 NHD (high resolution/non-high resolution) will be used as the data source for the majority of the spatial data of our focal saline lakes.
+
 <br>
+
 **Notes on specific lakes:** 
 
 * Lake Winnemucca, NV is not available in high resolution NHD database. Spatial data for this lake was therefore retrieved from non-high res NHD.
@@ -66,9 +70,12 @@ library(leaflet)
 
 <br> 
 <br>
-#### Lakes
+
+#### Focal Saline Lakes
 
 Lakes excel found in USGS project sharepoint folder under [Exploration/Data/Lakes_list.xlsx](https://doimspp.sharepoint.com/:x:/r/sites/IIDDStaff/_layouts/15/Doc.aspx?sourcedoc=%7BDC11027F-CD61-4240-9972-654EFEF8C401%7D&file=Lakes_list.xlsx&action=default&mobileredirect=true&cid=f49bdfe8-b10e-485c-86d0-48d02dd93a75) 
+
+<br>
 
 ```{r get lakes from databases, include=FALSE, message = FALSE}
 
@@ -107,8 +114,6 @@ states <- st_read('Data/statesp010g.shp_nt00938/statesp010g.shp') %>%
 
 ```
 
-<br>
-#### Focal Saline Lakes
 
 ```{r table, echo = FALSE}
 
@@ -215,8 +220,11 @@ lakes_map <- lakes_nhdhr %>%
   
 
 ```
+
 <br>
-#### Map of all focal saline lakes 
+
+#### Map of all 19 focal saline lakes 
+
 ```{r leaflet, echo =FALSE}
 
 pal <- colorFactor(
@@ -244,7 +252,7 @@ leaflet(lakes_map) %>%
 
 ```
 
-* Carson Sink does not have a lake polygon.
+*Carson Sink does not have a lake polygon.
 
 ```{r huc12 and huc8,echo =FALSE, message=FALSE, warning=FALSE}
 
@@ -272,7 +280,9 @@ all_flowlines <- rbind(huc8_flines_CA,
                        huc8_flines_UT)
 
 ```
+
 <br>
+
 #### Map of HUC08 (green) HUC08 (red) regions surrounding focal lakes
 ```{r mapview_huc, echo=FALSE}
 
@@ -296,8 +306,11 @@ leaflet(lakes_map) %>%
 
 
 ```
+
 <br>
+
 #### Map of HUC08 region around lakes and all HUC08 flowlines 
+
 ```{r mapview_flowlines, echo=FALSE}
 
 leaflet(lakes_map) %>%
@@ -318,5 +331,3 @@ leaflet(lakes_map) %>%
 #   mapview(lakes_map)
 
 ```
-
-
