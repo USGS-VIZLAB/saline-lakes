@@ -133,6 +133,7 @@ nhdhr_dir <- 'Data/temp_hr_lakes/'
 nhd_hr <- nhdplusTools::get_nhdplushr(hr_dir = nhdhr_dir,
                                       layer= 'NHDWaterbody')
 
+## Cleaning dataframe
 nhdhr_saline_lakes <- nhd_hr$NHDWaterbody %>%
   filter(GNIS_Name %in% lakes$lake) %>%
   st_zm() %>%
@@ -142,6 +143,7 @@ nhdhr_saline_lakes <- nhd_hr$NHDWaterbody %>%
   mutate(lake_w_state = paste(GNIS_Name, STATE_ABBR, sep = ',')) %>% 
   filter(lake_w_state %in% lakes$lake_w_state)
 
+## Spatial group by
 lakes_nhdhr <- nhdhr_saline_lakes %>%
   group_by(lake_w_state,GNIS_Name) %>%
   summarize(geometry = st_union(Shape)) %>% 
