@@ -1,19 +1,19 @@
 ---
 title: "Exploration of Available Spatial Data for Focal Saline Lakes"
 author: "Margaux Sleckman"
-date: "5/20/2022"
+date: "`r Sys.Date()`"
 output:
   html_document: default
-  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
 
-knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(echo = TRUE)
 
 ```
-
-#### Context
+<br>
+<br>
+#### Summary
 
 The following document gathers the spatial data immediately available for the 19 focal saline lakes that will be used to conduct the salines lakes data gap analysis.   
 
@@ -30,20 +30,19 @@ We reviewed three databases, querying our selected saline lakes (see table below
 |Database: | Focal Lakes Count | Use: |
 | ---------|----------|---------------|
 |[LAGO US LOCUS database](https://portal.edirepository.org/nis/mapbrowse?packageid=edi.854.1) | 14/19 | No
-|
 |[HydroLAKES](https://www.hydrosheds.org/products/hydrolakes) |  11/19 | No
-|
 |[National Hydrological Dataset - high res](https://www.usgs.gov/national-hydrography/nhdplus-high-resolution) - water body attributes | 18/19 (Carson sink missing) | Yes 
 
-NHD (high resolution/non-high resolution) will used for the majority of spatial data gathering for our focal saline lakes.
-
+NHD (high resolution/non-high resolution) will be used as the data source for the majority of the spatial data of our focal saline lakes.
+<br>
 **Notes on specific lakes:** 
 
 * Lake Winnemucca, NV is not available in high resolution NHD database. Spatial data for this lake was therefore retrieved from non-high res NHD.
 
 * 'Warner Lake' looks to be in fact a collection chain of 12 shallow lakes in South East Oregon. This needs to be confirmed. 
 
-* Carson Sink does not exist in any of our databases. It's point location has been added to the lake map below. The spatial data for the Carson Sink will likely be handled separately.  
+* Carson Sink does not exist in any of our databases. A point location has been added to the lake map below indicate our best estimate of the location of Carson Sink.
+The spatial data for the Carson Sink will likely be handled separately.  
 
 ```{r libs, echo=FALSE, message=FALSE}
 
@@ -65,9 +64,11 @@ library(leaflet)
 
 ```
 
+<br> 
+<br>
 #### Lakes
 
-Lakes excel found in sharepoint folder under [Exploration/Data/Lakes_list.xlsx](https://doimspp.sharepoint.com/:x:/r/sites/IIDDStaff/_layouts/15/Doc.aspx?sourcedoc=%7BDC11027F-CD61-4240-9972-654EFEF8C401%7D&file=Lakes_list.xlsx&action=default&mobileredirect=true&cid=f49bdfe8-b10e-485c-86d0-48d02dd93a75) 
+Lakes excel found in USGS project sharepoint folder under [Exploration/Data/Lakes_list.xlsx](https://doimspp.sharepoint.com/:x:/r/sites/IIDDStaff/_layouts/15/Doc.aspx?sourcedoc=%7BDC11027F-CD61-4240-9972-654EFEF8C401%7D&file=Lakes_list.xlsx&action=default&mobileredirect=true&cid=f49bdfe8-b10e-485c-86d0-48d02dd93a75) 
 
 ```{r get lakes from databases, include=FALSE, message = FALSE}
 
@@ -106,6 +107,7 @@ states <- st_read('Data/statesp010g.shp_nt00938/statesp010g.shp') %>%
 
 ```
 
+<br>
 #### Focal Saline Lakes
 
 ```{r table, echo = FALSE}
@@ -153,7 +155,7 @@ lakes_nhdhr <- nhdhr_saline_lakes %>%
 Winnemucca <- get_waterbodies(AOI = st_sfc(lakes$Point_geometry[lakes$lake =='Winnemucca Lake'],
                                         crs = selected_crs))
 
-## Handling Warner lakes/wetland which is a collection of lakes
+## Handling Warner lakes/wetland which is made u of collection of shallow wetland lakes
 Warner_lakes <- c('Pelican Lake',
                   'Crump Lake',
                   'Hart Lake',
@@ -188,11 +190,12 @@ Warner_lakes <- Warner %>%
 ## Carson Sink - extracting point for map 
 carson_sink <- lakes %>% filter(lake == 'Carson Sink') %>% 
   mutate(X = st_coordinates(Point_geometry)[1],
-         Y = st_coordinates(Point_geometry)[2])
+         Y = st_coordinates(Point_geometry)[2],
+         lake = gsub('Sink',"Sink*",lake))
 
 ```
 
-```{r Combining_all_lakes}
+```{r Combining_all_lakes, echo = FALSE}
 
 lakes_map <- lakes_nhdhr %>% 
   add_row(lake_w_state = 'Winnemucca Lake,NV',
@@ -207,9 +210,10 @@ lakes_map <- lakes_nhdhr %>%
   mutate(flag = ifelse(GNIS_Name == 'Winnemucca Lake','nhd',
                        ifelse(GNIS_Name == 'Warner Lakes',
                               'From nhd hr. Warner lakes Wetlands consists of 12 shallow lakes in south least region of oregon, and includes Pelican, Crump, Hart Lakes, among others', 'From nhd hr')))
+  
 
 ```
-
+<br>
 #### Map of all focal saline lakes 
 ```{r leaflet, echo =FALSE}
 
@@ -219,7 +223,7 @@ pal <- colorFactor(
 
 label_settings <- labelOptions(noHide = TRUE, direction = 'right',
                                textOnly = TRUE,
-                               textsize = '6px')
+                               textsize = '8px')
 
 ## valid lakes labelled on w/ leaflet
 leaflet(lakes_map) %>%
@@ -238,12 +242,14 @@ leaflet(lakes_map) %>%
 
 ```
 
+* Carson Sink does not have a lake polygon.
+
 ```{r huc12 and huc8,echo =FALSE, message=FALSE, warning=FALSE}
 
-lakes_huc12 <- get_huc12(AOI = lakes_map, buffer = 1) %>% 
+lakes_huc12 <- get_huc12(AOI = lakes_map, buffer = 1) %>%
   select(id, huc12, name, states, geometry)
 
-lakes_huc8 <- get_huc8(AOI = lakes_map, buffer = 1) %>% 
+lakes_huc8 <- get_huc8(AOI = lakes_map, buffer = 1) %>%
   select(id, huc8, name, states, geometry)
 
 huc8_flines_CA <- get_nhdplus(AOI = lakes_huc8 %>% filter(str_detect(states, 'CA')),
@@ -259,26 +265,56 @@ huc8_flines_UT <- get_nhdplus(AOI = lakes_huc8 %>% filter(str_detect(states, 'UT
                               realization = 'flowline')
 
 all_flowlines <- rbind(huc8_flines_CA,
-                       huc8_flines_OR, 
+                       huc8_flines_OR,
                        huc8_flines_NV,
                        huc8_flines_UT)
 
 ```
-
+<br>
 #### Map of HUC08 (green) HUC08 (red) regions surrounding focal lakes
 ```{r mapview_huc, echo=FALSE}
 
-mapview(lakes_huc8, col.regions = 'transparent', color = 'red')+
-  mapview(lakes_huc12, col.regions = 'transparent', color = 'green')+
-  mapview(lakes_map)
+leaflet(lakes_map) %>%
+  addProviderTiles("CartoDB.VoyagerNoLabels") %>% 
+  addPolygons(data = lakes_map, weight=1.5, color = 'grey', opacity = 0.3,
+              fillColor = 'lightblue', fillOpacity = 0.8,
+              highlightOptions = highlightOptions(color='darkblue',weight=0.5, bringToFront = TRUE)) %>% 
+  addPolygons(data = lakes_huc8, weight=1, color = 'red', fillColor = 'transparent') %>%   addPolygons(data = lakes_huc12, weight=1, color = 'green', fillColor = 'transparent') %>%
+  addLegend("bottomright",
+           colors = c('red','green','lightblue'),
+           labels = c('HUC08 boundary','HUC12 boundary', 'Focal lakes'),
+    title = "Legend",
+    opacity = 1
+  )
+
+
+# mapview(lakes_huc12, col.regions = 'transparent', color = 'green')+
+#   mapview(lakes_huc8, col.regions = 'transparent', color = 'red')+
+#   mapview(lakes_map)
+
 
 ```
-
+<br>
 #### Map of HUC08 region around lakes and all HUC08 flowlines 
 ```{r mapview_flowlines, echo=FALSE}
 
-mapview(all_flowlines,  color = 'lightblue')+
-  mapview(lakes_huc8, col.regions = 'transparent', color = 'red')+
-  mapview(lakes_map)
+leaflet(lakes_map) %>%
+  addProviderTiles("CartoDB.VoyagerNoLabels") %>% 
+  addPolygons(data = lakes_map, weight=1.5, color = 'grey', opacity = 0.3,
+              fillColor = 'lightblue', fillOpacity = 0.8,
+              highlightOptions = highlightOptions(color='darkblue',weight=0.5, bringToFront = TRUE)) %>% 
+  addPolygons(data = lakes_huc8, weight=1, color = 'red', fillColor = 'transparent') %>%
+  addPolylines(data = all_flowlines,  weight = 0.2, color = 'darkblue') %>% 
+  addLegend("bottomright",
+           colors = c('red','darkblue'), labels = c('HUC08 boundary','flowlines'),
+    title = "Legend",
+    opacity = 1
+  )
+
+# mapview(all_flowlines,  color = 'lightblue')+
+#   mapview(lakes_huc8, col.regions = 'transparent', color = 'red')+
+#   mapview(lakes_map)
 
 ```
+
+
