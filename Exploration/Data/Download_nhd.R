@@ -10,7 +10,7 @@ download_nhdhr <- function(lakes_df, point_geom_col = 'Point_geometry', output_f
   #' @param output_file_path out filepath for download data. Download process will create subfolders  for huc areas
   
   ## Define temp dir in Data folder
-  nhdhr_dir <- file_path
+  nhdhr_dir <- output_file_path
 
   ## Get huc08 for focal lakes and extract comids
   huc8 <- get_huc8(AOI = lakes_df[point_geom_col])
@@ -23,4 +23,6 @@ download_nhdhr <- function(lakes_df, point_geom_col = 'Point_geometry', output_f
   return(list.files(nhdhr_dir))
   
 }
+
+
 

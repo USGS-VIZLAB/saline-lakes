@@ -1,7 +1,7 @@
 ---
 title: "Exploration of Available Spatial Data for Focal Saline Lakes"
 author: "Margaux Sleckman"
-date: "`r Sys.Date()`"
+#date: "`r Sys.Date()`"
 output:
   html_document: default
 ---
@@ -19,11 +19,13 @@ knitr::opts_chunk$set(echo = TRUE)
 
 The following document gathers the spatial data immediately available for the 19 focal saline lakes that will be used to conduct the salines lakes data gap analysis.   
 
+<br>
+
 **Spatial data gathered:** 
 
 * Lakes polygon shapefiles
 
-* HUC08 and HUC12 catchment boundary shapefiles attached to our lake boundaries 
+* HUC08 and HUC12 catchment boundary shapefiles associated with our selected lakes 
 
 * Flowlines within HUC08 boundaries, as polyline shapefiles 
 
@@ -41,12 +43,12 @@ NHD (high resolution/non-high resolution) will be used as the data source for th
 
 **Notes on specific lakes:** 
 
-* Lake Winnemucca, NV is not available in high resolution NHD database. Spatial data for this lake was therefore retrieved from non-high res NHD.
+* Lake Winnemucca, NV is not available in the high resolution NHD database. Spatial data for this lake was retrieved from non-high res NHD.
 
 * 'Warner Lake' looks to be in fact a collection chain of 12 shallow lakes in South East Oregon. This needs to be confirmed. 
 
-* Carson Sink does not exist in any of our databases. A point location has been added to the lake map below indicate our best estimate of the location of Carson Sink.
-The spatial data for the Carson Sink will likely be handled separately.  
+* Carson Sink does not exist in any of our databases. A point location has been added to the lake map below to indicate our best estimate of the location of Carson Sink.
+The spatial data for the Carson Sink must be retrieved separately.  
 
 ```{r libs, echo=FALSE, message=FALSE}
 
@@ -114,12 +116,11 @@ states <- st_read('Data/statesp010g.shp_nt00938/statesp010g.shp') %>%
 
 ```
 
-
 ```{r table, echo = FALSE}
 
 lakes %>%
   select(lake, State) %>% 
-  kbl(caption = 'Selected Saline Lakes') %>%
+  kbl(caption = 'Selected Saline Lakes', align= 'ccc') %>%
    kable_styling(bootstrap_options = "striped",
                  full_width = F,
                  position = "center")
@@ -162,7 +163,7 @@ lakes_nhdhr <- nhdhr_saline_lakes %>%
 Winnemucca <- get_waterbodies(AOI = st_sfc(lakes$Point_geometry[lakes$lake =='Winnemucca Lake'],
                                         crs = selected_crs))
 
-## Handling Warner lakes/wetland which is made u of collection of shallow wetland lakes
+## Handling Warner lakes/wetlands which is made u of collection of shallow wetland lakes. Full list taken from https://www.blm.gov/visit/warner-wetlands
 Warner_lakes <- c('Pelican Lake',
                   'Crump Lake',
                   'Hart Lake',
@@ -216,7 +217,7 @@ lakes_map <- lakes_nhdhr %>%
          Y = st_coordinates(st_centroid(geometry))[,2]) %>% 
   mutate(flag = ifelse(GNIS_Name == 'Winnemucca Lake','nhd',
                        ifelse(GNIS_Name == 'Warner Lakes',
-                              'From nhd hr. Warner lakes Wetlands consists of 12 shallow lakes in south least region of oregon, and includes Pelican, Crump, Hart Lakes, among others', 'From nhd hr')))
+                              'From nhd hr. The Warner Lakes (aka Warner Wetlands) consist of 12 shallow lakes in South East Oregon, and include Pelican, Crump, Hart Lakes, among others', 'From nhd hr')))
   
 
 ```
@@ -233,7 +234,7 @@ pal <- colorFactor(
 
 label_settings <- labelOptions(noHide = TRUE, direction = 'right',
                                textOnly = TRUE,
-                               textsize = '8px')
+                               textsize = '9px')
 
 ## valid lakes labelled on w/ leaflet
 leaflet(lakes_map) %>%
@@ -249,6 +250,14 @@ leaflet(lakes_map) %>%
                       ~as.numeric(Y),
                       label =  ~GNIS_Name, 
                       labelOptions = label_settings)
+
+```
+
+
+```{r}
+
+st_write(lakes_map, 'Data/out/saline_lakes.shp', append = FALSE)
+
 
 ```
 
@@ -283,7 +292,7 @@ all_flowlines <- rbind(huc8_flines_CA,
 
 <br>
 
-#### Map of HUC08 (green) HUC08 (red) regions surrounding focal lakes
+#### Map of HUC08 (red) and HUC12 (green) regions surrounding focal lakes
 ```{r mapview_huc, echo=FALSE}
 
 leaflet(lakes_map) %>%
@@ -299,11 +308,9 @@ leaflet(lakes_map) %>%
     opacity = 1
   )
 
-
 # mapview(lakes_huc12, col.regions = 'transparent', color = 'green')+
 #   mapview(lakes_huc8, col.regions = 'transparent', color = 'red')+
 #   mapview(lakes_map)
-
 
 ```
 
@@ -321,13 +328,13 @@ leaflet(lakes_map) %>%
   addPolygons(data = lakes_huc8, weight=1, color = 'red', fillColor = 'transparent') %>%
   addPolylines(data = all_flowlines,  weight = 0.2, color = 'darkblue') %>% 
   addLegend("bottomright",
-           colors = c('red','darkblue'), labels = c('HUC08 boundary','flowlines'),
+           colors = c('red','darkblue'), labels = c('HUC08 boundary','HUC08 flowlines'),
     title = "Legend",
     opacity = 1
   )
 
 # mapview(all_flowlines,  color = 'lightblue')+
-#   mapview(lakes_huc8, col.regions = 'transparent', color = 'red')+
-#   mapview(lakes_map)
+# mapview(lakes_huc8, col.regions = 'transparent', color = 'red') +
+# mapview(lakes_map)
 
 ```
