@@ -81,11 +81,14 @@ Lakes excel found in USGS project sharepoint folder under [Exploration/Data/Lake
 
 ```{r get lakes from databases, include=FALSE, message = FALSE}
 
+### X
 ## CRS: keeping crs at 4326 for now
 selected_crs = 4326
 
+### X
 ## List of lakes
 lakes_excel <- readxl::read_xlsx('Data/Lakes_list.xlsx', col_types = 'text')
+
 
 ## Turning lakes into SF obj
 lakes <- lakes_excel %>% 
@@ -103,11 +106,13 @@ lakes <- lakes_excel %>%
          lake_name_shrt = trimws(str_replace(lake,
                                              pattern = 'Lake',
                                              replacement = "")))
-         
+     
+### X    
 ## Get huc08 for focal lakes
 huc08_df <- get_huc8(AOI = lakes$Point_geometry)
 huc04_comids_for_download <- substr(huc08_df$huc8, start = 1, stop = 4) %>% unique()
 
+### X
 # States
 states <- st_read('Data/statesp010g.shp_nt00938/statesp010g.shp') %>%
   filter(STATE_ABBR %in% c('CA',"NV",'UT','OR')) %>% 
