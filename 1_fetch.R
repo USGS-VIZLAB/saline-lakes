@@ -25,7 +25,7 @@ p1_targets_list <- list(
   ## place final shp files in states_shp folder then this will work
   tar_target(
     p1_states_sf,
-    st_read('1_fetch/in/states_shp/statesp010g.shp') %>%
+    st_read('1_fetch/in/states_shp/statesp010g.shp', quiet = TRUE) %>%
       filter(STATE_ABBR %in% c('CA',"NV",'UT','OR')) %>% 
       st_transform(crs = st_crs(p1_lakes_df)) %>% 
       select(NAME,STATE_ABBR, geometry)
@@ -42,6 +42,7 @@ p1_targets_list <- list(
     substr(p1_huc08_df$huc8, start = 1, stop = 4) %>% unique()
   ),
   
+  ## downloading to the in folder for now - will move to out
   tar_target(
     p1_download_nhdhr_lakes,
     nhdplusTools::download_nhdplushr('1_fetch/in/nhdhr/', p1_huc04_for_download),
