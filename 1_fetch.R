@@ -47,6 +47,33 @@ p1_targets_list <- list(
     p1_download_nhdhr_lakes,
     nhdplusTools::download_nhdplushr('1_fetch/in/nhdhr/', p1_huc04_for_download),
     pattern = map(p1_huc04_for_download)
-  )
+  ),
   
+  
+  ## get watershed boundary areas 
+  tar_target(
+    p1_get_lakes_huc12_sf,
+    {get_huc12(AOI = p2_saline_lakes_sf, buffer = 1) %>%
+      select(id, huc12, name, states, geometry)}
+    ),
+    
+  tar_target(
+    p1_get_lakes_huc8_sf,
+    {get_huc8(AOI = p2_saline_lakes_sf, buffer = 1) %>%
+      select(id, huc8, name, states, geometry)}
+    ),
+
+  tar_target(
+    p1_huc8_vec, 
+    {unique(p1_huc8_lakes_sf$huc8)}
+  ),
+
+  ## Fetch nhdplus flowlines for each huc8 region separately through dynamic branching 
+  tar_target(
+    p1_lake_flowlines_huc8_sf,
+    get_nhdplus(AOI = p1_huc8_lakes_sf %>%
+                  filter(huc8 == p1_huc8_vec),
+                realization = 'flowline'), 
+    pattern = map(p1_huc8_vec)
+  )
 )
