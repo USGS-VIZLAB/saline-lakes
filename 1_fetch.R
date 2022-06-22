@@ -42,13 +42,12 @@ p1_targets_list <- list(
     substr(p1_huc08_df$huc8, start = 1, stop = 4) %>% unique()
   ),
   
-  ## downloading to the in folder for now - will move to out
-  tar_target(
-    p1_download_nhdhr_lakes,
-    nhdplusTools::download_nhdplushr('1_fetch/in/nhdhr/', p1_huc04_for_download),
-    pattern = map(p1_huc04_for_download)
-  ),
-  
+  ## downloading to the in folder for now
+  # tar_target(
+  #   p1_download_nhdhr_lakes,
+  #   nhdplusTools::download_nhdplushr('1_fetch/in/nhdhr/', p1_huc04_for_download),
+  #   pattern = map(p1_huc04_for_download_fltrd)
+  # ),
   
   ## get watershed boundary areas 
   tar_target(
