@@ -87,7 +87,7 @@ selected_crs = 4326
 
 ### X
 ## List of lakes
-lakes_excel <- readxl::read_xlsx('Data/Lakes_list.xlsx', col_types = 'text')
+lakes_excel <- readxl::read_xlsx('Exploration/Data/Lakes_list.xlsx', col_types = 'text')
 
 
 ## Turning lakes into SF obj
@@ -114,7 +114,7 @@ huc04_comids_for_download <- substr(huc08_df$huc8, start = 1, stop = 4) %>% uniq
 
 ### X
 # States
-states <- st_read('Data/statesp010g.shp_nt00938/statesp010g.shp') %>%
+states <- st_read('Exploration/Data/statesp010g.shp_nt00938/statesp010g.shp') %>%
   filter(STATE_ABBR %in% c('CA',"NV",'UT','OR')) %>% 
   st_transform(crs = st_crs(lakes)) %>% 
   select(NAME,STATE_ABBR, geometry)
@@ -136,7 +136,7 @@ lakes %>%
 
 # Note - added my local path because i had everything downloaded already
 ## in Download_nhd.R, nhdhr_dir is created and would overwrite mine if that script is sourced
-nhdhr_dir <- 'Data/temp_hr_lakes/'
+nhdhr_dir <- 'Exploration/Data/temp_hr_lakes'
 
 ## nhdplustools download data if you have not done so.
 # source('Data/Download_nhd.R')
@@ -167,6 +167,8 @@ lakes_nhdhr <- nhdhr_saline_lakes %>%
 ## Handling Winnemucca which does not exist in nhd hr - only nhd
 Winnemucca <- get_waterbodies(AOI = st_sfc(lakes$Point_geometry[lakes$lake =='Winnemucca Lake'],
                                         crs = selected_crs))
+
+Owen <- get_waterbodies(AOI = st_sfc(st_point(c(-117.96,36.43)),crs = 4326))
 
 ## Handling Warner lakes/wetlands which is made u of collection of shallow wetland lakes. Full list taken from https://www.blm.gov/visit/warner-wetlands
 Warner_lakes <- c('Pelican Lake',
@@ -261,7 +263,7 @@ leaflet(lakes_map) %>%
 
 ```{r}
 
-st_write(lakes_map, 'Data/out/saline_lakes.shp', append = FALSE)
+st_write(lakes_map, 'Exploration/Data/out/saline_lakes.shp', append = FALSE)
 
 
 ```
