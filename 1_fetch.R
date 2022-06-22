@@ -43,48 +43,72 @@ p1_targets_list <- list(
     substr(p1_huc08_df$huc8, start = 1, stop = 4) %>% unique()
   ),
   
-  ## downloading to the in folder for now
+  ## Download high res nhd data to get lake water bodies 
+  ## 2 options - 1) try downloading with download_nhdplushr() from nhdplusTools R package. 
+  ## 2) If you get timeout errors with 1), manually copy from designated location in caldera. See instructions above targe 
+  
+  ## 1) Downloading nhd hr for our AOI at huc04 level, (placing in 1_fetch/in/ folder for now
+  ## Note - Check if targets::tar_files() works better here for downloading targets of file format
+  
   # tar_target(
-  #   p1_download_nhdhr_lakes,
-  #   nhdplusTools::download_nhdplushr('1_fetch/in/nhdhr/', p1_huc04_for_download),
+  #   p1_download_nhdhr_lakes_path,
+  #   download_nhdplushr('1_fetch/in/nhdhr/', p1_huc04_for_download),
+  #   pattern = map(p1_huc04_for_download)
+  ## format file
   #   format = 'file',
-  #   pattern = map(p1_huc04_for_download_fltrd),
   # ),
+  
+  ## 2) Using backup path via tallgrass. log into tallgrass and access saline lakes nhdhr data form saline lakes in caldera/projects/usgs/water/iidd/datasci/data-pulls/nhdplushr-salinelakes-msleckman/nhdplusdata
+  ## scp the subfolders folder in /nhdplusdata/ and place them in the newly created folder `1_fetch/in/nhdhr_backup`
+    tar_target(p1_download_nhdhr_lakes_backup_path,
+             '1_fetch/in/nhdhr_backup'
+             ),
+  
+  ## Fetch and Processing saline lakes sf function  creates the final lakes shapefile. 
+  ## Change nhdhr_lakes_path param with either p1_download_nhdhr_lakes_path or p1_download_nhdhr_lakes_backup_path depending on where nhdhr lives
   
   tar_target(
     p1_saline_lakes_sf,
-    process_saline_lakes_sf(nhdhr_lakes_path = p1_download_nhdhr_lakes_backup_download_path,
+    process_saline_lakes_sf(nhdhr_lakes_path = p1_download_nhdhr_lakes_backup_path,
                             lakes_sf = p1_lakes_sf,
                             states_sf = p1_states_sf,
                             selected_crs = selected_crs)
     ),
   
-  ## get watershed boundary areas 
+  ## Fetch watershed boundary areas - huc12
   tar_target(
     p1_get_lakes_huc12_sf,
     {get_huc12(AOI = p1_saline_lakes_sf, buffer = 1) %>%
       select(id, huc12, name, states, geometry)}
     ),
-    
+
+  ## Fetch watershed boundary areas - huc08  
   tar_target(
     p1_get_lakes_huc8_sf,
     {get_huc8(AOI = p1_saline_lakes_sf, buffer = 1) %>%
       select(id, huc8, name, states, geometry)}
     ),
 
-  ## get nwis sites 
+  ## grab vector of our huc08s to run branching for flowline fetch  
   tar_target(
     p1_huc8_vec, 
     {unique(p1_get_lakes_huc8_sf$huc8)}
   ),
 
-  ## Fetch nhdplus flowlines for each huc8 region separately through dynamic branching - fixing lakefract type difference between branches 
+  ## Fetch nhdplus flowlines for each huc8 region separately through dynamic branching - note difference between branches 
   tar_target(
     p1_lake_flowlines_huc8_sf,
     get_nhdplus(AOI = p1_get_lakes_huc8_sf %>%
                   filter(huc8 == p1_huc8_vec),
-                realization = 'flowline') %>% mutate(lakefract = as.character(lakefract)), 
+                realization = 'flowline'), 
     pattern = map(p1_huc8_vec)
-  )
+  ),
+  
+  ## Fetch nwis sites along tributaries and in our huc08 regions. Requires further filtering (e.g. ftype == ST, along flowlines only)
+  tar_target(
+    p1_nwis_sites,
+    get_nwis(AOI = p1_get_lakes_huc8_sf)
+  ),
+  
 )
 
