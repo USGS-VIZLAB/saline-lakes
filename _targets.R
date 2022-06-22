@@ -9,8 +9,7 @@ source("2_process.R")
 ## create dirs in `in` folder
 dir.create('1_fetch/in/nhdhr', showWarnings = FALSE)
 dir.create('1_fetch/in/nhdhr_backup', showWarnings = FALSE)
-
-dir.create('1_fetch/in/states_shp', showWarnings = FALSE)
+#dir.create('1_fetch/in/states_shp', showWarnings = FALSE)
 
 ## CRS: keeping crs at 4326 for now
 selected_crs <-  4326
