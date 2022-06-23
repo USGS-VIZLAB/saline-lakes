@@ -24,7 +24,7 @@ p1_targets_list <- list(
   
   ## States
   ## no sbtools access to this link https://www.sciencebase.gov/catalog/item/581d052de4b08da350d524e5
-  ## chose to keep in remote repo
+  ## chose to keep in github repo
   ## Can also manually download from  
   ## place final shp files in states_shp folder then this will work
   tar_target(
@@ -35,7 +35,7 @@ p1_targets_list <- list(
       select(NAME,STATE_ABBR, geometry)
   ),
   
-  ## Fetch huc08 for focal lakes - (not be necessary if we have nhdhr water bodies manually downloaded
+  ## 1rst Fetch of huc08 to get waterbodies for focal lakes - (not be necessary if we have nhdhr water bodies manually downloaded
   tar_target(
     p1_huc08_df,
     get_huc8(AOI = p1_lakes_sf$point_geometry)
@@ -47,7 +47,8 @@ p1_targets_list <- list(
     substr(p1_huc08_df$huc8, start = 1, stop = 4) %>% unique()
   ),
   
-  ## Download high res nhd data to get lake water bodies 
+  
+# Download high res nhd data to get lake water bodies #
   ## 2 OPTIONS - 1) try downloading with download_nhdplushr() from nhdplusTools R package. 
   ## 2) If you get timeout errors with 1), manually copy (scp) to local from designated hpc location in caldera . See instructions above target 
   
@@ -58,7 +59,7 @@ p1_targets_list <- list(
 #     p1_download_nhdhr_lakes_path,
 #     download_nhdplushr('1_fetch/in/nhdhr/', p1_huc04_for_download),
 #     pattern = map(p1_huc04_for_download)
-#   # format file
+#   # format file to include
 # #    format = 'file',
 #   ),
   
@@ -106,31 +107,28 @@ p1_targets_list <- list(
   ## Fetch nhdplus flowlines for each huc8 region separately through dynamic branching - note difference between branches 
   tar_target(
     p1_lake_flowlines_huc8_sf,
-    get_nhdplus(AOI = p1_get_lakes_huc8_sf %>%
-                  filter(huc8 == p1_huc8_vec),
-                realization = 'flowline') %>%
-      mutate(across(c(surfarea, lakefract, rareahload), ~as.numeric(.x)), huc8 = p1_huc8_vec), 
+    {get_nhdplus(AOI = {p1_get_lakes_huc8_sf %>% filter(huc8 == p1_huc8_vec)},
+                 realization = 'flowline') %>%
+        ## fixing col that are automatically transforming to char
+        mutate(across(c(surfarea, lakefract, rareahload), ~as.numeric(.x)), huc8 = p1_huc8_vec) %>% 
+        filter(streamorde >= 3)}, 
     pattern = map(p1_huc8_vec)
   ),
   
-  ## Fetch nwis sites along tributaries and in our huc08 regions. Requires further filtering (e.g. ftype == ST, along flowlines only)
+  ## Fetch NWIS sites along tributaries and in our huc08 regions. Requires further filtering (e.g. ftype == ST, along flowlines only)
   tar_target(
     p1_nwis_sites,
     {tryCatch(expr = get_huc8(id = p1_huc8_vec) %>% get_nwis(AOI = .) %>% mutate(huc8 = p1_huc8_vec),
               error = function(e){message(paste('error - No gages found in huc8', p1_huc8_vec))})},
   pattern = map(p1_huc8_vec)
-  ),
+  )
 
   ## Pulling site no from gages sites to query nwis with data retrieval
-  tar_target(
-    p1_site_ids_vec,
-    {unique(p1_nwis_sites$site_no)}
-  )
-)
+  # tar_target(
+  #   p1_site_ids,
+  #   {p1_nwis_sites$site_no}
+  # )
 
-# for(i in p1_huc8_vec){
-#   tryCatch(expr = get_huc8(id = i) %>% get_nwis(AOI = .),
-#            error = function(e){message('error - No gages found')})
-# }
+)
 
 
