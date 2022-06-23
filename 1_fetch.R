@@ -108,15 +108,29 @@ p1_targets_list <- list(
     p1_lake_flowlines_huc8_sf,
     get_nhdplus(AOI = p1_get_lakes_huc8_sf %>%
                   filter(huc8 == p1_huc8_vec),
-                realization = 'flowline'), 
+                realization = 'flowline') %>%
+      mutate(across(c(surfarea, lakefract, rareahload), ~as.numeric(.x)), huc8 = p1_huc8_vec), 
     pattern = map(p1_huc8_vec)
-  )
+  ),
   
   ## Fetch nwis sites along tributaries and in our huc08 regions. Requires further filtering (e.g. ftype == ST, along flowlines only)
-  # tar_target(
-  #   p1_nwis_sites,
-  #   get_nwis(AOI = p1_get_lakes_huc8_sf)
-  # )
-  
+  tar_target(
+    p1_nwis_sites,
+    {tryCatch(expr = get_huc8(id = p1_huc8_vec) %>% get_nwis(AOI = .) %>% mutate(huc8 = p1_huc8_vec),
+              error = function(e){message(paste('error - No gages found in huc8', p1_huc8_vec))})},
+  pattern = map(p1_huc8_vec)
+  ),
+
+  ## Pulling site no from gages sites to query nwis with data retrieval
+  tar_target(
+    p1_site_ids_vec,
+    {unique(p1_nwis_sites$site_no)}
+  )
 )
+
+# for(i in p1_huc8_vec){
+#   tryCatch(expr = get_huc8(id = i) %>% get_nwis(AOI = .),
+#            error = function(e){message('error - No gages found')})
+# }
+
 
