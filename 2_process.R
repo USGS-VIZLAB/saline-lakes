@@ -9,7 +9,7 @@ p2_targets_list <- list(
   
   tar_target(
     p2_saline_lakes_sf,
-    process_saline_lakes_sf(nhdhr_lakes_path = p1_download_nhdhr_lakes_backup_path,
+    process_saline_lakes_sf(nhdhr_waterbodies = p1_nhdhr_lakes,
                             lakes_sf = p1_lakes_sf,
                             states_sf = p1_states_sf,
                             selected_crs = selected_crs)

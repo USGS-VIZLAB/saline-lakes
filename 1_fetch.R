@@ -41,7 +41,7 @@ p1_targets_list <- list(
     get_huc8(AOI = p1_lakes_sf$point_geometry)
   ),
 
-  ## 
+  ## SPlit huc ids to 04 to pull nhdhr
   tar_target(
     p1_huc04_for_download,
     substr(p1_huc08_df$huc8, start = 1, stop = 4) %>% unique()
@@ -68,53 +68,69 @@ p1_targets_list <- list(
   ## run a scp of all subfolders in  /nhdplusdata/ and place them in the newly created folder `1_fetch/in/nhdhr_backup` (created w/ dir.create() in _targets.R)
     tar_target(p1_download_nhdhr_lakes_backup_path,
              '1_fetch/in/nhdhr_backup'
-             ),
+    ),
   
-
-  ## Fetch watershed boundary areas - huc12
-  tar_target(
-    p1_get_lakes_huc12_sf,
-    {get_huc12(AOI = p2_saline_lakes_sf, buffer = 1) %>%
-      select(id, huc12, name, states, geometry)}
-    ),
-
-  ## Fetch watershed boundary areas - huc08  
-  tar_target(
-    p1_get_lakes_huc8_sf,
-    {get_huc8(AOI = p2_saline_lakes_sf, buffer = 1) %>%
-      select(id, huc8, name, states, geometry)}
-    ),
-
-  ## Grab vector of our huc08s to run branching for flowline fetch  
-  tar_target(
-    p1_huc8_vec, 
-    {unique(p1_get_lakes_huc8_sf$huc8)}
+  # Fetch water bodies - HR
+  ## source('Data/Download_nhd.R'
+  tar_target(p1_nhdhr_lakes, 
+              get_nhdplushr(hr_dir = p1_download_nhdhr_lakes_backup_path,
+                            layer= 'NHDWaterbody')$NHDWaterbody
   ),
 
-  ## Fetch nhdplus flowlines for each huc8 region separately through dynamic branching - note difference between branches 
+  # Fetch watershed boundary areas filtered to our lakes - huc12 - HR
+  ## note possible duplicate polygons since this sorted by all saline lakes 
+  tar_target(
+    p1_get_lakes_huc12_sf,
+    get_nhdplushr(hr_dir = p1_download_nhdhr_lakes_backup_path,
+                  layer= 'WBDHU12')$WBDHU12 %>% 
+      ## filter to lakes HUC12
+      st_transform(crs = st_crs(p2_saline_lakes_sf)) %>% st_join(p2_saline_lakes_sf) %>% filter(!is.na(GNIS_Name))
+    ),
+
+  # Fetch watershed boundary areas - huc08  
+  ## note possible duplicate polygons since this sorted by all saline lakes 
+  tar_target(
+    p1_get_lakes_huc8_sf,
+    get_nhdplushr(hr_dir = p1_download_nhdhr_lakes_backup_path,
+                  layer= 'WBDHU8')$WBDHU8 %>% 
+      ## filter to lakes HUC8 - (move to process)
+      st_transform(crs = st_crs(p2_saline_lakes_sf)) %>% st_join(p2_saline_lakes_sf) %>%
+      filter(!is.na(GNIS_Name))
+    ),
+
+  # Grab vector of our huc08s to run branching for flowline fetch  
+  tar_target(
+    p1_huc8_vec, 
+    {unique(p1_get_lakes_huc8_sf$HUC8)}
+  ),
+
+  # Fetch nhdplus flowlines for each huc8 region separately through dynamic branching - note difference between branches 
   tar_target(
     p1_lake_flowlines_huc8_sf,
-    {get_nhdplus(AOI = {p1_get_lakes_huc8_sf %>% filter(huc8 == p1_huc8_vec)},
+    {get_nhdplus(AOI = {p1_get_lakes_huc8_sf %>% filter(HUC8 == p1_huc8_vec)},
                  realization = 'flowline') %>%
         ## fixing col that are automatically transforming to char
-        mutate(across(c(surfarea, lakefract, rareahload), ~as.numeric(.x)), huc8 = p1_huc8_vec) %>% 
+        mutate(across(c(surfarea, lakefract, rareahload), ~as.numeric(.x)),
+               HUC8 = p1_huc8_vec) %>% 
+        ## filtering out flowlines w/ vals below 1 (can be move to process)
         filter(streamorde >= 3)}, 
     pattern = map(p1_huc8_vec)
   ),
   
-  ## Fetch NWIS sites along tributaries and in our huc08 regions. Requires further filtering (e.g. ftype == ST, along flowlines only)
+  # Fetch NWIS sites along tributaries and in our huc08 regions. 
+  ## Will requires further filtering (e.g. ftype == ST, along flowlines only)
   tar_target(
     p1_nwis_sites,
-    {tryCatch(expr = get_huc8(id = p1_huc8_vec) %>% get_nwis(AOI = .) %>% mutate(huc8 = p1_huc8_vec),
+    {tryCatch(expr = get_huc8(id = p1_huc8_vec) %>% get_nwis(AOI = .) %>% mutate(HUC8 = p1_huc8_vec),
               error = function(e){message(paste('error - No gages found in huc8', p1_huc8_vec))})},
   pattern = map(p1_huc8_vec)
-  )
+  ),
 
-  ## Pulling site no from gages sites to query nwis with data retrieval
-  # tar_target(
-  #   p1_site_ids,
-  #   {p1_nwis_sites$site_no}
-  # )
+  ## Pulling site no from gauge sites to then query nwis and WQP with data retrieval
+  tar_target(
+    p1_site_ids,
+    {p1_nwis_sites %>% pull(site_no) %>% unique()}
+  )
 
 )
 

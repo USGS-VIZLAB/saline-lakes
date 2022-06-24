@@ -1,23 +1,11 @@
 
-process_saline_lakes_sf<- function(nhdhr_lakes_path, lakes_sf, states_sf, selected_crs){
-  
-  # nhdhr_lakes_path = p1_download_nhdhr_lakes_backup_download_path
-  # lakes_sf = lakes
-  # states_sf = states
-  # selected_crs = 4326
-  
+process_saline_lakes_sf<- function(nhdhr_waterbodies, lakes_sf, states_sf, selected_crs){
+
   lakes <- lakes_sf
   states <- states_sf
   
-  
-  ## nhdplustools download data if you have not done so.
-  # source('Data/Download_nhd.R'
-  
-  nhd_hr <- nhdplusTools::get_nhdplushr(hr_dir = nhdhr_lakes_path,
-                                        layer= 'NHDWaterbody')
-  
   ## Cleaning dataframe
-  nhdhr_saline_lakes <- nhd_hr$NHDWaterbody %>%
+  nhdhr_saline_lakes <- nhdhr_waterbodies %>%
     filter(GNIS_Name %in% lakes$lake) %>%
     st_zm() %>%
     st_make_valid() %>%
@@ -57,7 +45,7 @@ process_saline_lakes_sf<- function(nhdhr_lakes_path, lakes_sf, states_sf, select
   # there are two OR swamp lakes - id-ed the incorrect one and removed in following code chunk 
   wrong_swamp_lake_id <- '142134706'
   
-  Warner <-  nhd_hr$NHDWaterbody %>% 
+  Warner <-  nhdhr_waterbodies %>% 
     filter(GNIS_Name %in% Warner_lakes,
            Permanent_Identifier != wrong_swamp_lake_id) %>% 
     st_zm() %>% 
