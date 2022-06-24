@@ -1,7 +1,7 @@
 library(targets)
 
 options(tidyverse.quiet = TRUE, timeout = 300)
-tar_option_set(packages = c("tidyverse","sbtools","sf","nhdplusTools",'dplyr','readxl','readr','stringr'))
+tar_option_set(packages = c("tidyverse","sbtools","sf",'dataRetrieval',"nhdplusTools",'dplyr','readxl','readr','stringr','mapview','leaflet'))
 
 source("1_fetch.R")
 source("2_process.R")
@@ -15,4 +15,4 @@ dir.create('1_fetch/in/nhdhr_backup', showWarnings = FALSE)
 selected_crs <-  4326
 
 # Return the complete list of targets
-c(p1_targets_list)
+c(p1_targets_list, p2_targets_list)

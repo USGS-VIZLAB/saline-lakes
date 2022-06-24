@@ -50,7 +50,7 @@ p1_targets_list <- list(
   
 # Download high res nhd data to get lake water bodies #
   ## 2 OPTIONS - 1) try downloading with download_nhdplushr() from nhdplusTools R package. 
-  ## 2) If you get timeout errors with 1), manually copy (scp) to local from designated hpc location in caldera . See instructions above target 
+  ## 2) If timeout error occurs with 1), manually copy (scp) to local from designated hpc location in caldera . See instructions above target 
   
   ## 1) Downloading nhd hr for our AOI at huc04 level, (placing in 1_fetch/in/ folder for now
   ## Note - Check if targets::tar_files() works better here for downloading targets of file format
@@ -71,30 +71,17 @@ p1_targets_list <- list(
              ),
   
 
-
-  ## Fetch and Process saline lakes via specifically built function that creates the final saline lakes shapefile 
-  ## This fun not yet generalized, special handling of lakes included in fun
-  ## NOTE - Change nhdhr_lakes_path param with either p1_download_nhdhr_lakes_path or p1_download_nhdhr_lakes_backup_path depending on where nhdhr lives
-  
-  tar_target(
-    p1_saline_lakes_sf,
-    process_saline_lakes_sf(nhdhr_lakes_path = p1_download_nhdhr_lakes_backup_path,
-                            lakes_sf = p1_lakes_sf,
-                            states_sf = p1_states_sf,
-                            selected_crs = selected_crs)
-    ),
-  
   ## Fetch watershed boundary areas - huc12
   tar_target(
     p1_get_lakes_huc12_sf,
-    {get_huc12(AOI = p1_saline_lakes_sf, buffer = 1) %>%
+    {get_huc12(AOI = p2_saline_lakes_sf, buffer = 1) %>%
       select(id, huc12, name, states, geometry)}
     ),
 
   ## Fetch watershed boundary areas - huc08  
   tar_target(
     p1_get_lakes_huc8_sf,
-    {get_huc8(AOI = p1_saline_lakes_sf, buffer = 1) %>%
+    {get_huc8(AOI = p2_saline_lakes_sf, buffer = 1) %>%
       select(id, huc8, name, states, geometry)}
     ),
 
