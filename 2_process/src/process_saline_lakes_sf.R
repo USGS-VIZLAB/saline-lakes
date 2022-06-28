@@ -1,9 +1,12 @@
-
-process_saline_lakes_sf_sf<- function(nhdhr_waterbodies, lakes_sf_sf, states_sf_sf, selected_crs){
+process_saline_lakes_sf<- function(nhdhr_waterbodies, lakes_sf, states_sf, selected_crs){
+  
+  #'@param nhdhr_waterbodies
+  #'@param states_sf
+  #'@param lakes_sf
   
   ## Cleaning dataframe
   nhdhr_saline_lakes_sf <- nhdhr_waterbodies %>%
-    filter(GNIS_Name %in% lakes_sf_sf$lake) %>%
+    filter(GNIS_Name %in% lakes_sf$lake) %>%
     st_zm() %>%
     st_make_valid() %>%
     st_transform(crs = st_crs(lakes_sf)) %>% 

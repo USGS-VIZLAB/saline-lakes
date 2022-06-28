@@ -1,4 +1,5 @@
 source("1_fetch/src/Download_nhd.R")
+source('1_fetch/src/download_states_shp.R')
 ## process_saline_lakes_sf.R should ultimately move to /1_fetch/. OR target built by this function should be moved to 2_process.R
 source('2_process/src/process_saline_lakes_sf.R')
 
@@ -22,14 +23,17 @@ p1_targets_list <- list(
     }
       ),
   
-  ## States
-  ## no sbtools access to this link https://www.sciencebase.gov/catalog/item/581d052de4b08da350d524e5
-  ## chose to keep in github repo
-  ## Can also manually download from  
-  ## place final shp files in states_shp folder then this will work
+  ## Download states shp
+  tar_target(
+    p1_download_states_shp,
+    download_states_shp(url = states_download_url, 
+                        out_path = '1_fetch/in/states_shp'),
+    format = 'file'
+  ),
+  
   tar_target(
     p1_states_sf,
-    st_read('1_fetch/in/states_shp/statesp010g.shp', quiet = TRUE) %>%
+    st_read(file.path(p1_download_states_shp,'statesp010g.shp'), quiet = TRUE) %>%
       filter(STATE_ABBR %in% c('CA',"NV",'UT','OR')) %>% 
       st_transform(crs = st_crs(p1_lakes_sf)) %>% 
       select(NAME,STATE_ABBR, geometry)
