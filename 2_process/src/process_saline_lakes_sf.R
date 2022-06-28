@@ -57,7 +57,7 @@ process_saline_lakes_sf_sf<- function(nhdhr_waterbodies, lakes_sf_sf, states_sf_
     summarize(geometry = st_union(Shape)) %>% 
     ungroup()
   
-  lakes_sf_map <- lakes_sf_nhdhr %>% 
+  final_lakes <- lakes_sf_nhdhr %>% 
     add_row(lake_w_state = 'Winnemucca Lake,NV',
             GNIS_Name = 'Winnemucca Lake',
             geometry = Winnemucca$geometry[1]) %>%
@@ -74,6 +74,6 @@ process_saline_lakes_sf_sf<- function(nhdhr_waterbodies, lakes_sf_sf, states_sf_
                          ifelse(GNIS_Name == 'Warner lakes_sf',
                                 'From nhd hr. The Warner lakes_sf (aka Warner Wetlands) consist of 12 shallow lakes_sf in South East Oregon, and include Pelican, Crump, Hart lakes_sf, among others', 'From nhd hr')))
   
-  return(lakes_sf_map)
+  return(final_lakes)
   
 }
