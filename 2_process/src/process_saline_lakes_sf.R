@@ -1,18 +1,18 @@
-process_saline_lakes_sf<- function(nhdhr_waterbodies, lakes_sf, states_sf, selected_crs){
+process_saline_lakes_sf<- function(nhdhr_waterbodies, lakes_df, states_sf, selected_crs){
   
-  #'@param nhdhr_waterbodies
-  #'@param states_sf
-  #'@param lakes_sf
+  #'@param nhdhr_waterbodies downloaded nhd hr water body data for teh selected huc regions
+  #'@param states_sf states sf object
+  #'@param lakes_df lakes df object that lists lakes and lat long (from Lakes List csv)
   
   ## Cleaning dataframe
   nhdhr_saline_lakes_sf <- nhdhr_waterbodies %>%
-    filter(GNIS_Name %in% lakes_sf$lake) %>%
+    filter(GNIS_Name %in% lakes_df$lake) %>%
     st_zm() %>%
     st_make_valid() %>%
     st_transform(crs = st_crs(lakes_sf)) %>% 
     st_join(x = ., y = states_sf) %>% 
     mutate(lake_w_state = paste(GNIS_Name, STATE_ABBR, sep = ',')) %>% 
-    filter(lake_w_state %in% lakes_sf$lake_w_state)
+    filter(lake_w_state %in% lakes_df$lake_w_state)
   
   ## Spatial group by
   lakes_sf_nhdhr <- nhdhr_saline_lakes_sf %>%
@@ -28,7 +28,7 @@ process_saline_lakes_sf<- function(nhdhr_waterbodies, lakes_sf, states_sf, selec
   Owen <- get_waterbodies(AOI = st_sfc(lakes_sf$point_geometry[lakes_sf$lake == 'Owens Lake'], 
                                        crs = selected_crs))
   
-  ## Handling Warner lakes_sf/wetlands which is made u of collection of shallow wetland lakes_sf. Full list taken from https://www.blm.gov/visit/warner-wetlands
+  ## Handling Warner lakes wetlands which is made u of collection of shallow wetland lakes. Full list taken from https://www.blm.gov/visit/warner-wetlands
   Warner_lakes_sf <- c('Pelican Lake',
                     'Crump Lake',
                     'Hart Lake',
@@ -42,7 +42,7 @@ process_saline_lakes_sf<- function(nhdhr_waterbodies, lakes_sf, states_sf, selec
                     'Turpin Lake', 
                     'Bluejoint Lake')
   
-  # there are two OR swamp lakes_sf - id-ed the incorrect one and removed in following code chunk 
+  # there are two OR swamp lakes - id-ed the incorrect one and removed in following code chunk 
   wrong_swamp_lake_id <- '142134706'
   
   Warner <-  nhdhr_waterbodies %>% 
@@ -53,7 +53,7 @@ process_saline_lakes_sf<- function(nhdhr_waterbodies, lakes_sf, states_sf, selec
     st_transform(crs = st_crs(lakes_sf)) %>% 
     st_join(x = ., y = states_sf) %>% 
     mutate(lake_w_state = paste('Warner Lake', STATE_ABBR, sep = ',')) %>% 
-    filter(lake_w_state %in% lakes_sf$lake_w_state) 
+    filter(lake_w_state %in% lakes_df$lake_w_state) 
   
   Warner_lakes_sf <- Warner %>%
     group_by(lake_w_state) %>%
@@ -66,7 +66,7 @@ process_saline_lakes_sf<- function(nhdhr_waterbodies, lakes_sf, states_sf, selec
             geometry = Winnemucca$geometry[1]) %>%
     filter(GNIS_Name != 'Warner Lake') %>% 
     add_row(lake_w_state = Warner_lakes_sf$lake_w_state[1],
-            GNIS_Name = 'Warner lakes_sf',
+            GNIS_Name = 'Warner Lakes',
             geometry = Warner_lakes_sf$geometry[1]) %>%
     add_row(lake_w_state = 'Owens Lake,CA',
             GNIS_Name = 'Owens Lake',
@@ -74,8 +74,8 @@ process_saline_lakes_sf<- function(nhdhr_waterbodies, lakes_sf, states_sf, selec
     mutate(X = st_coordinates(st_centroid(geometry))[,1],
            Y = st_coordinates(st_centroid(geometry))[,2]) %>% 
     mutate(flag = ifelse(GNIS_Name == 'Winnemucca Lake','nhd',
-                         ifelse(GNIS_Name == 'Warner lakes_sf',
-                                'From nhd hr. The Warner lakes_sf (aka Warner Wetlands) consist of 12 shallow lakes_sf in South East Oregon, and include Pelican, Crump, Hart lakes_sf, among others', 'From nhd hr')))
+                         ifelse(GNIS_Name == 'Warner lakes',
+                                'From nhd hr. The Warner lakes (aka Warner Wetlands) consist of 12 shallow lakes in South East Oregon, and include Pelican, Crump, Hart lakes, among others', 'From nhd hr')))
   
   return(final_lakes)
   
