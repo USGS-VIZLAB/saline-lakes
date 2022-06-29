@@ -4,4 +4,6 @@
 .Ruserdata
 1_fetch/in/*
 !1_fetch/in/saline_lakes.csv
-!1_fetch/in/states_shp
+!1_fetch/in/states_shp/.placeholder
+_targets/
+.DS_Store

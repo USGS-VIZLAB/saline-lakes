@@ -56,14 +56,14 @@ p1_targets_list <- list(
   
   # 1) Downloading nhd hr for our AOI at huc04 level, (placing in 1_fetch/in/ folder for now)
   #### tbd - Check if targets::tar_files() works better here for downloading targets of file format
-  
+
    tar_target(
     p1_download_nhdhr_lakes_path,
     {download_nhdplushr('1_fetch/in/nhdhr', p1_huc04_for_download)},
     pattern = map(p1_huc04_for_download),
     format = 'file'
    ),
-  
+
   # 2) Using backup path via tallgrass. Log into tallgrass and navigate to the saline lakes nhdhr data folder
   ## This lives in caldera/projects/usgs/water/iidd/datasci/data-pulls/nhdplushr-salinelakes-msleckman/nhdplusdata
   ## run a scp on all subfolders in  /nhdplusdata/ and place them in the newly created local folder `1_fetch/in/nhdhr_backup` (created w/ dir.create() in _targets.R)
