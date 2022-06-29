@@ -1,5 +1,6 @@
 process_saline_lakes_sf<- function(nhdhr_waterbodies, lakes_df, states_sf, selected_crs){
   
+  #'@description function processes nhd hr lakes with specific lakes of interest. Output is an lakes polygon sf object of our ~27 lakes
   #'@param nhdhr_waterbodies downloaded nhd hr water body data for teh selected huc regions
   #'@param states_sf states sf object
   #'@param lakes_df lakes df object that lists lakes and lat long (from Lakes List csv)
