@@ -1,19 +1,19 @@
-process_saline_lakes_sf<- function(nhdhr_waterbodies, lakes_df, states_sf, selected_crs){
+process_saline_lakes_sf<- function(nhdhr_waterbodies, lakes_sf, states_sf, selected_crs){
   
   #'@description function processes nhd hr lakes with specific lakes of interest. Output is an lakes polygon sf object of our ~27 lakes
   #'@param nhdhr_waterbodies downloaded nhd hr water body data for teh selected huc regions
   #'@param states_sf states sf object
-  #'@param lakes_df lakes df object that lists lakes and lat long (from Lakes List csv)
+  #'@param lakes_sf lakes df object that lists lakes and lat long (from Lakes List csv)
   
   ## Cleaning dataframe
   nhdhr_saline_lakes_sf <- nhdhr_waterbodies %>%
-    filter(GNIS_Name %in% lakes_df$lake) %>%
+    filter(GNIS_Name %in% lakes_sf$lake) %>%
     st_zm() %>%
     st_make_valid() %>%
     st_transform(crs = st_crs(lakes_sf)) %>% 
     st_join(x = ., y = states_sf) %>% 
     mutate(lake_w_state = paste(GNIS_Name, STATE_ABBR, sep = ',')) %>% 
-    filter(lake_w_state %in% lakes_df$lake_w_state)
+    filter(lake_w_state %in% lakes_sf$lake_w_state)
   
   ## Spatial group by
   lakes_sf_nhdhr <- nhdhr_saline_lakes_sf %>%
@@ -54,7 +54,7 @@ process_saline_lakes_sf<- function(nhdhr_waterbodies, lakes_df, states_sf, selec
     st_transform(crs = st_crs(lakes_sf)) %>% 
     st_join(x = ., y = states_sf) %>% 
     mutate(lake_w_state = paste('Warner Lake', STATE_ABBR, sep = ',')) %>% 
-    filter(lake_w_state %in% lakes_df$lake_w_state) 
+    filter(lake_w_state %in% lakes_sf$lake_w_state) 
   
   Warner_lakes_sf <- Warner %>%
     group_by(lake_w_state) %>%
