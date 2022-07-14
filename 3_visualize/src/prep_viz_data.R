@@ -26,5 +26,21 @@ prep_flowlines_viz_sf <- function(flowlines_sf, crs_plot){
     st_transform(crs = crs_plot)
 }
 
-
-
+# Prep gage site data for leaflet map
+prep_gage_viz_sf <- function(nwis_sites, huc8_sf, crs_plot){
+  nwis_sites %>%
+    left_join(nwis_sites %>%
+                st_within(huc8_sf) %>%
+                as.data.frame()  %>%
+                mutate(site_no = nwis_sites$site_no[row.id],
+                       HUC8_within = huc8_sf$HUC8[col.id])  %>%
+                select(c(site_no, HUC8_within)) %>%
+                distinct(.keep_all = T), 
+              by = "site_no") %>%
+    mutate(same = HUC8 == HUC8_within,
+           in_watershed = as.character(!is.na(HUC8_within)),
+           label = paste0("Station: ", str_to_title(station_nm), "<br>(", HUC8, ")")) %>%
+    mutate(in_watershed = recode(in_watershed, "FALSE" = "No", "TRUE" = "Yes")) %>%
+    st_as_sf() %>%
+    st_transform(crs = crs_plot)
+}
