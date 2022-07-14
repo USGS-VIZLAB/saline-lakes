@@ -1,4 +1,5 @@
 source('3_visualize/src/prep_viz_data.R')
+source('3_visualize/src/interactive_map.R')
 
 
 p3_targets_list <- list(
@@ -30,6 +31,14 @@ p3_targets_list <- list(
     prep_gage_viz_sf(nwis_sites = p1_nwis_sites, 
                      huc8_sf = p3_huc8_sf, 
                      crs_plot = selected_crs)
+  ),
+  
+  tar_target(
+    p3_interactive_map_leaflet,
+    build_map_leaflet(p3_huc8_sf, 
+                         p3_saline_lakes_sf, 
+                         p3_flowlines_sf, 
+                         p3_gage_sites)
   )
   
 )
