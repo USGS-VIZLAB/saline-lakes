@@ -17,7 +17,12 @@ p3_targets_list <- list(
     p3_huc8_sf,
     prep_huc8_viz_sf(huc8_sf = p1_get_lakes_huc8_sf, 
                      crs_plot = selected_crs)
+  ),
+  
+  tar_target(
+    p3_flowlines_sf,
+    prep_flowlines_viz_sf(flowlines_sf = p1_lake_flowlines_huc8_sf, 
+                          crs_plot = selected_crs)
   )
   
-
 )
