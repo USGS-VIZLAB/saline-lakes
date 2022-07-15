@@ -27,7 +27,7 @@ p3_targets_list <- list(
   ),
   
   tar_target(
-    p3_gage_sites,
+    p3_gage_sites_sf,
     prep_gage_viz_sf(nwis_sites = p1_nwis_sites, 
                      huc8_sf = p3_huc8_sf, 
                      crs_plot = selected_crs)
@@ -38,7 +38,7 @@ p3_targets_list <- list(
     build_map_leaflet(p3_huc8_sf, 
                          p3_saline_lakes_sf, 
                          p3_flowlines_sf, 
-                         p3_gage_sites)
+                         p3_gage_sites_sf)
   )
   
 )

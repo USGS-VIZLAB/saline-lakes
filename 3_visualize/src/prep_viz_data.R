@@ -39,7 +39,7 @@ prep_gage_viz_sf <- function(nwis_sites, huc8_sf, crs_plot){
               by = "site_no") %>%
     mutate(same = HUC8 == HUC8_within,
            in_watershed = as.character(!is.na(HUC8_within)),
-           label = paste0("Station: ", str_to_title(station_nm), "<br>(", HUC8, ")")) %>%
+           label = paste0("Station: ", str_to_title(station_nm), "<br>(", site_no, ")")) %>%
     mutate(in_watershed = recode(in_watershed, "FALSE" = "No", "TRUE" = "Yes")) %>%
     st_as_sf() %>%
     st_transform(crs = crs_plot)
