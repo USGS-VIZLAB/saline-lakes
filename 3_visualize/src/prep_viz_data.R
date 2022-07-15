@@ -7,7 +7,7 @@ prep_lakes_viz_sf <- function(lakes_sf, crs_plot){
     st_transform(crs = crs_plot)
 }
 
-# Prep HUC8 watershed data for leaflet map
+# Prep HUC8 data for leaflet map
 prep_huc8_viz_sf <- function(huc8_sf, crs_plot){
   huc8_sf %>%
     mutate(duplicate = duplicated(TNMID)) %>%
@@ -39,9 +39,9 @@ prep_gage_viz_sf <- function(nwis_sites, huc8_sf, crs_plot){
                 distinct(.keep_all = T), 
               by = "site_no") %>%
     mutate(same = HUC8 == HUC8_within,
-           in_watershed = as.character(!is.na(HUC8_within)),
+           in_HUC8 = as.character(!is.na(HUC8_within)),
            label = paste0("Station: ", str_to_title(station_nm), "<br>(", site_no, ")")) %>%
-    mutate(in_watershed = recode(in_watershed, "FALSE" = "No", "TRUE" = "Yes")) %>%
+    mutate(in_HUC8 = recode(in_HUC8, "FALSE" = "No", "TRUE" = "Yes")) %>%
     st_as_sf() %>%
     st_transform(crs = crs_plot)
 }

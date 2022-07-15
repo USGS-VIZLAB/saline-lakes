@@ -8,7 +8,7 @@ build_map_leaflet <- function(p3_huc8_sf, p3_saline_lakes_sf, p3_flowlines_sf, p
   # Define color ramp for gages
   pal_gage <- colorFactor(
     palette = scico::scico(16, palette = 'davos')[c(11, 1)],
-    domain = p3_gage_sites$in_watershed)
+    domain = p3_gage_sites$in_HUC8)
   
   # Build map
   leaflet() %>% 
@@ -17,7 +17,7 @@ build_map_leaflet <- function(p3_huc8_sf, p3_saline_lakes_sf, p3_flowlines_sf, p
     addProviderTiles("CartoDB.PositronOnlyLabels", group = "Labels") %>%
     
     # Add data layers
-    addPolygons(data = p3_huc8_sf, group = "Watersheds (HUC 8)",
+    addPolygons(data = p3_huc8_sf, group = "Subbasin (HUC 8)",
                 color = "#C3CB9F", opacity = 0.4, weight = 3,
                 popup = ~label) %>% 
     addPolygons(data = p3_saline_lakes_sf, group = "Saline lakes",
@@ -28,7 +28,7 @@ build_map_leaflet <- function(p3_huc8_sf, p3_saline_lakes_sf, p3_flowlines_sf, p
                  weight = ~streamorde,
                  popup = ~label) %>%
     addCircleMarkers(data = p3_gage_sites, group = "Gage sites",
-                     color = ~pal_gage(in_watershed), radius = 5, weight = 2,
+                     color = ~pal_gage(in_HUC8), radius = 5, weight = 2,
                      popup = ~label) %>%
     addLabelOnlyMarkers(data = p3_saline_lakes_sf, lng = ~X, lat = ~Y, group = "Lake labels",
                label = ~lake_w_state,
@@ -41,13 +41,13 @@ build_map_leaflet <- function(p3_huc8_sf, p3_saline_lakes_sf, p3_flowlines_sf, p
               position = "bottomright") %>%
     
     addLegend(data = p3_gage_sites, group = "Gage sites",
-              title = "Within saline lake watershed",
-              pal = pal_gage, values = ~in_watershed,
+              title = "Within saline lake subbasin",
+              pal = pal_gage, values = ~in_HUC8,
               position = "bottomright") %>%
     
     # Add layer controls
     addLayersControl(baseGroups = c("Labels", "No Labels"),
-                     overlayGroups = c("Saline lakes", "Lake labels", "Watersheds (HUC 8)", "Streams", "Gage sites"),
+                     overlayGroups = c("Saline lakes", "Lake labels", "Subbasin (HUC 8)", "Streams", "Gage sites"),
                      position = "topright",
                      options = layersControlOptions(collapsed = F)) %>%
     hideGroup(c("Streams", "Gage sites"))
