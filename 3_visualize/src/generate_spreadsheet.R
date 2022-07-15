@@ -8,10 +8,10 @@ p1_get_lakes_huc8_sf %>%
   distinct() %>%
   select(lake_w_state, Name, HUC8) %>%
   rename(`Saline lake` = lake_w_state, 
-         `Watershed name` = Name) %>%
+         `Subbasin name` = Name) %>%
   mutate(`Keep/discard` = "",
          Notes = "") %>%
-  write.xlsx(file = "3_visualize/out/Watershed_KeepDiscard.xlsx",
-             sheetName = "Watersheds",
+  write.xlsx(file = "3_visualize/out/Subbasin_KeepDiscard.xlsx",
+             sheetName = "Subbasins",
              col.names = T,
              row.names = F)
