@@ -3,7 +3,7 @@ build_map_leaflet <- function(p3_huc8_sf, p3_saline_lakes_sf, p3_flowlines_sf, p
   # Define color ramp for steams
   pal_stream <- colorFactor(
     palette = scico::scico(9, palette = 'davos')[6:3],
-    domain = p3_flowlines_sf$streamorde)
+    domain = p3_flowlines_sf$streamorde_size)
   
   # Define color ramp for gages
   pal_gage <- colorFactor(
@@ -18,24 +18,26 @@ build_map_leaflet <- function(p3_huc8_sf, p3_saline_lakes_sf, p3_flowlines_sf, p
     
     # Add data layers
     addPolygons(data = p3_huc8_sf, group = "Watersheds (HUC 8)",
-                color = "#C3CB9F", opacity = 0.4, 
+                color = "#C3CB9F", opacity = 0.4, weight = 3,
                 popup = ~label) %>% 
     addPolygons(data = p3_saline_lakes_sf, group = "Saline lakes",
-                color = '#3A6DB7', opacity = 0.8,
+                color = '#3A6DB7', opacity = 0.8, weight = 2,
                 popup = ~label) %>%
     addPolylines(data = p3_flowlines_sf, group = "Streams",
                  color = ~pal_stream(streamorde), opacity = 0.8,
+                 weight = ~streamorde,
                  popup = ~label) %>%
     addCircleMarkers(data = p3_gage_sites, group = "Gage sites",
-                     color = ~pal_gage(in_watershed), radius = 5,
+                     color = ~pal_gage(in_watershed), radius = 5, weight = 2,
                      popup = ~label) %>%
-    addMarkers(data = p3_saline_lakes_sf, lng = ~X, lat = ~Y, group = "Lake markers",
-               popup = ~lake_w_state) %>%
+    addLabelOnlyMarkers(data = p3_saline_lakes_sf, lng = ~X, lat = ~Y, group = "Lake labels",
+               label = ~lake_w_state,
+               labelOptions = labelOptions(noHide = T, textOnly = T)) %>%
     
     # Add legend
     addLegend(data = p3_flowlines_sf, group = "Streams",
               title = "Stream order",
-              pal = pal_stream, values = ~streamorde,
+              pal = pal_stream, values = ~streamorde_size,
               position = "bottomright") %>%
     
     addLegend(data = p3_gage_sites, group = "Gage sites",
@@ -45,7 +47,7 @@ build_map_leaflet <- function(p3_huc8_sf, p3_saline_lakes_sf, p3_flowlines_sf, p
     
     # Add layer controls
     addLayersControl(baseGroups = c("Labels", "No Labels"),
-                     overlayGroups = c("Lake markers", "Saline lakes", "Watersheds (HUC 8)", "Streams", "Gage sites"),
+                     overlayGroups = c("Saline lakes", "Lake labels", "Watersheds (HUC 8)", "Streams", "Gage sites"),
                      position = "topright",
                      options = layersControlOptions(collapsed = F)) %>%
     hideGroup(c("Streams", "Gage sites"))
