@@ -1,6 +1,6 @@
 library(targets)
 
-options(tidyverse.quiet = TRUE, timeout = 300)
+options(tidyverse.quiet = TRUE, timeout = 700)
 tar_option_set(packages = c("tidyverse","sbtools","sf",'dataRetrieval',"nhdplusTools",'dplyr','readxl','readr','stringr','mapview','leaflet', 'httr'))
 
 source("1_fetch.R")

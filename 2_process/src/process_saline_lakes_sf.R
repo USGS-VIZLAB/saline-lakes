@@ -15,8 +15,12 @@ process_saline_lakes_sf<- function(nhdhr_waterbodies, lakes_sf, states_sf, selec
     mutate(lake_w_state = paste(GNIS_Name, STATE_ABBR, sep = ',')) %>% 
     filter(lake_w_state %in% lakes_sf$lake_w_state)
   
+  ## filter out incorrect lakes (e.g. eagles lakes in CA) using the lat long of Lakes and spatial join
+  buf_nhdhr_saline_lakes_sf <- nhdhr_saline_lakes_sf %>% st_buffer(dist = 10^4) %>% st_join(y = lakes_sf) %>% filter(!is.na(lake))
+  
   ## Spatial group by
   lakes_sf_nhdhr <- nhdhr_saline_lakes_sf %>%
+    filter(GNIS_ID %in% buf_nhdhr_saline_lakes_sf$GNIS_ID) %>% 
     group_by(lake_w_state,GNIS_Name) %>%
     summarize(geometry = st_union(Shape)) %>% 
     ungroup()
@@ -45,7 +49,7 @@ process_saline_lakes_sf<- function(nhdhr_waterbodies, lakes_sf, states_sf, selec
   
   # there are two OR swamp lakes - id-ed the incorrect one and removed in following code chunk 
   wrong_swamp_lake_id <- '142134706'
-  
+  # wrong_eagle_lake_id <- 
   Warner <-  nhdhr_waterbodies %>% 
     filter(GNIS_Name %in% Warner_lakes_sf,
            Permanent_Identifier != wrong_swamp_lake_id) %>% 
@@ -77,6 +81,9 @@ process_saline_lakes_sf<- function(nhdhr_waterbodies, lakes_sf, states_sf, selec
     mutate(flag = ifelse(GNIS_Name == 'Winnemucca Lake','nhd',
                          ifelse(GNIS_Name == 'Warner lakes',
                                 'From nhd hr. The Warner lakes (aka Warner Wetlands) consist of 12 shallow lakes in South East Oregon, and include Pelican, Crump, Hart lakes, among others', 'From nhd hr')))
+  
+  del(buf_nhdhr_saline_lakes_sf)
+  
   
   return(final_lakes)
   
