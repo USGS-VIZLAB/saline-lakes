@@ -1,5 +1,6 @@
 source('3_visualize/src/prep_viz_data.R')
 source('3_visualize/src/interactive_map.R')
+source('3_visualize/src/generate_spreadsheet.R')
 
 
 p3_targets_list <- list(
@@ -31,6 +32,13 @@ p3_targets_list <- list(
     prep_gage_viz_sf(nwis_sites = p1_nwis_sites, 
                      huc8_sf = p3_huc8_sf, 
                      crs_plot = selected_crs)
+  ),
+  
+  tar_target(
+    p3_feedback_spreadsheet_xlsx,
+    build_feedback_spreadsheet(p1_get_lakes_huc8_sf = p1_get_lakes_huc8_sf,
+                               out_file = "3_visualize/out/Subbasin_KeepDiscard.xlsx"),
+    format = "file"
   ),
   
   tar_target(
