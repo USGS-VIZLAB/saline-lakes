@@ -5,6 +5,14 @@ process_saline_lakes_sf<- function(nhdhr_waterbodies, lakes_sf, states_sf, selec
   #'@param states_sf states sf object
   #'@param lakes_sf lakes df object that lists lakes and lat long (from Lakes List csv)
   
+  tar_load(p1_nhdhr_lakes)
+  tar_load(p1_lakes_sf)
+  tar_load(p1_states_sf)
+  
+  nhdhr_waterbodies = p1_nhdhr_lakes
+  lakes_sf = p1_lakes_sf
+  states_sf = p1_states_sf
+  
   ## Cleaning dataframe
   nhdhr_saline_lakes_sf <- nhdhr_waterbodies %>%
     filter(GNIS_Name %in% lakes_sf$lake) %>%
@@ -15,9 +23,13 @@ process_saline_lakes_sf<- function(nhdhr_waterbodies, lakes_sf, states_sf, selec
     mutate(lake_w_state = paste(GNIS_Name, STATE_ABBR, sep = ',')) %>% 
     filter(lake_w_state %in% lakes_sf$lake_w_state)
   
+  ## filter out incorrect lakes (e.g. eagles lakes in CA) using the lat long of Lakes and spatial join
+  buf_nhdhr_saline_lakes_sf <- nhdhr_saline_lakes_sf %>% st_buffer(dist = 10^4) %>% st_join(y = lakes_sf) %>% filter(!is.na(lake))
+  
   ## Spatial group by
   lakes_sf_nhdhr <- nhdhr_saline_lakes_sf %>%
-    group_by(lake_w_state,GNIS_Name) %>%
+    filter(GNIS_ID %in% buf_nhdhr_saline_lakes_sf$GNIS_ID) %>% 
+    group_by(lake_w_state,GNIS_Name, COMID) %>%
     summarize(geometry = st_union(Shape)) %>% 
     ungroup()
   
@@ -43,9 +55,9 @@ process_saline_lakes_sf<- function(nhdhr_waterbodies, lakes_sf, states_sf, selec
                     'Turpin Lake', 
                     'Bluejoint Lake')
   
-  # there are two OR swamp lakes - id-ed the incorrect one and removed in following code chunk 
+  # there are two OR swamp lakes, only 1 mong warner lakes - id-ed the incorrect one and removed in following code chunk 
   wrong_swamp_lake_id <- '142134706'
-  
+
   Warner <-  nhdhr_waterbodies %>% 
     filter(GNIS_Name %in% Warner_lakes_sf,
            Permanent_Identifier != wrong_swamp_lake_id) %>% 
@@ -77,6 +89,9 @@ process_saline_lakes_sf<- function(nhdhr_waterbodies, lakes_sf, states_sf, selec
     mutate(flag = ifelse(GNIS_Name == 'Winnemucca Lake','nhd',
                          ifelse(GNIS_Name == 'Warner lakes',
                                 'From nhd hr. The Warner lakes (aka Warner Wetlands) consist of 12 shallow lakes in South East Oregon, and include Pelican, Crump, Hart lakes, among others', 'From nhd hr')))
+  
+  remove(buf_nhdhr_saline_lakes_sf)
+  
   
   return(final_lakes)
   
