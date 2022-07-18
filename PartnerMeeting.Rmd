@@ -1,0 +1,23 @@
+---
+title: "Partner meeting"
+author: "Vizlab, Data Science Branch, IIDD"
+output: html_document
+---
+
+### Interactive map
+This map shows the focal saline lakes in the western US and the associated data.
+This data includes the subbasins (HUC8), streams within these subbasins (stream order >=3), and stream gages within the subbasins.
+```{r, echo = FALSE, out.width = '100%'}
+library(targets)
+library(leaflet)
+source('3_visualize/src/prep_viz_data.R')
+source('3_visualize/src/interactive_map.R')
+tar_load(p3_huc8_sf)
+tar_load(p3_saline_lakes_sf)
+tar_load(p3_flowlines_sf)
+tar_load(p3_gage_sites_sf)
+build_map_leaflet(p3_huc8_sf, p3_saline_lakes_sf, p3_flowlines_sf, p3_gage_sites)
+```
+
+### Spreadsheet
+A spreadsheet of subbasins (HUC8) for each focal lake is available to review on [SharePoint](https://doimspp.sharepoint.com/:x:/s/IIDDStaff/EXalneoSajNDh95PN8mTRZEBz6Ww_eCY1U5vwgcW1qnAvQ?e=OC6jhf).

@@ -35,10 +35,10 @@ p3_targets_list <- list(
   
   tar_target(
     p3_interactive_map_leaflet,
-    build_map_leaflet(p3_huc8_sf, 
-                         p3_saline_lakes_sf, 
-                         p3_flowlines_sf, 
-                         p3_gage_sites_sf)
+    build_map_leaflet(p3_huc8_sf = p3_huc8_sf, 
+                      p3_saline_lakes_sf = p3_saline_lakes_sf, 
+                      p3_flowlines_sf = p3_flowlines_sf, 
+                      p3_gage_sites_Sf = p3_gage_sites_sf)
+    
   )
-  
 )
