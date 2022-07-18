@@ -1,6 +1,6 @@
 ---
 title: "Partner meeting"
-author: "Vizlab, Data Science Branch, IIDD"
+author: "Vizlab, Data Science Branch, IIDD <br>Contacts: Anthony Martinez (ajmartinez@usgs.gov) and Cee Nell (cnell@usgs.gov)"
 output: html_document
 ---
 
