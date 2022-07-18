@@ -1,10 +1,5 @@
 # Build interactive map with leaflet
 build_map_leaflet <- function(p3_huc8_sf, p3_saline_lakes_sf, p3_flowlines_sf, p3_gage_sites_sf){
-  # Define color ramp for steams
-  pal_stream <- colorFactor(
-    palette = scico::scico(9, palette = 'davos')[6:3],
-    domain = p3_flowlines_sf$streamorde_size)
-  
   # Define color ramp for gages
   pal_gage <- colorFactor(
     palette = scico::scico(16, palette = 'davos')[c(11, 1)],
@@ -24,7 +19,7 @@ build_map_leaflet <- function(p3_huc8_sf, p3_saline_lakes_sf, p3_flowlines_sf, p
                 color = '#3A6DB7', opacity = 0.8, weight = 2,
                 popup = ~label) %>%
     addPolylines(data = p3_flowlines_sf, group = "Streams",
-                 color = ~pal_stream(streamorde), opacity = 0.8,
+                 color = scico(9, palette = 'davos')[5], opacity = 0.8,
                  weight = ~streamorde,
                  popup = ~label) %>%
     addCircleMarkers(data = p3_gage_sites_sf, group = "Gage sites",
@@ -35,11 +30,6 @@ build_map_leaflet <- function(p3_huc8_sf, p3_saline_lakes_sf, p3_flowlines_sf, p
                labelOptions = labelOptions(noHide = T, textOnly = T)) %>%
     
     # Add legend
-    addLegend(data = p3_flowlines_sf, group = "Streams",
-              title = "Stream order",
-              pal = pal_stream, values = ~streamorde_size,
-              position = "bottomright") %>%
-    
     addLegend(data = p3_gage_sites_sf, group = "Gage sites",
               title = "Within saline lake subbasin",
               pal = pal_gage, values = ~in_HUC8,
