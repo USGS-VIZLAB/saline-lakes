@@ -1,5 +1,5 @@
 # Build interactive map with leaflet
-build_map_leaflet <- function(p3_huc8_sf, p3_saline_lakes_sf, p3_flowlines_sf, p3_gage_sites_Sf){
+build_map_leaflet <- function(p3_huc8_sf, p3_saline_lakes_sf, p3_flowlines_sf, p3_gage_sites_sf){
   # Define color ramp for steams
   pal_stream <- colorFactor(
     palette = scico::scico(9, palette = 'davos')[6:3],
