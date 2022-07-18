@@ -16,7 +16,10 @@ tar_load(p3_huc8_sf)
 tar_load(p3_saline_lakes_sf)
 tar_load(p3_flowlines_sf)
 tar_load(p3_gage_sites_sf)
-build_map_leaflet(p3_huc8_sf, p3_saline_lakes_sf, p3_flowlines_sf, p3_gage_sites)
+build_map_leaflet(p3_huc8_sf = p3_huc8_sf, 
+                      p3_saline_lakes_sf = p3_saline_lakes_sf, 
+                      p3_flowlines_sf = p3_flowlines_sf, 
+                      p3_gage_sites_sf = p3_gage_sites_sf)
 ```
 
 ### Spreadsheet
