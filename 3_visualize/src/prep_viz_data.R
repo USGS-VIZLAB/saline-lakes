@@ -9,10 +9,16 @@ prep_lakes_viz_sf <- function(lakes_sf, crs_plot){
 
 # Prep HUC8 data for leaflet map
 prep_huc8_viz_sf <- function(huc8_sf, crs_plot){
+  assc_lakes_df <- huc8_sf %>%
+    st_drop_geometry() %>%
+    distinct(HUC8, lake_w_state, .keep_all = F) %>%
+    group_by(HUC8) %>%
+    summarise(assc_lakes = paste(lake_w_state, collapse =  "; "))
+  
   huc8_sf %>%
-    mutate(duplicate = duplicated(TNMID)) %>%
-    filter(duplicate == F) %>%
-    mutate(label = paste0("HUC8: ", Name, "(", HUC8, ")", "<br>", "Associated lake: ", lake_w_state)) %>%
+    distinct(HUC8, lake_w_state, .keep_all = T) %>%
+    left_join(assc_lakes_df, by = "HUC8") %>%
+    mutate(label = paste0("HUC8: ", Name, "(", HUC8, ")", "<br>", "Associated lake: ", assc_lakes)) %>%
     st_as_sf() %>%
     st_transform(crs = crs_plot)
 }
