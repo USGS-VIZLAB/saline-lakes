@@ -74,7 +74,7 @@ p1_targets_list <- list(
   
   # Fetch water bodies - HR
   tar_target(p1_nhdhr_lakes, 
-              get_nhdplushr(hr_dir = p1_download_nhdhr_lakes_path,
+              get_nhdplushr(hr_dir = '1_fetch/in/nhdhr',
                             layer= 'NHDWaterbody')$NHDWaterbody
   ),
 
@@ -94,7 +94,7 @@ p1_targets_list <- list(
     p1_get_lakes_huc8_sf,
     get_nhdplushr(hr_dir = p1_download_nhdhr_lakes_path,
                   layer= 'WBDHU8')$WBDHU8 %>% 
-      ## filter to lakes HUC8 - (can move to process)
+      ## filter to lakes in HUC8 - (can move to process)
       st_transform(crs = st_crs(p2_saline_lakes_sf)) %>% st_join(p2_saline_lakes_sf) %>%
       filter(!is.na(GNIS_Name))
     ),
@@ -110,8 +110,6 @@ p1_targets_list <- list(
     p1_lake_flowlines_huc8_sf,
     {get_nhdplus(AOI = {p1_get_lakes_huc8_sf %>% filter(HUC8 == p1_huc8_vec)},
                  realization = 'flowline') %>%
-        ## making as dataframe to load with tar_load()
-        #as.data.frame() %>% 
         ## fixing col that are automatically transforming to char
         mutate(across(c(surfarea, lakefract, rareahload), ~as.numeric(.x)),
                HUC8 = p1_huc8_vec) %>% 
@@ -125,8 +123,6 @@ p1_targets_list <- list(
   tar_target(
     p1_nwis_sites,
     {tryCatch(expr = get_huc8(id = p1_huc8_vec) %>% get_nwis(AOI = .) %>%
-                ## making as dataframe to load with tar_load()
-                #as.data.frame() %>% 
                 mutate(HUC8 = p1_huc8_vec),
               error = function(e){message(paste('error - No gages found in huc8', p1_huc8_vec))})},
   pattern = map(p1_huc8_vec)
