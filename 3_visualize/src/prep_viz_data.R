@@ -12,7 +12,7 @@ prep_huc8_viz_sf <- function(huc8_sf, crs_plot){
   huc8_sf %>%
     mutate(duplicate = duplicated(TNMID)) %>%
     filter(duplicate == F) %>%
-    mutate(label = paste0("HUC8: ", Name, "(", HUC8, ")")) %>%
+    mutate(label = paste0("HUC8: ", Name, "(", HUC8, ")", "<br>", "Associated lake: ", lake_w_state)) %>%
     st_as_sf() %>%
     st_transform(crs = crs_plot)
 }
