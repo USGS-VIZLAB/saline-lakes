@@ -7,6 +7,7 @@ p1_get_lakes_huc8_sf %>%
   as.data.frame() %>%
   distinct() %>%
   select(lake_w_state, Name, HUC8) %>%
+  arrange(lake_w_state, HUC8) %>%
   rename(`Saline lake` = lake_w_state, 
          `Subbasin name` = Name) %>%
   mutate(`Keep/discard` = "",
