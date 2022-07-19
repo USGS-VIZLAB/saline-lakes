@@ -29,6 +29,7 @@ prep_huc8_viz_sf <- function(huc8_sf, assc_lakes_df, crs_plot){
 # Prep stream data for leaflet map
 prep_flowlines_viz_sf <- function(flowlines_sf, crs_plot){
   flowlines_sf %>%
+    ms_simplify() %>%
     mutate(streamorde_size = as.factor(as.character(as.numeric(streamorde))),
            streamorde = as.factor(as.character(streamorde)),
            label = paste0("Stream: ", ifelse(gnis_name == " ", "No GNIS name/ID", paste0(gnis_name, " (", gnis_id, ")")), " <br> Stream order ", streamorde)) %>%
