@@ -1,3 +1,12 @@
+# Create HUC9-Lake crosswalk
+assc_lakes_xwalk_df <- function(huc8_sf){
+  huc8_sf %>%
+    st_drop_geometry() %>%
+    distinct(HUC8, lake_w_state, .keep_all = F) %>%
+    group_by(HUC8) %>%
+    summarise(assc_lakes = paste(lake_w_state, collapse =  "; "))
+}
+
 # Prep saline lake data for leaflet map
 prep_lakes_viz_sf <- function(lakes_sf, crs_plot){
   lakes_sf %>%
@@ -8,13 +17,7 @@ prep_lakes_viz_sf <- function(lakes_sf, crs_plot){
 }
 
 # Prep HUC8 data for leaflet map
-prep_huc8_viz_sf <- function(huc8_sf, crs_plot){
-  assc_lakes_df <- huc8_sf %>%
-    st_drop_geometry() %>%
-    distinct(HUC8, lake_w_state, .keep_all = F) %>%
-    group_by(HUC8) %>%
-    summarise(assc_lakes = paste(lake_w_state, collapse =  "; "))
-  
+prep_huc8_viz_sf <- function(huc8_sf, assc_lakes_df, crs_plot){
   huc8_sf %>%
     distinct(HUC8, lake_w_state, .keep_all = T) %>%
     left_join(assc_lakes_df, by = "HUC8") %>%
@@ -26,9 +29,8 @@ prep_huc8_viz_sf <- function(huc8_sf, crs_plot){
 # Prep stream data for leaflet map
 prep_flowlines_viz_sf <- function(flowlines_sf, crs_plot){
   flowlines_sf %>%
-    mutate(streamorde_size = as.factor(as.character(as.numeric(streamorde))),
-           streamorde = as.factor(as.character(streamorde)),
-           label = paste0("Stream: ", ifelse(gnis_name == " ", "No GNIS name/ID", paste0(gnis_name, " (", gnis_id, ")")), " <br> Stream order ", streamorde)) %>%
+    ms_simplify() %>%
+    mutate(label = paste0("Stream: ", ifelse(gnis_name == " ", "No GNIS name/ID", paste0(gnis_name, " (", gnis_id, ")")), " <br> Stream order ", streamorde)) %>%
     st_as_sf() %>%
     st_transform(crs = crs_plot)
 }

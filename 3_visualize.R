@@ -8,6 +8,10 @@ p3_targets_list <- list(
   ## Fetch and Process saline lakes via specifically built function that creates the final saline lakes shapefile 
   ## This fun not yet generalized, special handling of lakes included in fun
   ## NOTE - Change nhdhr_lakes_path param with either p1_download_nhdhr_lakes_path or p1_download_nhdhr_lakes_backup_path depending on where nhdhr lives
+  tar_target(
+    assc_lakes_df,
+    assc_lakes_xwalk_df(huc8_sf = p1_get_lakes_huc8_sf)
+  ),
   
   tar_target(
     p3_saline_lakes_sf,
@@ -17,7 +21,8 @@ p3_targets_list <- list(
   
   tar_target(
     p3_huc8_sf,
-    prep_huc8_viz_sf(huc8_sf = p1_get_lakes_huc8_sf, 
+    prep_huc8_viz_sf(huc8_sf = p1_get_lakes_huc8_sf,
+                     assc_lakes_df = assc_lakes_df,
                      crs_plot = selected_crs)
   ),
   
@@ -37,6 +42,8 @@ p3_targets_list <- list(
   tar_target(
     p3_feedback_spreadsheet_xlsx,
     build_feedback_spreadsheet(p1_get_lakes_huc8_sf = p1_get_lakes_huc8_sf,
+                               p3_flowlines_sf = p3_flowlines_sf, 
+                               assc_lakes_df = assc_lakes_df,
                                out_file = "3_visualize/out/Subbasin_KeepDiscard.xlsx"),
     format = "file"
   ),

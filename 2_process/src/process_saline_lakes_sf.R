@@ -49,10 +49,12 @@ process_saline_lakes_sf<- function(nhdhr_waterbodies, lakes_sf, states_sf, selec
   
   # there are two OR swamp lakes - id-ed the incorrect one and removed in following code chunk 
   wrong_swamp_lake_id <- '142134706'
+  wrong_campbell_lake_id <- '01118545'
   
   Warner <-  nhdhr_waterbodies %>% 
     filter(GNIS_Name %in% Warner_lakes_sf,
-           Permanent_Identifier != wrong_swamp_lake_id) %>% 
+           Permanent_Identifier != wrong_swamp_lake_id,
+           GNIS_ID != wrong_campbell_lake_id) %>% 
     st_zm() %>% 
     st_make_valid() %>%
     st_transform(crs = st_crs(lakes_sf)) %>% 
@@ -79,7 +81,7 @@ process_saline_lakes_sf<- function(nhdhr_waterbodies, lakes_sf, states_sf, selec
     mutate(X = st_coordinates(st_centroid(geometry))[,1],
            Y = st_coordinates(st_centroid(geometry))[,2]) %>% 
     mutate(flag = ifelse(GNIS_Name == 'Winnemucca Lake','nhd',
-                         ifelse(GNIS_Name == 'Warner lakes',
+                         ifelse(GNIS_Name == 'Warner Lakes',
                                 'From nhd hr. The Warner lakes (aka Warner Wetlands) consist of 12 shallow lakes in South East Oregon, and include Pelican, Crump, Hart lakes, among others', 'From nhd hr')))
   
   return(final_lakes)

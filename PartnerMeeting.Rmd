@@ -22,6 +22,7 @@ Use the toggles on the right-hand corner to turn on or off different data layers
 library(targets)
 library(leaflet)
 library(scico)
+library(scales)
 source('3_visualize/src/prep_viz_data.R')
 source('3_visualize/src/interactive_map.R')
 tar_load(p3_huc8_sf)
