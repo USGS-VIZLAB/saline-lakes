@@ -57,10 +57,12 @@ process_saline_lakes_sf<- function(nhdhr_waterbodies, lakes_sf, states_sf, selec
   
   # there are two OR swamp lakes, only 1 mong warner lakes - id-ed the incorrect one and removed in following code chunk 
   wrong_swamp_lake_id <- '142134706'
+  wrong_campbell_lake_id <- '01118545'
 
   Warner <-  nhdhr_waterbodies %>% 
     filter(GNIS_Name %in% Warner_lakes_sf,
-           Permanent_Identifier != wrong_swamp_lake_id) %>% 
+           Permanent_Identifier != wrong_swamp_lake_id,
+           GNIS_ID != wrong_campbell_lake_id) %>% 
     st_zm() %>% 
     st_make_valid() %>%
     st_transform(crs = st_crs(lakes_sf)) %>% 
