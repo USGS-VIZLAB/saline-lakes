@@ -49,10 +49,12 @@ process_saline_lakes_sf<- function(nhdhr_waterbodies, lakes_sf, states_sf, selec
   
   # there are two OR swamp lakes - id-ed the incorrect one and removed in following code chunk 
   wrong_swamp_lake_id <- '142134706'
+  wrong_campbell_lake_id <- '01118545'
   
   Warner <-  nhdhr_waterbodies %>% 
     filter(GNIS_Name %in% Warner_lakes_sf,
-           Permanent_Identifier != wrong_swamp_lake_id) %>% 
+           Permanent_Identifier != wrong_swamp_lake_id,
+           GNIS_ID != wrong_campbell_lake_id) %>% 
     st_zm() %>% 
     st_make_valid() %>%
     st_transform(crs = st_crs(lakes_sf)) %>% 
@@ -69,7 +71,7 @@ process_saline_lakes_sf<- function(nhdhr_waterbodies, lakes_sf, states_sf, selec
     add_row(lake_w_state = 'Winnemucca Lake,NV',
             GNIS_Name = 'Winnemucca Lake',
             geometry = Winnemucca$geometry[1]) %>%
-    filter(GNIS_Name != 'Warner Lake') %>% 
+ #   filter(GNIS_Name != 'Warner Lake') %>% 
     add_row(lake_w_state = Warner_lakes_sf$lake_w_state[1],
             GNIS_Name = 'Warner Lakes',
             geometry = Warner_lakes_sf$geometry[1]) %>%
