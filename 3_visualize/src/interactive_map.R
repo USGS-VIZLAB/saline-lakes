@@ -20,7 +20,7 @@ build_map_leaflet <- function(p3_huc8_sf, p3_saline_lakes_sf, p3_flowlines_sf, p
                 popup = ~label) %>%
     addPolylines(data = p3_flowlines_sf, group = "Streams",
                  color = scico(9, palette = 'davos')[5], opacity = 0.8,
-                 weight = ~streamorde,
+                 weight = ~streamorde_size,
                  popup = ~label) %>%
     addCircleMarkers(data = p3_gage_sites_sf, group = "Gage sites",
                      color = ~pal_gage(in_HUC8), radius = 5, weight = 2,
