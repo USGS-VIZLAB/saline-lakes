@@ -1,15 +1,10 @@
 scope_lake_tributaries <- function(fline_network,
                                  lakes_sf,
                                  buffer_dist = 10000,
-                                 realization = c('flowline','catchment'),
+                                 realization = 'flowline',
                                  stream_order = 3){
 
-    fline_network = p1_lake_flowlines_huc8_sf
-    lakes_sf = p2_saline_lakes_sf
-    buffer_dist = 10000
-    realization = c('flowline','catchment')
-    stream_order = 3
-  
+
   # CHECKS
   ## flines layer geometries 
   if(any(!st_is_valid(fline_network))){
@@ -43,9 +38,21 @@ scope_lake_tributaries <- function(fline_network,
   # Get Upstream Tribs
   lake_UT <- get_UT(comid = reach_in_lake$comid, network = fline_network)
   
-  # fetch identified upstream tributaries
-  final_lake_tributaries <- get_nhdplus(comid = lake_UT, realization = 'flowline', streamorder = stream_order)
+  # running get_nhdplustools in chunks for avoid timeout error
+  comid_UT_df <- tibble(COMID_UT = lakes_UT) %>%
+    mutate(comid_n = row_number(),
+           download_grp = ((comid_n -1) %/% 50) + 1)
   
-  return(final_lake_tributaries)
+  Lake_tributaries <- comid_UT_df %>%
+    split(., .$download_grp) %>%
+    lapply(., function(x){
+      cats_sub <- suppressMessages(nhdplusTools::get_nhdplus(comid = x$COMID_UT, 
+                                                             realization = 'flowline',
+                                                             streamorder = streamorder))
+    }) %>%
+    bind_rows()
+  
+
+  return(Lake_tributaries)
   
 }
