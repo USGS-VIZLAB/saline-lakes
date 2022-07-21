@@ -1,10 +1,17 @@
 scope_lake_tributaries <- function(fline_network,
                                  lakes_sf,
-                                 buffer_dist = 10000,
+                                 buffer_dist = NULL,
                                  realization = 'flowline',
-                                 stream_order = 3){
+                                 stream_order = NULL){
 
-
+  #'@description subset flowlines network to get only tributaries upstream of lakes or catchments of lake Upstream tributaries
+  #'@paramfline_network sf dataframe of flowlines from nhdplustools 
+  #'@param lakes_sf sf dataframe of focal lake polygons
+  #'@param buffer_dist buffer distance for lakes to ensure we capture all flowlines relevant to lake
+  #'@param realization either flowline or catchment. Must input only 1, unlike with this param in get_nhdplus() 
+  #'@param stream_order stream order level. Defaults See get_nhdplus() for further details
+  #'@value nhdplus sf dataframe of flowlines or catchments of reaches Upstream of focal lakes
+  
   # CHECKS
   ## flines layer geometries 
   if(any(!st_is_valid(fline_network))){
@@ -27,32 +34,29 @@ scope_lake_tributaries <- function(fline_network,
   } else {
     message('crs are already aligned')
   }
-    
-  # Comid reaches in lake = buffering by 10000 because many lakes don't have flowlines that go right into it
-  ## NOTE - Chose to buffer to be able to get all incoming tribs (issues arrive around franklin lake and carson lake)
-  lakes_buffered_sf <- lakes_sf %>% st_buffer(dist= buffer_dist)
   
-  # get only flowlines within lake buffer
+  # Buffer lakes if not null  
+  ## Comid reaches in lake = buffering by 10000 because many lakes don't have flowlines inside lake
+  if(!is.null(buffer_dist)){
+    lakes_buffered_sf <- lakes_sf %>% st_buffer(dist= buffer_dist)
+  } else{
+    lakes_buffered_sf <- lakes_sf
+    }
+  
+  # Intersect to grab only flowlines within lake buffer
   reach_in_lake <- st_join(fline_network, lakes_buffered_sf, left =FALSE)
 
-  # Get Upstream Tribs
-  lake_UT <- get_UT(comid = reach_in_lake$comid, network = fline_network)
+  # Get Upstream tribs - chunking to process faster without potential errors
+  lake_UT <- get_UT(comid = reach_in_lake$comid, network = fline_network) %>% 
+    split(., ceiling(seq_along(.)/50))
   
-  # running get_nhdplustools in chunks for avoid timeout error
-  comid_UT_df <- tibble(COMID_UT = lakes_UT) %>%
-    mutate(comid_n = row_number(),
-           download_grp = ((comid_n -1) %/% 50) + 1)
-  
-  Lake_tributaries <- comid_UT_df %>%
-    split(., .$download_grp) %>%
-    lapply(., function(x){
-      cats_sub <- suppressMessages(nhdplusTools::get_nhdplus(comid = x$COMID_UT, 
-                                                             realization = 'flowline',
-                                                             streamorder = streamorder))
+  # Running get_nhdplustools() in lake_UT chunks
+  lake_tributaries <- lapply(lake_UT, function(x){
+    suppressMessages(nhdplusTools::get_nhdplus(comid = x, 
+                                               realization = 'flowline',
+                                               streamorder = streamorder))
     }) %>%
-    bind_rows()
+    do.call(rbind, .)
   
-
-  return(Lake_tributaries)
-  
+  return(lake_tributaries)
 }

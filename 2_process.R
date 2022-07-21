@@ -20,8 +20,12 @@ p2_targets_list <- list(
     p2_lake_tributaries, 
     scope_lake_tributaries(fline_network = p1_lake_flowlines_huc8_sf,
                            lakes_sf = p2_saline_lakes_sf,
-     buffer_dist = 1000000, realization = c('flowline','catchment'), stream_order = 3)
+     buffer_dist = 10000, realization = 'flowline', stream_order = 3)
+  ),
+  tar_target(
+    p2_lake_tributaries_cat, 
+    scope_lake_tributaries(fline_network = p1_lake_flowlines_huc8_sf,
+                           lakes_sf = p2_saline_lakes_sf,
+                           buffer_dist = 10000, realization = 'catchment', stream_order = 3)
   )
-  
-
 )
