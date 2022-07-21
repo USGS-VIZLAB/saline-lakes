@@ -1,10 +1,11 @@
 library(targets)
 
-options(tidyverse.quiet = TRUE, timeout = 700)
-tar_option_set(packages = c("tidyverse","sbtools","sf",'dataRetrieval',"nhdplusTools",'dplyr','readxl','readr','stringr','mapview','leaflet', 'httr'))
+options(tidyverse.quiet = TRUE, timeout = 300)
+tar_option_set(packages = c("tidyverse","sbtools","sf",'dataRetrieval',"nhdplusTools",'dplyr','readxl','readr','stringr','mapview','leaflet', 'httr', 'scico', 'openxlsx', 'rmapshaper', 'scales'))
 
 source("1_fetch.R")
 source("2_process.R")
+source("3_visualize.R")
 
 ## create dirs in `in` folder
 dir.create('1_fetch/in/nhdhr', showWarnings = FALSE)
@@ -19,4 +20,4 @@ states_download_url <- 'https://prd-tnm.s3.amazonaws.com/StagedProducts/Small-sc
 
 
 # Return the complete list of targets
-c(p1_targets_list, p2_targets_list)
+c(p1_targets_list, p2_targets_list, p3_targets_list)
