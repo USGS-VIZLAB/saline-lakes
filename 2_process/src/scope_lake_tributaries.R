@@ -53,8 +53,8 @@ scope_lake_tributaries <- function(fline_network,
   # Running get_nhdplustools() in lake_UT chunks
   lake_tributaries <- lapply(lake_UT, function(x){
     suppressMessages(nhdplusTools::get_nhdplus(comid = x, 
-                                               realization = 'flowline',
-                                               streamorder = streamorder))
+                                               realization = realization,
+                                               streamorder = stream_order))
     }) %>%
     do.call(rbind, .)
   
