@@ -84,6 +84,9 @@ process_saline_lakes_sf<- function(nhdhr_waterbodies, lakes_sf, states_sf, selec
                          ifelse(GNIS_Name == 'Warner Lakes',
                                 'From nhd hr. The Warner lakes (aka Warner Wetlands) consist of 12 shallow lakes in South East Oregon, and include Pelican, Crump, Hart lakes, among others', 'From nhd hr')))
   
+  del(buf_nhdhr_saline_lakes_sf)
+  
+  
   return(final_lakes)
   
 }

@@ -110,6 +110,8 @@ p1_targets_list <- list(
     p1_lake_flowlines_huc8_sf,
     {get_nhdplus(AOI = {p1_get_lakes_huc8_sf %>% filter(HUC8 == p1_huc8_vec)},
                  realization = 'flowline') %>%
+        ## making as dataframe to load with tar_load()
+        #as.data.frame() %>% 
         ## fixing col that are automatically transforming to char
         mutate(across(c(surfarea, lakefract, rareahload), ~as.numeric(.x)),
                HUC8 = p1_huc8_vec) %>% 
@@ -122,7 +124,10 @@ p1_targets_list <- list(
   ## Will require further filtering (e.g. ftype == ST, along flowlines only)
   tar_target(
     p1_nwis_sites,
-    {tryCatch(expr = get_huc8(id = p1_huc8_vec) %>% get_nwis(AOI = .) %>% mutate(HUC8 = p1_huc8_vec),
+    {tryCatch(expr = get_huc8(id = p1_huc8_vec) %>% get_nwis(AOI = .) %>%
+                ## making as dataframe to load with tar_load()
+                #as.data.frame() %>% 
+                mutate(HUC8 = p1_huc8_vec),
               error = function(e){message(paste('error - No gages found in huc8', p1_huc8_vec))})},
   pattern = map(p1_huc8_vec)
   ),
