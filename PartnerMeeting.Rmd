@@ -1,0 +1,36 @@
+---
+title: "Saline Lakes spatial extents"
+author: |
+  | Vizlab, Data Science Branch, IIDD 
+  | Contacts: Anthony Martinez (ajmartinez@usgs.gov) and Cee Nell (cnell@usgs.gov)
+  
+output: html_document
+---
+
+The purpose of this document is to establish agreed upon spatial extent for each of the saline lakes, including:
+
+1. Lake polygons
+2. Watershed boundaries
+3. Flowlines within each watershed
+
+The map below can be panned and zoomed to verify the delineations are accurate to each lake. Clicking on polygons provides identifying information about each watershed. Please provide feedback in this [linked](https://doimspp.sharepoint.com/:x:/s/IIDDStaff/EXalneoSajNDh95PN8mTRZEBz6Ww_eCY1U5vwgcW1qnAvQ?e=OC6jhf) spreadsheet if the mapped data require changes.
+
+Use the toggles on the right-hand corner to turn on or off different data layers. These include preliminary gage sites that are associated with each lake.
+
+
+```{r, echo = FALSE, warnings = FALSE, out.width = '100%'}
+library(targets)
+library(leaflet)
+library(scico)
+library(scales)
+source('3_visualize/src/prep_viz_data.R')
+source('3_visualize/src/interactive_map.R')
+tar_load(p3_huc8_sf)
+tar_load(p3_saline_lakes_sf)
+tar_load(p3_flowlines_sf)
+tar_load(p3_gage_sites_sf)
+build_map_leaflet(p3_huc8_sf = p3_huc8_sf, 
+                      p3_saline_lakes_sf = p3_saline_lakes_sf, 
+                      p3_flowlines_sf = p3_flowlines_sf, 
+                      p3_gage_sites_sf = p3_gage_sites_sf)
+```

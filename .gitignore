@@ -5,5 +5,9 @@
 1_fetch/in/*
 !1_fetch/in/saline_lakes.csv
 !1_fetch/in/states_shp/.placeholder
+
+3_visualize/out/*
+!3_visualize/out/.empty
+
 _targets/
 .DS_Store
