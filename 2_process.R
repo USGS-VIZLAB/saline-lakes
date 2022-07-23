@@ -1,4 +1,5 @@
 source('2_process/src/process_saline_lakes_sf.R')
+source('2_process/src/scope_lake_tributaries.R')
 
 
 p2_targets_list <- list(
@@ -13,7 +14,18 @@ p2_targets_list <- list(
                             lakes_sf = p1_lakes_sf,
                             states_sf = p1_states_sf,
                             selected_crs = selected_crs)
-  )
+  ), 
   
-
+  tar_target(
+    p2_lake_tributaries, 
+    scope_lake_tributaries(fline_network = p1_lake_flowlines_huc8_sf,
+                           lakes_sf = p2_saline_lakes_sf,
+     buffer_dist = 10000, realization = 'flowline', stream_order = 3)
+  ),
+  tar_target(
+    p2_lake_tributaries_cat, 
+    scope_lake_tributaries(fline_network = p1_lake_flowlines_huc8_sf,
+                           lakes_sf = p2_saline_lakes_sf,
+                           buffer_dist = 10000, realization = 'catchment', stream_order = 3)
+  )
 )
