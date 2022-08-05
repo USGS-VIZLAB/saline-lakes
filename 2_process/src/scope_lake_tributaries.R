@@ -5,7 +5,7 @@ scope_lake_tributaries <- function(fline_network,
                                  stream_order = NULL){
 
   #'@description subset flowlines network to get only tributaries upstream of lakes or catchments of lake Upstream tributaries
-  #'@paramfline_network sf dataframe of flowlines from nhdplustools 
+  #'@param fline_network sf dataframe of flowlines from nhdplustools 
   #'@param lakes_sf sf dataframe of focal lake polygons
   #'@param buffer_dist buffer distance for lakes to ensure we capture all flowlines relevant to lake
   #'@param realization either flowline or catchment. Must input only 1, unlike with this param in get_nhdplus() 
