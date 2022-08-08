@@ -142,5 +142,12 @@ p1_targets_list <- list(
   tar_target(
     p1_site_ids,
     {p1_nwis_sites %>% pull(site_no) %>% unique()}
-  )
+  ),
+  
+  tar_target(
+    p1_nwis_sw_data,
+    {readNWISmeas(p1_nwis_sites)}
+    ),
+
+
 )
