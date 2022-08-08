@@ -126,9 +126,15 @@ p1_targets_list <- list(
     p1_nwis_sites,
     {tryCatch(expr = get_huc8(id = p1_huc8_vec) %>% get_nwis(AOI = .) %>%
                 ## making as dataframe to load with tar_load()
-                #as.data.frame() %>% 
+                as.data.frame() %>% 
                 mutate(HUC8 = p1_huc8_vec),
-              error = function(e){message(paste('error - No gages found in huc8', p1_huc8_vec))})},
+              error = function(e){
+                return(warning(e$message))
+                },
+              warning = function(w){
+                return(message(paste(w$message, 'huc8:', p1_huc8_vec)))
+              }
+              )},
   pattern = map(p1_huc8_vec)
   ),
 
