@@ -72,31 +72,38 @@ p1_targets_list <- list(
   #          '1_fetch/in/nhdhr_backup'
   # ),
   
-  # Fetch water bodies - HR
-  tar_target(p1_nhdhr_lakes, 
+  # Fetch waterbodies, huc8, huc10 from hr and place in local gpkg
+  tar_target(p1_nhd_gpkg, 
               get_nhdplushr(hr_dir = p1_download_nhdhr_lakes_path,
-                            layer= 'NHDWaterbody')$NHDWaterbody
+                            out_gpkg = '1_fetch/in/nhd_WB_HU8_HU10.gpkg',
+                            layer= c('NHDWaterbody','WBDHU8','WBDHU10')),
+             format = 'file'
   ),
 
-  # Fetch watershed boundary areas filtered to our lakes - huc12 - HR
+  # Read in all waterbodies in full basin
+  tar_targets(p1_nhdhr_lakes,
+              sf::st_read('1_fetch/in/nhd_WB_HU8_HU10.gpkg',
+                          layer = 'NHDWaterbody')),
+
+  # Fetch watershed boundary areas filtered to our lakes - huc8 - HR
   ## note possible duplicate polygons since some individual saline lakes have same huc08 
   tar_target(
-    p1_get_lakes_huc12_sf,
-    get_nhdplushr(hr_dir = p1_download_nhdhr_lakes_path,
-                  layer= 'WBDHU12')$WBDHU12 %>% 
+    p1_get_lakes_huc8_sf,
+    st_read('1_fetch/in/nhd_WB_HU8_HU10.gpkg', layer = 'WBDHU8') %>% 
       ## filter to lakes HUC12
-      st_transform(crs = st_crs(p2_saline_lakes_sf)) %>% st_join(p2_saline_lakes_sf) %>% filter(!is.na(GNIS_Name))
+      st_transform(crs = st_crs(p2_saline_lakes_sf)) %>%
+      st_join(p2_saline_lakes_sf) %>% filter(!is.na(GNIS_Name))
     ),
 
   # Fetch watershed boundary areas - huc08  
   ## note possible duplicate polygons since some individual saline lakes have same huc08 
   tar_target(
-    p1_get_lakes_huc8_sf,
-    get_nhdplushr(hr_dir = p1_download_nhdhr_lakes_path,
-                  layer= 'WBDHU8')$WBDHU8 %>% 
-      ## filter to lakes HUC8 - (can move to process)
-      st_transform(crs = st_crs(p2_saline_lakes_sf)) %>% st_join(p2_saline_lakes_sf) %>%
-      filter(!is.na(GNIS_Name))
+    p1_get_lakes_huc10_sf,
+    st_read('1_fetch/in/nhd_WB_HU8_HU10.gpkg', layer = 'WBDHU10') %>% 
+      ## Filtering huc10 to within huc8 - (can move to process)
+      st_transform(crs = st_crs(p1_get_lakes_huc8_sf)) %>%
+      st_join(p1_get_lakes_huc8_sf) %>%
+      filter(!is.na(HUC8))
     ),
 
   # Grab vector of our huc08s in order to run branching for nhd flowlines fetch  
