@@ -78,12 +78,12 @@ p1_targets_list <- list(
                             layer= 'NHDWaterbody')$NHDWaterbody
   ),
 
-  # Fetch watershed boundary areas filtered to our lakes - huc12 - HR
+  # Fetch watershed boundary areas filtered to our lakes - huc10 - HR
   ## note possible duplicate polygons since some individual saline lakes have same huc08 
   tar_target(
-    p1_get_lakes_huc12_sf,
+    p1_get_lakes_huc10_sf,
     get_nhdplushr(hr_dir = p1_download_nhdhr_lakes_path,
-                  layer= 'WBDHU12')$WBDHU12 %>% 
+                  layer= 'WBDHU10')$WBDHU12 %>% 
       ## filter to lakes HUC12
       st_transform(crs = st_crs(p2_saline_lakes_sf)) %>% st_join(p2_saline_lakes_sf) %>% filter(!is.na(GNIS_Name))
     ),
