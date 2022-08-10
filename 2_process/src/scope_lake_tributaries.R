@@ -5,7 +5,7 @@ scope_lake_tributaries <- function(fline_network,
                                  stream_order = NULL){
 
   #'@description subset flowlines network to get only tributaries upstream of lakes or catchments of lake Upstream tributaries
-  #'@paramfline_network sf dataframe of flowlines from nhdplustools 
+  #'@param fline_network sf dataframe of flowlines from nhdplustools 
   #'@param lakes_sf sf dataframe of focal lake polygons
   #'@param buffer_dist buffer_dist buffer distance for lakes to ensure capture of all flowlines relevant to lake. Measurement units for the buffer depend on the CRS. The default CRS of 4326 has linear units of meters.
   #'@param realization either flowline or catchment. Must input only 1, unlike with this param in get_nhdplus() 
