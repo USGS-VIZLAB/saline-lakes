@@ -114,9 +114,10 @@ p1_targets_list <- list(
         #as.data.frame() %>% 
         ## fixing col that are automatically transforming to char
         mutate(across(c(surfarea, lakefract, rareahload), ~as.numeric(.x)),
-               HUC8 = p1_huc8_vec) %>% 
+               HUC8 = p1_huc8_vec) 
         ## filtering out flowlines w/ vals below 1 (can be move to process)
-        filter(streamorde >= 3)}, 
+    #    filter(streamorde >= 3)
+      }, 
     pattern = map(p1_huc8_vec)
   ),
   
