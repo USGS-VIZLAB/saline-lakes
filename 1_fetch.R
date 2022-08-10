@@ -71,7 +71,7 @@ p1_targets_list <- list(
   # tar_target(p1_download_nhdhr_lakes_path,
   #          '1_fetch/in/nhdhr'
   # ),
-  # 
+   
   # Fetch water bodies - HR
   tar_target(p1_nhdhr_lakes, 
               get_nhdplushr(hr_dir = p1_download_nhdhr_lakes_path,
