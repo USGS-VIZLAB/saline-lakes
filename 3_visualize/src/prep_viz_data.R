@@ -1,4 +1,4 @@
-# Create HUC9-Lake crosswalk
+# Create HUC8-Lake crosswalk
 assc_lakes_xwalk_df <- function(huc_sf, huc_column = 'HUC8'){
   
   tmp <- huc_sf %>%

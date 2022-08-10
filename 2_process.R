@@ -29,11 +29,21 @@ p2_targets_list <- list(
                            buffer_dist = 10000, realization = 'catchment', stream_order = 3)
   ),
   
+  ## Creating simplified df that structured the huc10 within the HUC 8 of our selected lakes -exporting the xlsx for manual review in view of feedback
   tar_target(
     p2_huc_boundary_xwalk_df, 
     create_huc_verification_table(huc10_sf = p1_get_lakes_huc10_sf, huc10_name_col = 'Name',
                                   huc8_sf = p1_get_lakes_huc8_sf, huc8_name_col = 'Name',
                                   lake_column = 'lake_w_state')
 
-  )
+  ),
+  
+  ## Target to clean p1_get_lakes_huc10_sf and remove / add huc 10s that we need   
+
+  ## Watershed boundary
+  tar_target(
+    p2_huc10_watershed_boundary,
+    p1_get_lakes_huc10_sf %>% distinct(HUC10, lake_w_state, .keep_all = TRUE) %>%
+      ## dissolve huc10 polygons by common attribute in HUC8 (st_union does same thing but does not keep cols
+      group_by(HUC8, lake_w_state) %>% summarise(.) %>% ungroup()
 )
