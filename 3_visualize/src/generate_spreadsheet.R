@@ -1,29 +1,19 @@
-build_feedback_spreadsheet <- function(p1_get_lakes_huc8_sf, p3_flowlines_sf, assc_lakes_df, out_file){
+build_feedback_spreadsheet <- function(p1_get_lakes_huc_sf,
+                                       huc_column = 'HUC8',
+                                       p3_flowlines_sf,
+                                       assc_lakes_df,
+                                       out_file,
+                                       add_sheet_for_streams = TRUE){
+
   # Build table for subbasins
-  subbasins <- p1_get_lakes_huc8_sf %>%
+  subbasins <- p1_get_lakes_huc_sf %>%
     st_drop_geometry() %>%
     as.data.frame() %>%
     distinct() %>%
-    select(lake_w_state, Name, HUC8) %>%
-    arrange(lake_w_state, HUC8) %>%
+    select( lake_w_state, Name,.data[[huc_column]]) %>%
+    arrange(lake_w_state, .data[[huc_column]]) %>%
     rename(`Saline lake` = lake_w_state, 
            `Subbasin name` = Name) %>%
-    mutate(`Keep/discard` = "",
-           Notes = "") 
-  
-  # Build table for streams
-  flowlines <- p3_flowlines_sf %>%
-    st_drop_geometry() %>%
-    as.data.frame() %>%
-    filter(gnis_id != " ") %>%
-    select(HUC8, gnis_name, gnis_id) %>%
-    distinct(.keep_all = T) %>%
-    left_join(assc_lakes_df, by = "HUC8") %>%
-    relocate(assc_lakes) %>%
-    arrange(assc_lakes, HUC8, gnis_name, gnis_id) %>%
-    rename(`Associated lakes` = assc_lakes, 
-           `Stream name` = gnis_name,
-           `GNIS ID` = gnis_id) %>%
     mutate(`Keep/discard` = "",
            Notes = "") 
   
@@ -36,12 +26,30 @@ build_feedback_spreadsheet <- function(p1_get_lakes_huc8_sf, p3_flowlines_sf, as
   setColWidths(wb, 1, cols = 1:4, widths = "auto")
   setColWidths(wb, 1, cols = 5, widths = 20)
   
+  ## Optional - adding the flowlines sheet 
+  if(add_sheet_for_streams == TRUE){
+  # Build table for streams
+  flowlines <- p3_flowlines_sf %>%
+    st_drop_geometry() %>%
+    as.data.frame() %>%
+    filter(gnis_id != " ") %>%
+    select(.data[[huc_column]], gnis_name, gnis_id) %>%
+    distinct(.keep_all = T) %>%
+    left_join(assc_lakes_df, by = .data[[huc_column]]) %>%
+    relocate(assc_lakes) %>%
+    arrange(assc_lakes, .data[[huc_column]], gnis_name, gnis_id) %>%
+    rename(`Associated lakes` = assc_lakes, 
+           `Stream name` = gnis_name,
+           `GNIS ID` = gnis_id) %>%
+    mutate(`Keep/discard` = "",
+           Notes = "")
+  
   # Add and format flowlines worksheet
   addWorksheet(wb, "Streams")
   writeDataTable(wb, 2, flowlines, tableStyle = "TableStyleLight9")
   setColWidths(wb, 2, cols = 1:5, widths = "auto")
   setColWidths(wb, 2, cols = 6, widths = 20)
-  
+  }
   
   # Export workbook
   saveWorkbook(wb, out_file, overwrite = T)
@@ -49,3 +57,57 @@ build_feedback_spreadsheet <- function(p1_get_lakes_huc8_sf, p3_flowlines_sf, as
   return(out_file)
 }
 
+
+create_huc_verification_table <- function(huc10_sf,
+                                          huc10_name_col,
+                                          huc8_sf,
+                                          huc8_name_col,
+                                          lake_column){
+
+  
+  ## Prep merge cols with just id and name
+  huc10_nonsf <- huc10_sf %>% sf::st_drop_geometry() %>%
+    select(all_of(c('HUC10', huc10_name_col))) %>% distinct() %>% 
+    rename(HUC10_Name = 2)
+
+  huc8_nonsf <- huc8_sf %>% sf::st_drop_geometry() %>%
+    select(all_of(c('HUC8', huc8_name_col))) %>% distinct() %>% 
+    rename(HUC8_Name = 2)
+  
+  ## Tidy + left join 
+  huc10_df <- huc10_sf %>%
+    st_drop_geometry() %>% 
+    select({{lake_column}}, HUC8,HUC10) %>%
+    distinct() %>% 
+    left_join(., huc10_nonsf, by = 'HUC10') %>% 
+    left_join(., huc8_nonsf, by = 'HUC8') %>% 
+    select({{lake_column}},HUC8, HUC8_Name, HUC10, HUC10_Name)
+  
+  ## return tidy dataset of HUC8 tied to our lakes and the HUC10s within these HUC8s - will use to verify HUC8/HUC10 scope
+  return(huc10_df)
+  
+  }
+
+## More generalized function for creating workbooks
+create_workbook <- function(df_to_export_as_wb,
+                            Worksheet_name = 'Sheet 1',
+                            manual_cols_to_add = NULL,
+                            out_file){
+  
+  ## adding extra com if 
+  df_to_export_as_wb[manual_cols_to_add] <- NA
+  
+  # Create Excel workbook for export
+  wb <- createWorkbook()
+  # Add and format subbasin worksheet
+  addWorksheet(wb, Worksheet_name)
+  writeDataTable(wb, 1, df_to_export_as_wb, tableStyle = "TableStyleLight9")
+  setColWidths(wb, 1, cols = 1:4, widths = "auto")
+  setColWidths(wb, 1, cols = 5, widths = 20)
+  
+  # Export workbook
+  saveWorkbook(wb, out_file, overwrite = T)
+  
+  return(out_file)
+  
+}

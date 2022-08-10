@@ -9,8 +9,13 @@ p3_targets_list <- list(
   ## This fun not yet generalized, special handling of lakes included in fun
   ## NOTE - Change nhdhr_lakes_path param with either p1_download_nhdhr_lakes_path or p1_download_nhdhr_lakes_backup_path depending on where nhdhr lives
   tar_target(
-    assc_lakes_df,
-    assc_lakes_xwalk_df(huc8_sf = p1_get_lakes_huc8_sf)
+    assc_lakes_df_huc8,
+    assc_lakes_xwalk_df(huc_sf = p1_get_lakes_huc8_sf, huc_column = 'HUC8')
+  ),
+  
+  tar_target(
+    assc_lakes_df_huc10,
+    assc_lakes_xwalk_df(huc_sf = p1_get_lakes_huc10_sf, huc_column = 'HUC10')
   ),
   
   tar_target(
@@ -21,10 +26,18 @@ p3_targets_list <- list(
   
   tar_target(
     p3_huc8_sf,
-    prep_huc8_viz_sf(huc8_sf = p1_get_lakes_huc8_sf,
-                     assc_lakes_df = assc_lakes_df,
-                     crs_plot = selected_crs)
+    prep_huc_viz_sf(huc_sf = p1_get_lakes_huc8_sf,
+                     assc_lakes_df = assc_lakes_df_huc8,
+                     crs_plot = selected_crs, huc_column = 'HUC8')
   ),
+  
+  # tar_target(
+  #   p3_huc10_sf,
+  #   prep_huc_viz_sf(huc_sf = p1_get_lakes_huc10_sf,
+  #                   assc_lakes_df = assc_lakes_df_huc10,
+  #                   crs_plot = selected_crs, huc_column = 'HUC10')
+  # ),
+  
   
   tar_target(
     p3_flowlines_sf,
@@ -41,11 +54,23 @@ p3_targets_list <- list(
   
   tar_target(
     p3_feedback_spreadsheet_xlsx,
-    build_feedback_spreadsheet(p1_get_lakes_huc8_sf = p1_get_lakes_huc8_sf,
-                               p3_flowlines_sf = p3_flowlines_sf, 
-                               assc_lakes_df = assc_lakes_df,
-                               out_file = "3_visualize/out/Subbasin_KeepDiscard.xlsx"),
+    build_feedback_spreadsheet(p1_get_lakes_huc_sf = p1_get_lakes_huc8_sf,
+                               huc_column = 'HUC8',
+                               p3_flowlines_sf = p3_flowlines_sf,
+                               assc_lakes_df = assc_lakes_df_huc8,
+                               ## not adding streams for now because we have switched out p3_flowlines_sf with specified tributaries, and does not have HUC8 col right now
+                               add_sheet_for_streams = FALSE,
+                               out_file = "3_visualize/out/Subbasin_KeepDiscard_huc8.xlsx"),
     format = "file"
+  ),
+
+  tar_target(
+  p3_lake_HUC10_spreadsheet_xlsx,
+  create_workbook(df_to_export_as_wb = p2_huc_boundary_xwalk_df,
+                  Worksheet_name = 'Lake_huc8_huc10',
+                  manual_cols_to_add = 'Part of Watershed (Yes/No)',
+                  out_file = '3_visualize/out/lake_huc10_structure.xlsx'),
+  format = 'file'
   ),
   
   tar_target(

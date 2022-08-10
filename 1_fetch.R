@@ -33,7 +33,7 @@ p1_targets_list <- list(
     p1_states_sf,
     st_read(file.path(p1_download_states_shp,'statesp010g.shp'), quiet = TRUE) %>%
       filter(STATE_ABBR %in% c('CA',"NV",'UT','OR')) %>% 
-      st_transform(crs = st_crs(p1_lakes_sf)) %>% 
+      st_transform(crs = selected_crs) %>% 
       select(NAME,STATE_ABBR, geometry)
   ),
   
@@ -69,24 +69,14 @@ p1_targets_list <- list(
   ## run a scp on all subfolders in  /nhdplusdata/ and place them in the newly created local folder `1_fetch/in/nhdhr_backup` (created w/ dir.create() in _targets.R)
 
   # tar_target(p1_download_nhdhr_lakes_path,
-  #          '1_fetch/in/nhdhr_backup'
+  #          '1_fetch/in/nhdhr'
   # ),
-  
+  # 
   # Fetch water bodies - HR
   tar_target(p1_nhdhr_lakes, 
               get_nhdplushr(hr_dir = p1_download_nhdhr_lakes_path,
                             layer= 'NHDWaterbody')$NHDWaterbody
   ),
-
-  # Fetch watershed boundary areas filtered to our lakes - huc10 - HR
-  ## note possible duplicate polygons since some individual saline lakes have same huc08 
-  tar_target(
-    p1_get_lakes_huc10_sf,
-    get_nhdplushr(hr_dir = p1_download_nhdhr_lakes_path,
-                  layer= 'WBDHU10')$WBDHU12 %>% 
-      ## filter to lakes HUC12
-      st_transform(crs = st_crs(p2_saline_lakes_sf)) %>% st_join(p2_saline_lakes_sf) %>% filter(!is.na(GNIS_Name))
-    ),
 
   # Fetch watershed boundary areas - huc08  
   ## note possible duplicate polygons since some individual saline lakes have same huc08 
@@ -95,8 +85,21 @@ p1_targets_list <- list(
     get_nhdplushr(hr_dir = p1_download_nhdhr_lakes_path,
                   layer= 'WBDHU8')$WBDHU8 %>% 
       ## filter to lakes HUC8 - (can move to process)
-      st_transform(crs = st_crs(p2_saline_lakes_sf)) %>% st_join(p2_saline_lakes_sf) %>%
+      st_transform(crs = st_crs(p2_saline_lakes_sf)) %>%
+      st_join(p2_saline_lakes_sf) %>%
       filter(!is.na(GNIS_Name))
+    ),
+
+  # Fetch watershed boundary areas filtered to our huc8 areas - huc10 - HR
+  ## note possible duplicate polygons since some individual saline lakes have same huc08 
+  tar_target(
+    p1_get_lakes_huc10_sf,
+    nhdplusTools::get_nhdplushr(hr_dir = p1_download_nhdhr_lakes_path,
+                  layer= 'WBDHU10')$WBDHU10 %>% 
+      st_transform(crs = st_crs(p1_get_lakes_huc8_sf)) %>%
+      st_join(x = ., y = p1_get_lakes_huc8_sf[,c('HUC8','lake_w_state')]) %>%
+      ## filter to HUC10s that are within our HUC8
+      filter(!is.na(HUC8))
     ),
 
   # Grab vector of our huc08s in order to run branching for nhd flowlines fetch  

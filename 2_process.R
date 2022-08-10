@@ -27,5 +27,13 @@ p2_targets_list <- list(
     scope_lake_tributaries(fline_network = p1_lake_flowlines_huc8_sf,
                            lakes_sf = p2_saline_lakes_sf,
                            buffer_dist = 10000, realization = 'catchment', stream_order = 3)
+  ),
+  
+  tar_target(
+    p2_huc_boundary_xwalk_df, 
+    create_huc_verification_table(huc10_sf = p1_get_lakes_huc10_sf, huc10_name_col = 'Name',
+                                  huc8_sf = p1_get_lakes_huc8_sf, huc8_name_col = 'Name',
+                                  lake_column = 'lake_w_state')
+
   )
 )
