@@ -1,5 +1,6 @@
 source("1_fetch/src/Download_nhd.R")
 source('1_fetch/src/download_states_shp.R')
+source('1_fetch/src/fetch_by_site_and_service.R')
 
 p1_targets_list <- list(
   
@@ -140,15 +141,33 @@ p1_targets_list <- list(
   ),
 
   ## Pulling site no from gauge sites to then query nwis and WQP with data retrieval
+   # Is this the best representation of our sites? If we query the huc8 with data Retrieval, more site_no appear
   tar_target(
     p1_site_ids,
     {p1_nwis_sites %>% pull(site_no) %>% unique()}
   ),
+
+  ################
+  # NWIS Data Queries
   
+  ## SW
   tar_target(
     p1_nwis_sw_data,
-    {readNWISmeas(p1_nwis_sites)}
+    fetch_by_site_and_service(sites = p1_site_ids,
+                              pcodes = NA,
+                              service = 'measurements',
+                              start_date = '2010-01-01',
+                              end_date = '2020-01-01')
     ),
 
+## GW
+  tar_target(
+    p1_nwis_gw_data,
+    fetch_by_site_and_service(sites = p1_site_ids,
+                              pcodes = NA,
+                              service = 'gwlevels',
+                              start_date = '2010-01-01',
+                              end_date = '2020-01-01')
+)
 
 )

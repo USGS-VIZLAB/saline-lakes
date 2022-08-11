@@ -17,7 +17,5 @@ selected_crs <-  4326
 
 states_download_url <- 'https://prd-tnm.s3.amazonaws.com/StagedProducts/Small-scale/data/Boundaries/statesp010g.shp_nt00938.tar.gz'
 
-
-
 # Return the complete list of targets
 c(p1_targets_list, p2_targets_list, p3_targets_list)
