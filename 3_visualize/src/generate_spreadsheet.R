@@ -17,7 +17,7 @@ build_feedback_spreadsheet <- function(p1_get_lakes_huc_sf,
     mutate(`Keep/discard` = "",
            Notes = "") 
   
-  create_workbook(df_to_export_as_wb = subbasins,
+  create_worksheet(df_to_export_as_wb = subbasins,
                   worksheet_name = "Subbasins",
                   manual_cols_to_add = NULL, 
                   out_file = out_file, create_wb = TRUE, existing_wb_path = NULL, sheet_num = 1)
@@ -40,7 +40,7 @@ build_feedback_spreadsheet <- function(p1_get_lakes_huc_sf,
     mutate(`Keep/discard` = "",
            Notes = "")
   
-  create_workbook(df_to_export_as_wb = flowlines,
+  create_worksheet(df_to_export_as_wb = flowlines,
                   worksheet_name = "Streams",
                   manual_cols_to_add = NULL, 
                   out_file = out_file, create_wb = FALSE,
@@ -83,7 +83,7 @@ create_huc_verification_table <- function(huc10_sf,
   }
 
 ## More generalized function for creating workbooks
-create_workbook <- function(df_to_export_as_wb,
+create_worksheet <- function(df_to_export_as_wb,
                             worksheet_name = 'Sheet 1',
                             manual_cols_to_add = NULL,
                             out_file,
