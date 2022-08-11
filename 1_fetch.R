@@ -85,13 +85,14 @@ p1_targets_list <- list(
   tar_target(p1_nhdhr_lakes,
               sf::st_read('1_fetch/in/nhd_WB_HU8_HU10.gpkg',
                           layer = 'NHDWaterbody',
-                          query = 'SELECT * FROM NHDWaterbody WHERE Shape_Area > 7e-08')),
+                          query = 'SELECT * FROM NHDWaterbody WHERE Shape_Area > 7e-08',
+                          quiet = TRUE)),
 
   # Fetch watershed boundary areas filtered to our lakes - huc8 - HR
   ## note possible duplicate polygons since some individual saline lakes have same huc08 
   tar_target(
     p1_get_lakes_huc8_sf,
-    st_read('1_fetch/in/nhd_WB_HU8_HU10.gpkg', layer = 'WBDHU8') %>% 
+    st_read('1_fetch/in/nhd_WB_HU8_HU10.gpkg', layer = 'WBDHU8', quiet = TRUE) %>% 
       ## filter to lakes HUC12
       st_transform(crs = st_crs(p2_saline_lakes_sf)) %>%
       st_join(p2_saline_lakes_sf) %>% filter(!is.na(GNIS_Name))
@@ -101,10 +102,10 @@ p1_targets_list <- list(
   ## note possible duplicate polygons since some individual saline lakes have same huc08 
   tar_target(
     p1_get_lakes_huc10_sf,
-    st_read('1_fetch/in/nhd_WB_HU8_HU10.gpkg', layer = 'WBDHU10') %>% 
+    st_read('1_fetch/in/nhd_WB_HU8_HU10.gpkg', layer = 'WBDHU10', quiet = TRUE) %>% 
       ## Filtering huc10 to within huc8 - (can move to process)
       st_transform(crs = st_crs(p1_get_lakes_huc8_sf)) %>%
-      st_join(p1_get_lakes_huc8_sf) %>%
+      st_join(p1_get_lakes_huc8_sf, ) %>%
       filter(!is.na(HUC8))
     ),
 
