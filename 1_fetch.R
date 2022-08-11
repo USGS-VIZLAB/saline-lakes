@@ -1,5 +1,6 @@
 source("1_fetch/src/Download_nhd.R")
 source('1_fetch/src/download_states_shp.R')
+source('1_fetch/src/fetch_nhdplus_data.R')
 
 p1_targets_list <- list(
   
@@ -74,9 +75,9 @@ p1_targets_list <- list(
   
   # Fetch waterbodies, huc8, huc10 from hr and place in local gpkg
   tar_target(p1_nhd_gpkg, 
-              get_nhdplushr(hr_dir = p1_download_nhdhr_lakes_path,
-                            out_gpkg = '1_fetch/in/nhd_WB_HU8_HU10.gpkg',
-                            layer= c('NHDWaterbody','WBDHU8','WBDHU10')),
+             get_downloaded_nhd_data(gdb_path = p1_download_nhdhr_lakes_path,
+                                     out_gpkg_path = '1_fetch/in/nhd_WB_HU8_HU10.gpkg',
+                                     layer = c('NHDWaterbody','WBDHU8','WBDHU10')),
              format = 'file'
   ),
 
