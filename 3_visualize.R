@@ -41,7 +41,7 @@ p3_targets_list <- list(
   
   tar_target(
     p3_flowlines_sf,
-    prep_flowlines_viz_sf(flowlines_sf = p2_lake_tributaries, 
+    prep_flowlines_viz_sf(flowlines_sf = p1_lake_flowlines_huc8_sf, 
                           crs_plot = selected_crs)
   ),
   
@@ -56,7 +56,7 @@ p3_targets_list <- list(
     p3_feedback_spreadsheet_xlsx,
     build_feedback_spreadsheet(p1_get_lakes_huc_sf = p1_get_lakes_huc8_sf,
                                huc_column = 'HUC8',
-                               p3_flowlines_sf = p3_flowlines_sf,
+                               p3_flowlines_sf = p2_lake_tributaries,
                                assc_lakes_df = assc_lakes_df_huc8,
                                ## not adding streams for now because we have switched out p3_flowlines_sf with specified tributaries, and does not have HUC8 col right now
                                add_sheet_for_streams = FALSE,

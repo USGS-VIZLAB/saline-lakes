@@ -47,3 +47,5 @@ p2_targets_list <- list(
       ## dissolve huc10 polygons by common attribute in HUC8 (st_union does same thing but does not keep cols
       group_by(HUC8, lake_w_state) %>% summarise(.) %>% ungroup()
 )
+
+)
