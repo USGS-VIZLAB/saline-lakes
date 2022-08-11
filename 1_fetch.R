@@ -81,9 +81,10 @@ p1_targets_list <- list(
   ),
 
   # Read in all waterbodies in full basin
-  tar_targets(p1_nhdhr_lakes,
+  tar_target(p1_nhdhr_lakes,
               sf::st_read('1_fetch/in/nhd_WB_HU8_HU10.gpkg',
-                          layer = 'NHDWaterbody')),
+                          layer = 'NHDWaterbody',
+                          query = 'SELECT * FROM NHDWaterbody WHERE Shape_Area > 7e-08')),
 
   # Fetch watershed boundary areas filtered to our lakes - huc8 - HR
   ## note possible duplicate polygons since some individual saline lakes have same huc08 
