@@ -5,10 +5,6 @@ process_saline_lakes_sf<- function(nhdhr_waterbodies, lakes_sf, states_sf, selec
   #'@param states_sf states sf object
   #'@param lakes_sf lakes df object that lists lakes and lat long (from Lakes List csv)
   
-  nhdhr_waterbodies <- p1_nhdhr_lakes 
-  lakes_sf <- p1_lakes_sf
-  states_sf <- p1_states_sf
-  
   ## Cleaning dataframe
   nhdhr_saline_lakes_sf <- nhdhr_waterbodies %>%
     filter(GNIS_Name %in% lakes_sf$lake) %>%
