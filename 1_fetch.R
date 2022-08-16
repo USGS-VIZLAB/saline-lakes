@@ -1,6 +1,7 @@
 source("1_fetch/src/Download_nhd.R")
 source('1_fetch/src/download_states_shp.R')
 source('1_fetch/src/fetch_by_site_and_service.R')
+source('1_fetch/src/get_NWIS_site_no.R')
 
 p1_targets_list <- list(
   
@@ -140,34 +141,74 @@ p1_targets_list <- list(
   pattern = map(p1_huc8_vec)
   ),
 
-  ## Pulling site no from gauge sites to then query nwis and WQP with data retrieval
-   # Is this the best representation of our sites? If we query the huc8 with data Retrieval, more site_no appear
+  ## Pulling site no from data retrieval using whatNWISsites() 
   tar_target(
-    p1_site_ids,
-    {p1_nwis_sites %>% pull(site_no) %>% unique()}
-  ),
+    p1_site_no,
+    get_NWIS_site_no(basin_huc08 = p1_huc08_df$huc8,
+                     lake_watershed_sf = p1_get_lakes_huc8_sf %>% select(HUC8, Shape),
+                     crs = selected_crs)
+    ),
 
   ################
   # NWIS Data Queries
   
-  ## SW
+  # SW
+  ## SW - dv
   tar_target(
-    p1_nwis_sw_data,
-    fetch_by_site_and_service(sites = p1_site_ids,
-                              pcodes = NA,
-                              service = 'measurements',
+    p1_nwis_dv_sw_data,
+    fetch_by_site_and_service(sites = p1_site_no,
+                              pcodes = '00060',
+                              service = 'dv',
                               start_date = '2010-01-01',
                               end_date = '2020-01-01')
     ),
 
-## GW
+  ## SW - iv
   tar_target(
-    p1_nwis_gw_data,
-    fetch_by_site_and_service(sites = p1_site_ids,
-                              pcodes = NA,
+    p1_nwis_iv_sw_data,
+    fetch_by_site_and_service(sites = p1_site_no,
+                            pcodes = p0_sw_pcodes,
+                            service = 'iv',
+                            start_date = '2010-01-01',
+                            end_date = '2020-01-01')
+  ),
+
+  ## SW - field measurements
+  tar_target(
+    p1_nwis_meas_sw_data,
+    fetch_by_site_and_service(sites = p1_site_no,
+                              pcodes = p0_sw_pcodes,
+                              service = 'meas',
+                              start_date = '2010-01-01',
+                              end_date = '2020-01-01')
+  ),
+
+  ## GW
+  tar_target(
+    p1_nwis_dv_gw_data,
+    fetch_by_site_and_service(sites = p1_site_no,
+                              pcodes = p0_gw_pcodes,
+                              service = 'dv',
+                              start_date = '2010-01-01',
+                              end_date = '2020-01-01')
+  ),
+  
+  tar_target(
+    p1_nwis_iv_gw_data,
+    fetch_by_site_and_service(sites = p1_site_no,
+                              pcodes = p0_gw_pcodes,
+                              service = 'iv',
+                              start_date = '2010-01-01',
+                              end_date = '2020-01-01')
+  ),
+  
+  tar_target(
+    p1_nwis_meas_sw_data,
+    fetch_by_site_and_service(sites = p1_site_no,
+                              pcodes = p0_gw_pcodes,
                               service = 'gwlevels',
                               start_date = '2010-01-01',
                               end_date = '2020-01-01')
-)
+  ),
 
 )

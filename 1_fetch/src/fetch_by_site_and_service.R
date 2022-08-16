@@ -3,6 +3,12 @@
 #'  
 
 fetch_by_site_and_service <- function(sites, pcodes, service, start_date, end_date) {
+  # 
+  # sites = p1_site_no[1:100]
+  # pcodes = '00072'
+  # service = 'iv'
+  # start_date = '2000-01-01'
+  # end_date = '2020-01-01'
   
   raw_data <- fetch_nwis_fault_tolerantly(sites, pcodes, service, start_date, end_date)
   
