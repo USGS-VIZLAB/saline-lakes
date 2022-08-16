@@ -51,7 +51,6 @@ p1_targets_list <- list(
     substr(p1_huc08_df$huc8, start = 1, stop = 4) %>% unique()
   ),
   
-  
 # Download high res nhd data to get lake water bodies #
   ## 2 OPTIONS - 1) try downloading by running the `p1_download_nhdhr_lakes_path` target below with download_nhdplushr() from the nhdplusTools R package. 
   ## 2) If timeout error occurs with 1), manually copy (scp) to local from designated hpc location in caldera . See instructions above target.
@@ -149,7 +148,7 @@ p1_targets_list <- list(
                      crs = selected_crs)
     ),
 
-  ################
+  ###################
   # NWIS Data Queries
   
   # SW
@@ -157,9 +156,9 @@ p1_targets_list <- list(
   tar_target(
     p1_nwis_dv_sw_data,
     fetch_by_site_and_service(sites = p1_site_no,
-                              pcodes = '00060',
+                              pcodes = c('00060','00072'),
                               service = 'dv',
-                              start_date = '2010-01-01',
+                              start_date = '2000-01-01',
                               end_date = '2020-01-01')
     ),
 
@@ -169,7 +168,7 @@ p1_targets_list <- list(
     fetch_by_site_and_service(sites = p1_site_no,
                             pcodes = p0_sw_pcodes,
                             service = 'iv',
-                            start_date = '2010-01-01',
+                            start_date = '2000-01-01',
                             end_date = '2020-01-01')
   ),
 
@@ -179,7 +178,7 @@ p1_targets_list <- list(
     fetch_by_site_and_service(sites = p1_site_no,
                               pcodes = p0_sw_pcodes,
                               service = 'meas',
-                              start_date = '2010-01-01',
+                              start_date = '2000-01-01',
                               end_date = '2020-01-01')
   ),
 
@@ -189,7 +188,7 @@ p1_targets_list <- list(
     fetch_by_site_and_service(sites = p1_site_no,
                               pcodes = p0_gw_pcodes,
                               service = 'dv',
-                              start_date = '2010-01-01',
+                              start_date = '2000-01-01',
                               end_date = '2020-01-01')
   ),
   
@@ -198,17 +197,17 @@ p1_targets_list <- list(
     fetch_by_site_and_service(sites = p1_site_no,
                               pcodes = p0_gw_pcodes,
                               service = 'iv',
-                              start_date = '2010-01-01',
+                              start_date = '2000-01-01',
                               end_date = '2020-01-01')
   ),
   
   tar_target(
-    p1_nwis_meas_sw_data,
+    p1_nwis_meas_gw_data,
     fetch_by_site_and_service(sites = p1_site_no,
                               pcodes = p0_gw_pcodes,
                               service = 'gwlevels',
-                              start_date = '2010-01-01',
+                              start_date = '2000-01-01',
                               end_date = '2020-01-01')
-  ),
+  )
 
 )

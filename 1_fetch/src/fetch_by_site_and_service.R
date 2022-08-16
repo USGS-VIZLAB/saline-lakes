@@ -4,11 +4,11 @@
 
 fetch_by_site_and_service <- function(sites, pcodes, service, start_date, end_date) {
   # 
-  # sites = p1_site_no[1:100]
-  # pcodes = '00072'
-  # service = 'iv'
-  # start_date = '2000-01-01'
-  # end_date = '2020-01-01'
+  sites = p1_site_no[1:100]
+  pcodes = c('00072','00060')
+  service = 'iv'
+  start_date = '2010-01-01'
+  end_date = '2020-01-01'
   
   raw_data <- fetch_nwis_fault_tolerantly(sites, pcodes, service, start_date, end_date)
   
@@ -25,8 +25,8 @@ fetch_by_site_and_service <- function(sites, pcodes, service, start_date, end_da
 fetch_nwis_fault_tolerantly <- function(sites, pcodes, service, start_date, end_date, max_tries = 10) {
   ## adding condition for surface water because service = 'measurements' does not work with readNWISdata
   if(service == 'measurements'){
-    data_returned <- tryCatch(
-      retry(readNWISmeas(siteNumbers = sites,
+    data_returned <- tryCatchLog(
+      retry::retry(readNWISmeas(siteNumbers = sites,
                          startDate = start_date,
                          endDate = end_date),
             until = function(val, cnd) "data.frame" %in% class(val),
@@ -34,8 +34,8 @@ fetch_nwis_fault_tolerantly <- function(sites, pcodes, service, start_date, end_
       error = function(e) return()
     )
   }else{
-  data_returned <- tryCatch(
-    retry(readNWISdata(sites = sites , 
+  data_returned <- tryCatchLog(
+    retry::retry(readNWISdata(sites = sites , 
                        parameterCd = pcodes,
                        startDate = start_date,
                        endDate = end_date,

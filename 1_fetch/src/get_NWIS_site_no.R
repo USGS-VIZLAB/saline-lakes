@@ -8,8 +8,8 @@ get_NWIS_site_no <- function(basin_huc08, lake_watershed_sf, crs){
   # lake_watershed_sf <- p1_get_lakes_huc8_sf %>% select(HUC8, Shape)
   # selected_crs <- 4326
   
-  huc_grps <- split(p1_huc08_df$huc8,
-                    ceiling(seq_along(p1_huc08_df$huc8)/10))
+  huc_grps <- split(basin_huc08,
+                    ceiling(seq_along(basin_huc08)/10))
   
   sites_df <- lapply(huc_grps, function(huc08){dataRetrieval::whatNWISsites(huc = huc08)}) %>% 
     bind_rows()
