@@ -18,4 +18,4 @@ dir.create('1_fetch/in/nhdhr_backup', showWarnings = FALSE)
 selected_crs <-  4326
 
 # Return the complete list of targets
-c(p1_targets_list, p2_targets_list, p3_targets_list)
+c(p0_targets_list, p1_targets_list, p2_targets_list, p3_targets_list)

@@ -1,6 +1,5 @@
 #' This function is derived and minorly adjusted from habs proxies fetch source function fetch_by_pcode_and_service_using_hucs.R
 #' https://code.usgs.gov/wma/proxies/habs/wq-data-download/-/blob/main/1_fetch/src/fetch_by_pcode_and_service_using_hucs.R#L34
-#'  
 
 fetch_by_site_and_service <- function(sites, pcodes, service, start_date, end_date, incrementally = FALSE, split_num = 10) {
   

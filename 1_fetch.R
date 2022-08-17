@@ -140,11 +140,12 @@ p1_targets_list <- list(
   pattern = map(p1_huc8_vec)
   ),
 
-  ## Pulling site no from data retrieval using whatNWISsites() 
+  # Pulling site data retrieval using whatNWISsites(). This target is a sf object can be joined to nwis datasets below via site_no 
+  ## subsetting huc8 multipolygon to simplify join in get_NWIS_site_no() 
   tar_target(
-    p1_site_in_watersheds,
+    p1_site_in_watersheds_sf,
     get_NWIS_site_no(basin_huc08 = p1_huc08_df$huc8,
-                     lake_watershed_sf = p1_get_lakes_huc8_sf %>% select(HUC8, Shape),
+                     lake_watershed_sf = p1_get_lakes_huc8_sf %>% select(HUC8, Shape), 
                      crs = selected_crs)
     ),
 
@@ -161,10 +162,10 @@ p1_targets_list <- list(
   tar_target(
     p1_nwis_dv_sw_data,
     fetch_by_site_and_service(sites = p1_site_no,
-                              pcodes = c('00060','00065'),
+                              pcodes = p0_sw_params,
                               service = 'dv',
-                              start_date = '2000-01-01',
-                              end_date = '2020-01-01')
+                              start_date = p0_start,
+                              end_date = p0_end)
     ),
 
   ## SW - iv
@@ -173,21 +174,23 @@ p1_targets_list <- list(
   tar_target(
     p1_nwis_iv_sw_data,
     fetch_by_site_and_service(sites = unique(p1_nwis_dv_sw_data$site_no),
-                              pcodes = c('00060','00065'),
+                              pcodes = p0_sw_params,
                               service = 'iv',
-                              start_date = '2000-01-01',
-                              end_date = '2020-01-01', 
-                              incrementally = TRUE, split_num = 10)
+                              start_date = p0_start,
+                              end_date = p0_end,
+                              incrementally = TRUE,
+                              split_num = 10)
     ),
 
   ## SW - field measurements
   tar_target(
     p1_nwis_meas_sw_data,
     fetch_by_site_and_service(sites = p1_site_no,
-                              pcodes = c('00060','00065'),
+                              ## note - for service = measurements, pcodes is irrelevant
+                              pcodes = p0_sw_params,
                               service = 'measurements',
-                              start_date = '2000-01-01',
-                              end_date = '2020-01-01')
+                              start_date = p0_start,
+                              end_date = p0_end)
   ),
 
   # GW
@@ -197,8 +200,8 @@ p1_targets_list <- list(
     fetch_by_site_and_service(sites = p1_site_no,
                               pcodes = p0_gw_pcodes,
                               service = 'dv',
-                              start_date = '2000-01-01',
-                              end_date = '2020-01-01')
+                              start_date = p0_start,
+                              end_date = p0_end)
   ),
   
   ## GW - iv
@@ -209,8 +212,8 @@ p1_targets_list <- list(
     fetch_by_site_and_service(sites = unique(p1_nwis_dv_gw_data$site_no),
                               pcodes = p0_gw_pcodes,
                               service = 'iv',
-                              start_date = '2000-01-01',
-                              end_date = '2020-01-01')
+                              start_date = p0_start,
+                              end_date = p0_end)
   ),
   
   tar_target(
@@ -218,8 +221,7 @@ p1_targets_list <- list(
     fetch_by_site_and_service(sites = p1_site_no,
                               pcodes = p0_gw_pcodes,
                               service = 'gwlevels',
-                              start_date = '2000-01-01',
-                              end_date = '2020-01-01')
+                              start_date = p0_start,
+                              end_date = p0_end)
   )
-
 )
