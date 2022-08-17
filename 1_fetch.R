@@ -102,7 +102,7 @@ p1_targets_list <- list(
   ## note possible duplicate polygons since some individual saline lakes have same huc08 
   tar_target(
     p1_get_lakes_huc10_sf,
-    st_read('1_fetch/in/nhd_WB_HU8_HU10.gpkg', layer = 'WBDHU10', quiet = TRUE) %>% 
+    st_read(p1_nhd_gpkg, layer = 'WBDHU10', quiet = TRUE) %>% 
       ## Filtering huc10 to within huc8 - (can move to process)
       st_transform(crs = st_crs(p1_get_lakes_huc8_sf)) %>%
       st_join(p1_get_lakes_huc8_sf, ) %>%
