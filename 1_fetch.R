@@ -151,7 +151,7 @@ p1_targets_list <- list(
   tar_target(
     p1_site_no,
     {p1_site_in_watersheds %>% pull(site_no)}
-  )
+  ),
 
   ###################
   # NWIS Data Queries
@@ -161,7 +161,7 @@ p1_targets_list <- list(
   tar_target(
     p1_nwis_dv_sw_data,
     fetch_by_site_and_service(sites = p1_site_no,
-                              pcodes = c('00060','00072'),
+                              pcodes = c('00060','00065'),
                               service = 'dv',
                               start_date = '2000-01-01',
                               end_date = '2020-01-01')
@@ -173,7 +173,7 @@ p1_targets_list <- list(
   tar_target(
     p1_nwis_iv_sw_data,
     fetch_by_site_and_service(sites = unique(p1_nwis_dv_sw_data$site_no),
-                              pcodes = c('00060','00072'),
+                              pcodes = c('00060','00065'),
                               service = 'iv',
                               start_date = '2000-01-01',
                               end_date = '2020-01-01', 
@@ -184,7 +184,7 @@ p1_targets_list <- list(
   tar_target(
     p1_nwis_meas_sw_data,
     fetch_by_site_and_service(sites = p1_site_no,
-                              pcodes = c('00060','00072'),
+                              pcodes = c('00060','00065'),
                               service = 'measurements',
                               start_date = '2000-01-01',
                               end_date = '2020-01-01')
