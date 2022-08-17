@@ -105,7 +105,7 @@ p1_targets_list <- list(
     st_read(p1_nhd_gpkg, layer = 'WBDHU10', quiet = TRUE) %>% 
       ## Filtering huc10 to within huc8 - (can move to process)
       st_transform(crs = st_crs(p1_get_lakes_huc8_sf)) %>%
-      st_join(p1_get_lakes_huc8_sf, ) %>%
+      st_join(p1_get_lakes_huc8_sf) %>%
       filter(!is.na(HUC8))
     ),
 
