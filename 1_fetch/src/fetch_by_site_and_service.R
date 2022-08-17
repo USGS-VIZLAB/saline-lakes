@@ -7,14 +7,14 @@ fetch_by_site_and_service <- function(sites, pcodes, service, start_date, end_da
   if(incrementally == TRUE){
     sites_list <- sites %>% split(., ceiling(seq_along(.)/split_num))
     start <- Sys.time()
-    message('nwis dat fetch starting at', start)
+    message('nwis data fetch starting at', start)
     raw_data <- lapply(sites_list, function(sites_subset){fetch_nwis_fault_tolerantly(sites_subset,
                                                                                      pcodes,
                                                                                      service,
                                                                                      start_date,
                                                                                      end_date)}) %>% bind_rows()
     end <- Sys.time()
-    message('nwis dat fetch finished at', end)
+    message('nwis data fetch finished at', end)
   }else{
     raw_data <- fetch_nwis_fault_tolerantly(sites, pcodes, service, start_date, end_date)
   }
