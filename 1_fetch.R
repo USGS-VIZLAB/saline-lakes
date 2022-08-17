@@ -99,7 +99,7 @@ p1_targets_list <- list(
     ),
 
   # Fetch watershed boundary areas - huc10  
-  ## note possible duplicate polygons since some individual saline lakes have same huc08 
+  ## note possible duplicate polygons since some individual saline lakes have same huc10 
   tar_target(
     p1_get_lakes_huc10_sf,
     st_read(p1_nhd_gpkg, layer = 'WBDHU10', quiet = TRUE) %>% 
