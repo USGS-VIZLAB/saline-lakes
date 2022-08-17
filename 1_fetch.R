@@ -167,12 +167,17 @@ p1_targets_list <- list(
   ## iv data is much heavier so we provided a filtered list to lighten the load of request
   tar_target(
     p1_nwis_iv_sw_data,
-    fetch_by_site_and_service(sites = unique(p1_nwis_dv_sw_data$site_no),
-                            pcodes = c('00060','00072'),
-                            service = 'iv',
-                            start_date = '2000-01-01',
-                            end_date = '2020-01-01')
-  ),
+    {unique(p1_nwis_dv_sw_data$site_no)[1:4] %>% 
+        split(., ceiling(seq_along(.)/4)) %>%
+        lapply(.,
+               function(split_sites){fetch_by_site_and_service(sites = split_sites,
+                                                               pcodes = c('00060','00072'),
+                                                               service = 'iv',
+                                                               start_date = '2000-01-01',
+                                                               end_date = '2020-01-01')}) %>%
+                 bind_rows()
+    }
+    ),
 
   ## SW - field measurements
   tar_target(
