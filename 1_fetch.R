@@ -163,10 +163,12 @@ p1_targets_list <- list(
     ),
 
   ## SW - iv
+  ## dv data is summarized from iv data, therefore any site with dv data will have iv data and vis versa
+  ## iv data is much heavier so we provided a filtered list to lighten the load of request
   tar_target(
     p1_nwis_iv_sw_data,
-    fetch_by_site_and_service(sites = p1_site_no,
-                            pcodes = p0_sw_pcodes,
+    fetch_by_site_and_service(sites = unique(p1_nwis_dv_sw_data$site_no),
+                            pcodes = c('00060','00072'),
                             service = 'iv',
                             start_date = '2000-01-01',
                             end_date = '2020-01-01')
@@ -176,13 +178,14 @@ p1_targets_list <- list(
   tar_target(
     p1_nwis_meas_sw_data,
     fetch_by_site_and_service(sites = p1_site_no,
-                              pcodes = p0_sw_pcodes,
+                              pcodes = c('00060','00072'),
                               service = 'meas',
                               start_date = '2000-01-01',
                               end_date = '2020-01-01')
   ),
 
-  ## GW
+  # GW
+  ## GW - dv
   tar_target(
     p1_nwis_dv_gw_data,
     fetch_by_site_and_service(sites = p1_site_no,
@@ -192,9 +195,12 @@ p1_targets_list <- list(
                               end_date = '2020-01-01')
   ),
   
+  ## GW - iv
+  ## dv data is summarized from iv data, therefore any site with dv data will have iv data and vis versa
+  ## iv data is much heavier so we provided a filtered list to lighten the load of request
   tar_target(
     p1_nwis_iv_gw_data,
-    fetch_by_site_and_service(sites = p1_site_no,
+    fetch_by_site_and_service(sites = unique(p1_nwis_dv_gw_data$site_no),
                               pcodes = p0_gw_pcodes,
                               service = 'iv',
                               start_date = '2000-01-01',
