@@ -98,7 +98,7 @@ p1_targets_list <- list(
       st_join(p2_saline_lakes_sf) %>% filter(!is.na(GNIS_Name))
     ),
 
-  # Fetch watershed boundary areas - huc08  
+  # Fetch watershed boundary areas - huc10  
   ## note possible duplicate polygons since some individual saline lakes have same huc08 
   tar_target(
     p1_get_lakes_huc10_sf,
