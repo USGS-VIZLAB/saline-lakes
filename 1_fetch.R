@@ -26,7 +26,7 @@ p1_targets_list <- list(
   # Download states shp
   tar_target(
     p1_download_states_shp,
-    download_states_shp(url = states_download_url, 
+    download_states_shp(url = pO_states_dwnld_url, 
                         out_path = '1_fetch/in/states_shp'),
     format = 'file'
   ),
@@ -142,11 +142,16 @@ p1_targets_list <- list(
 
   ## Pulling site no from data retrieval using whatNWISsites() 
   tar_target(
-    p1_site_no,
+    p1_site_in_watersheds,
     get_NWIS_site_no(basin_huc08 = p1_huc08_df$huc8,
                      lake_watershed_sf = p1_get_lakes_huc8_sf %>% select(HUC8, Shape),
                      crs = selected_crs)
     ),
+
+  tar_target(
+    p1_site_no,
+    {p1_site_in_watersheds %>% pull(site_no)}
+  )
 
   ###################
   # NWIS Data Queries
@@ -167,16 +172,12 @@ p1_targets_list <- list(
   ## iv data is much heavier so we provided a filtered list to lighten the load of request
   tar_target(
     p1_nwis_iv_sw_data,
-    {unique(p1_nwis_dv_sw_data$site_no)[1:4] %>% 
-        split(., ceiling(seq_along(.)/4)) %>%
-        lapply(.,
-               function(split_sites){fetch_by_site_and_service(sites = split_sites,
-                                                               pcodes = c('00060','00072'),
-                                                               service = 'iv',
-                                                               start_date = '2000-01-01',
-                                                               end_date = '2020-01-01')}) %>%
-                 bind_rows()
-    }
+    fetch_by_site_and_service(sites = unique(p1_nwis_dv_sw_data$site_no),
+                              pcodes = c('00060','00072'),
+                              service = 'iv',
+                              start_date = '2000-01-01',
+                              end_date = '2020-01-01', 
+                              incrementally = TRUE, split_num = 10)
     ),
 
   ## SW - field measurements
@@ -184,7 +185,7 @@ p1_targets_list <- list(
     p1_nwis_meas_sw_data,
     fetch_by_site_and_service(sites = p1_site_no,
                               pcodes = c('00060','00072'),
-                              service = 'meas',
+                              service = 'measurements',
                               start_date = '2000-01-01',
                               end_date = '2020-01-01')
   ),

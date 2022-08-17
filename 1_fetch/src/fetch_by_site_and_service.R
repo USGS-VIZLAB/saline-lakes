@@ -2,16 +2,22 @@
 #' https://code.usgs.gov/wma/proxies/habs/wq-data-download/-/blob/main/1_fetch/src/fetch_by_pcode_and_service_using_hucs.R#L34
 #'  
 
-fetch_by_site_and_service <- function(sites, pcodes, service, start_date, end_date) {
-  # 
-  sites = p1_site_no[1:100]
-  pcodes = c('00072','00060')
-  service = 'iv'
-  start_date = '2010-01-01'
-  end_date = '2020-01-01'
+fetch_by_site_and_service <- function(sites, pcodes, service, start_date, end_date, incrementally = FALSE, split_num = 10) {
   
-  raw_data <- fetch_nwis_fault_tolerantly(sites, pcodes, service, start_date, end_date)
-  
+  ## incrementally added as binomial param to chunk the sites in order to send requests incrementally through an lapply 
+  if(incrementally == TRUE){
+    sites_list <- sites %>% split(., ceiling(seq_along(.)/split_num))
+    start <- Sys.time()
+    raw_data <- lapply(sites_list, function(sites_subset){fetch_nwis_fault_tolerantly(sites_subset,
+                                                                                     pcodes,
+                                                                                     service,
+                                                                                     start_date,
+                                                                                     end_date)}) %>% bind_rows()
+    end <- Sys.time()
+    message('Time different with running fetch_by_site_and_service incrementally: ', end - start,' secs')
+  }else{
+    raw_data <- fetch_nwis_fault_tolerantly(sites, pcodes, service, start_date, end_date)
+  }
   # Remove attributes, which typically have a timestamp associated
   #  with them this can cause strange rebuilds of downstream data, 
   #   even if the data itself is the same.
@@ -21,6 +27,7 @@ fetch_by_site_and_service <- function(sites, pcodes, service, start_date, end_da
   
   return(raw_data)
 }
+
 
 fetch_nwis_fault_tolerantly <- function(sites, pcodes, service, start_date, end_date, max_tries = 10) {
   ## adding condition for surface water because service = 'measurements' does not work with readNWISdata

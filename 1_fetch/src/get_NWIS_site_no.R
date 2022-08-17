@@ -24,6 +24,6 @@ get_NWIS_site_no <- function(basin_huc08, lake_watershed_sf, crs){
   ## filter sites to only those within watershed (multi)polygons
   sites_in_watersheds <- st_join(sites_sf, lake_watershed_sf, left = FALSE) %>% distinct(site_no, .keep_all = TRUE)
   
-  return(sites_in_watersheds %>% pull(site_no))
+  return(sites_in_watersheds)
   
 }
