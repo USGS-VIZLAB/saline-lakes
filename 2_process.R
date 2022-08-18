@@ -56,7 +56,7 @@ p2_targets_list <- list(
                                        p2_huc_manual_verification_df$HUC10[p2_huc_manual_verification_df$`Part of Watershed Boundary (Yes/No)` == 'Yes'])
   ),
 
-  ## Watershed boundary
+  ## Watershed boundary - NOTE this watershed boundary currently not covering all lakes. 
   tar_target(
     p2_huc10_watershed_boundary,
     p2_huc10_keep_remove_df %>% distinct(HUC10, lake_w_state, .keep_all = TRUE) %>%
