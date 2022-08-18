@@ -45,8 +45,7 @@ p1_targets_list <- list(
 
    tar_target(
     p1_download_nhdhr_lakes_path,
-    {download_nhdplushr('1_fetch/in/nhdhr', p1_huc04_for_download)},
-    pattern = map(p1_huc04_for_download),
+    download_nhdhr_data(nhdhr_gdb_path = '1_fetch/in/nhdhr', huc04_list = p1_huc04_for_download),
     format = 'file'
    ),
 
@@ -147,7 +146,6 @@ tar_target(
     filter(STATE_ABBR %in% c('CA',"NV",'UT','OR')) %>% 
     st_transform(crs = st_crs(p1_lakes_sf)) %>% 
     select(NAME,STATE_ABBR, geometry)
-),
-
+)
 
 )
