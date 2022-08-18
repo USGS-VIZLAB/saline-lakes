@@ -42,11 +42,11 @@ p2_targets_list <- list(
   ## Target to clean p1_get_lakes_huc10_sf and remove / add huc 10s that we need   
 
   ## Watershed boundary
-  tar_target(
-    p2_huc10_watershed_boundary,
-    p1_get_lakes_huc10_sf %>% distinct(HUC10, lake_w_state, .keep_all = TRUE) %>%
-      ## dissolve huc10 polygons by common attribute in HUC8 (st_union does same thing but does not keep cols
-      group_by(HUC8, lake_w_state) %>% summarise(.) %>% ungroup()
-)
+#   tar_target(
+#     p2_huc10_watershed_boundary,
+#     p1_get_lakes_huc10_sf %>% distinct(HUC10, lake_w_state, .keep_all = TRUE) %>%
+#       ## dissolve huc10 polygons by common attribute in HUC8 (st_union does same thing but does not keep cols
+#       group_by(HUC8, lake_w_state) %>% summarise(.) %>% ungroup()
+# )
 
 )
