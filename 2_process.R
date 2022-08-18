@@ -49,18 +49,19 @@ p2_targets_list <- list(
                col_types = 'text')
     ),
   
+  ## filtering out 
   tar_target(
     p2_huc10_keep_remove_df,
     p1_get_lakes_huc10_sf %>% filter(HUC10 %in%
                                        p2_huc_manual_verification_df$HUC10[p2_huc_manual_verification_df$`Part of Watershed Boundary (Yes/No)` == 'Yes'])
-  )
+  ),
 
   ## Watershed boundary
-#   tar_target(
-#     p2_huc10_watershed_boundary,
-#     p1_get_lakes_huc10_sf %>% distinct(HUC10, lake_w_state, .keep_all = TRUE) %>%
-#       ## dissolve huc10 polygons by common attribute in HUC8 (st_union does same thing but does not keep cols
-#       group_by(HUC8, lake_w_state) %>% summarise(.) %>% ungroup()
-# )
+  tar_target(
+    p2_huc10_watershed_boundary,
+    p2_huc10_keep_remove_df %>% distinct(HUC10, lake_w_state, .keep_all = TRUE) %>%
+      ## dissolve huc10 polygons by common attribute in HUC8 (st_union does same thing as group by but group by keeps all columns
+      group_by(HUC8, lake_w_state) %>% summarise(.) %>% ungroup()
+  )
 
 )
