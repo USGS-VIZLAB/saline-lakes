@@ -25,23 +25,18 @@ p1_targets_list <- list(
  
   # 1st fetch of huc08 to get high res nhd data (water bodies, huc8 areas) for focal laakes
   tar_target(
-    p1_huc08_df,
+    p1_huc08_full_basin_sf,
     get_huc8(AOI = p1_lakes_sf$point_geometry)
   ),
 
   # Split huc ids to 04 to pull nhdhr
   tar_target(
     p1_huc04_for_download,
-    substr(p1_huc08_df$huc8, start = 1, stop = 4) %>% unique()
+    substr(p1_huc08_full_basin_sf$huc8, start = 1, stop = 4) %>% unique()
   ),
   
   
 # Download high res nhd data to get lake water bodies #
-  ## 2 OPTIONS - 1) try downloading by running the `p1_download_nhdhr_lakes_path` target below with download_nhdplushr() from the nhdplusTools R package. 
-  ## 2) If timeout error occurs with 1), manually copy (scp) to local from designated hpc location in caldera . See instructions above target.
-  
-  # 1) Downloading nhd hr for our AOI at huc04 level, (placing in 1_fetch/in/ folder for now)
-  #### tbd - Check if targets::tar_files() works better here for downloading targets of file format
 
    tar_target(
     p1_download_nhdhr_lakes_path,
