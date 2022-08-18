@@ -1,5 +1,6 @@
 source("1_fetch/src/Download_nhd.R")
 source('1_fetch/src/download_states_shp.R')
+source('1_fetch/src/fetch_nhdplus_data.R')
 
 p1_targets_list <- list(
   
@@ -21,46 +22,24 @@ p1_targets_list <- list(
     }
       ),
   
-  # Download states shp
-  tar_target(
-    p1_download_states_shp,
-    download_states_shp(url = states_download_url, 
-                        out_path = '1_fetch/in/states_shp'),
-    format = 'file'
-  ),
-  
-  tar_target(
-    p1_states_sf,
-    st_read(file.path(p1_download_states_shp,'statesp010g.shp'), quiet = TRUE) %>%
-      filter(STATE_ABBR %in% c('CA',"NV",'UT','OR')) %>% 
-      st_transform(crs = selected_crs) %>% 
-      select(NAME,STATE_ABBR, geometry)
-  ),
-  
   # 1st fetch of huc08 to get high res nhd data (water bodies, huc8 areas) for focal laakes
   tar_target(
-    p1_huc08_df,
+    p1_huc08_full_basin_sf,
     get_huc8(AOI = p1_lakes_sf$point_geometry)
   ),
 
   # Split huc ids to 04 to pull nhdhr
   tar_target(
     p1_huc04_for_download,
-    substr(p1_huc08_df$huc8, start = 1, stop = 4) %>% unique()
+    substr(p1_huc08_full_basin_sf$huc8, start = 1, stop = 4) %>% unique()
   ),
   
   
 # Download high res nhd data to get lake water bodies #
-  ## 2 OPTIONS - 1) try downloading by running the `p1_download_nhdhr_lakes_path` target below with download_nhdplushr() from the nhdplusTools R package. 
-  ## 2) If timeout error occurs with 1), manually copy (scp) to local from designated hpc location in caldera . See instructions above target.
-  
-  # 1) Downloading nhd hr for our AOI at huc04 level, (placing in 1_fetch/in/ folder for now)
-  #### tbd - Check if targets::tar_files() works better here for downloading targets of file format
 
    tar_target(
     p1_download_nhdhr_lakes_path,
-    {download_nhdplushr('1_fetch/in/nhdhr', p1_huc04_for_download)},
-    pattern = map(p1_huc04_for_download),
+    download_nhdhr_data(nhdhr_gdb_path = '1_fetch/in/nhdhr', huc04_list = p1_huc04_for_download),
     format = 'file'
    ),
 
@@ -71,23 +50,41 @@ p1_targets_list <- list(
   # tar_target(p1_download_nhdhr_lakes_path,
   #          '1_fetch/in/nhdhr'
   # ),
-   
-  # Fetch water bodies - HR
-  tar_target(p1_nhdhr_lakes, 
-              get_nhdplushr(hr_dir = p1_download_nhdhr_lakes_path,
-                            layer= 'NHDWaterbody')$NHDWaterbody
+
+  # Fetch waterbodies, huc8, huc10 from hr and place in local gpkg
+  tar_target(p1_nhd_gpkg, 
+             get_downloaded_nhd_data(gdb_path = p1_download_nhdhr_lakes_path,
+                                     out_gpkg_path = '1_fetch/in/nhd_WB_HU8_HU10.gpkg',
+                                     layer = c('NHDWaterbody','WBDHU8','WBDHU10')),
+             format = 'file'
   ),
 
-  # Fetch watershed boundary areas - huc08  
+  # Read in all waterbodies in full basin
+  tar_target(p1_nhdhr_lakes,
+              sf::st_read('1_fetch/in/nhd_WB_HU8_HU10.gpkg',
+                          layer = 'NHDWaterbody',
+                          query = 'SELECT * FROM NHDWaterbody WHERE Shape_Area > 7e-08',
+                          quiet = TRUE)),
+
+  # Fetch watershed boundary areas filtered to our lakes - huc8 - HR
   ## note possible duplicate polygons since some individual saline lakes have same huc08 
   tar_target(
     p1_get_lakes_huc8_sf,
-    get_nhdplushr(hr_dir = p1_download_nhdhr_lakes_path,
-                  layer= 'WBDHU8')$WBDHU8 %>% 
-      ## filter to lakes HUC8 - (can move to process)
+    st_read(p1_nhd_gpkg, layer = 'WBDHU8', quiet = TRUE) %>% 
+      ## filter to lakes HUC12
       st_transform(crs = st_crs(p2_saline_lakes_sf)) %>%
-      st_join(p2_saline_lakes_sf) %>%
-      filter(!is.na(GNIS_Name))
+      st_join(p2_saline_lakes_sf) %>% filter(!is.na(GNIS_Name))
+    ),
+
+  # Fetch watershed boundary areas - huc10  
+  ## note possible duplicate polygons since some individual saline lakes have same huc10 
+  tar_target(
+    p1_get_lakes_huc10_sf,
+    st_read(p1_nhd_gpkg, layer = 'WBDHU10', quiet = TRUE) %>% 
+      ## Filtering huc10 to within huc8 - (can move to process)
+      st_transform(crs = st_crs(p1_get_lakes_huc8_sf)) %>%
+      st_join(p1_get_lakes_huc8_sf) %>%
+      filter(!is.na(HUC8))
     ),
 
   # Fetch watershed boundary areas filtered to our huc8 areas - huc10 - HR
@@ -140,5 +137,21 @@ p1_targets_list <- list(
   tar_target(
     p1_site_ids,
     {p1_nwis_sites %>% pull(site_no) %>% unique()}
-  )
+  ),
+# Download states shp
+tar_target(
+  p1_download_states_shp,
+  download_states_shp(url = states_download_url, 
+                      out_path = '1_fetch/in/states_shp'),
+  format = 'file'
+),
+
+tar_target(
+  p1_states_sf,
+  st_read(file.path(p1_download_states_shp,'statesp010g.shp'), quiet = TRUE) %>%
+    filter(STATE_ABBR %in% c('CA',"NV",'UT','OR')) %>% 
+    st_transform(crs = st_crs(p1_lakes_sf)) %>% 
+    select(NAME,STATE_ABBR, geometry)
+)
+
 )
