@@ -39,14 +39,14 @@ p3_targets_list <- list(
                      crs_plot = selected_crs)
   ),
   
-  tar_target(
-    p3_feedback_spreadsheet_xlsx,
-    build_feedback_spreadsheet(p1_get_lakes_huc8_sf = p1_get_lakes_huc8_sf,
-                               p3_flowlines_sf = p3_flowlines_sf, 
-                               assc_lakes_df = assc_lakes_df,
-                               out_file = "3_visualize/out/Subbasin_KeepDiscard.xlsx"),
-    format = "file"
-  ),
+  # tar_target(
+  #   p3_feedback_spreadsheet_xlsx,
+  #   build_feedback_spreadsheet(p1_get_lakes_huc8_sf = p1_get_lakes_huc8_sf,
+  #                              p3_flowlines_sf = p3_flowlines_sf, 
+  #                              assc_lakes_df = assc_lakes_df,
+  #                              out_file = "3_visualize/out/Subbasin_KeepDiscard.xlsx"),
+  #   format = "file"
+  # ),
   
   tar_target(
     p3_interactive_map_leaflet,

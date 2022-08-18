@@ -22,22 +22,7 @@ p1_targets_list <- list(
     }
       ),
   
-  # Download states shp
-  tar_target(
-    p1_download_states_shp,
-    download_states_shp(url = states_download_url, 
-                        out_path = '1_fetch/in/states_shp'),
-    format = 'file'
-  ),
-  
-  tar_target(
-    p1_states_sf,
-    st_read(file.path(p1_download_states_shp,'statesp010g.shp'), quiet = TRUE) %>%
-      filter(STATE_ABBR %in% c('CA',"NV",'UT','OR')) %>% 
-      st_transform(crs = st_crs(p1_lakes_sf)) %>% 
-      select(NAME,STATE_ABBR, geometry)
-  ),
-  
+ 
   # 1st fetch of huc08 to get high res nhd data (water bodies, huc8 areas) for focal laakes
   tar_target(
     p1_huc08_df,
@@ -147,5 +132,22 @@ p1_targets_list <- list(
   tar_target(
     p1_site_ids,
     {p1_nwis_sites %>% pull(site_no) %>% unique()}
-  )
+  ),
+# Download states shp
+tar_target(
+  p1_download_states_shp,
+  download_states_shp(url = states_download_url, 
+                      out_path = '1_fetch/in/states_shp'),
+  format = 'file'
+),
+
+tar_target(
+  p1_states_sf,
+  st_read(file.path(p1_download_states_shp,'statesp010g.shp'), quiet = TRUE) %>%
+    filter(STATE_ABBR %in% c('CA',"NV",'UT','OR')) %>% 
+    st_transform(crs = st_crs(p1_lakes_sf)) %>% 
+    select(NAME,STATE_ABBR, geometry)
+),
+
+
 )
