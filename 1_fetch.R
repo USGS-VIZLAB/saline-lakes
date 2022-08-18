@@ -34,22 +34,15 @@ p1_targets_list <- list(
     substr(p1_huc08_full_basin_sf$huc8, start = 1, stop = 4) %>% unique()
   ),
   
-  
 # Download high res nhd data to get lake water bodies #
 
    tar_target(
     p1_download_nhdhr_lakes_path,
-    download_nhdhr_data(nhdhr_gdb_path = '1_fetch/in/nhdhr', huc04_list = p1_huc04_for_download),
+    download_nhdhr_data(nhdhr_gdb_path = '1_fetch/in/nhdhr',
+                        huc04_list = p1_huc04_for_download),
     format = 'file'
    ),
 
-  # 2) Using backup path via tallgrass. Log into tallgrass and navigate to the saline lakes nhdhr data folder
-  ## This lives in caldera/projects/usgs/water/iidd/datasci/data-pulls/nhdplushr-salinelakes-msleckman/nhdplusdata
-  ## run a scp on all subfolders in  /nhdplusdata/ and place them in the newly created local folder `1_fetch/in/nhdhr_backup` (created w/ dir.create() in _targets.R)
-
-  # tar_target(p1_download_nhdhr_lakes_path,
-  #          '1_fetch/in/nhdhr'
-  # ),
 
   # Fetch waterbodies, huc8, huc10 from hr and place in local gpkg
   tar_target(p1_nhd_gpkg, 
@@ -83,19 +76,7 @@ p1_targets_list <- list(
     st_read(p1_nhd_gpkg, layer = 'WBDHU10', quiet = TRUE) %>% 
       ## Filtering huc10 to within huc8 - (can move to process)
       st_transform(crs = st_crs(p1_get_lakes_huc8_sf)) %>%
-      st_join(p1_get_lakes_huc8_sf) %>%
-      filter(!is.na(HUC8))
-    ),
-
-  # Fetch watershed boundary areas filtered to our huc8 areas - huc10 - HR
-  ## note possible duplicate polygons since some individual saline lakes have same huc08 
-  tar_target(
-    p1_get_lakes_huc10_sf,
-    nhdplusTools::get_nhdplushr(hr_dir = p1_download_nhdhr_lakes_path,
-                  layer= 'WBDHU10')$WBDHU10 %>% 
-      st_transform(crs = st_crs(p1_get_lakes_huc8_sf)) %>%
       st_join(x = ., y = p1_get_lakes_huc8_sf[,c('HUC8','lake_w_state')]) %>%
-      ## filter to HUC10s that are within our HUC8
       filter(!is.na(HUC8))
     ),
 
