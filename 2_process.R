@@ -42,12 +42,12 @@ p2_targets_list <- list(
   ),
   
   ## Target to clean p1_get_lakes_huc10_sf and remove / add huc 10s that we need   
+  ## Note: moved lakes_huc8_huc10_structure_table to the 1_fetch/in/ to be able to read in the manually edited excel
   tar_target(
     p2_huc_manual_verification_df,
       readxl::read_excel('1_fetch/in/lake_huc8_huc10_structure_table.xlsx',
                col_types = 'text')
     ),
-  
   
   tar_target(
     p2_huc10_keep_remove_df,
