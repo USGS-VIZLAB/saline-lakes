@@ -42,7 +42,18 @@ p2_targets_list <- list(
   ),
   
   ## Target to clean p1_get_lakes_huc10_sf and remove / add huc 10s that we need   
+  tar_target(
+    p2_huc_manual_verification_df,
+      readxl::read_excel('1_fetch/in/lake_huc8_huc10_structure_table.xlsx',
+               col_types = 'text')
+    ),
   
+  
+  tar_target(
+    p2_huc10_keep_remove_df,
+    p1_get_lakes_huc10_sf %>% filter(HUC10 %in%
+                                       p2_huc_manual_verification_df$HUC10[p2_huc_manual_verification_df$`Part of Watershed Boundary (Yes/No)` == 'Yes'])
+  )
 
   ## Watershed boundary
 #   tar_target(

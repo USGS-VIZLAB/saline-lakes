@@ -69,7 +69,7 @@ p3_targets_list <- list(
   create_worksheet(df_to_export_as_wb = p2_huc_boundary_xwalk_df,
                   worksheet_name = 'Lake_huc8_huc10',
                   manual_cols_to_add = 'Part of Watershed (Yes/No)',
-                  out_file = '3_visualize/out/lake_huc10_structure.xlsx'),
+                  out_file = '3_visualize/out/lake_huc8_huc10_structure_table.xlsx'),
   format = 'file'
   # ),
   # 

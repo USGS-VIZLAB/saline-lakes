@@ -5,6 +5,7 @@ source('1_fetch/src/fetch_nhdplus_data.R')
 p1_targets_list <- list(
   
   ## Lake sf from Sharepoint
+  ## This should be manually downloaded to local 1_fetch/in/ folder 
   tar_target(
     p1_saline_lakes_bnds_sf,
     st_read('1_fetch/in/SalineLakeBnds.shp') %>% 
@@ -77,18 +78,21 @@ p1_targets_list <- list(
     st_read(p1_nhd_gpkg, layer = 'WBDHU8', quiet = TRUE) %>% 
       ## filter to lakes HUC12
       st_transform(crs = st_crs(p2_saline_lakes_sf)) %>%
-      st_join(p2_saline_lakes_sf) %>% filter(!is.na(GNIS_Name))
+      st_join(p2_saline_lakes_sf) %>% filter(!is.na(GNIS_Name)) %>% 
+      distinct()
     ),
 
   # Fetch watershed boundary areas - huc10  
   ## note possible duplicate polygons since some individual saline lakes have same huc10 
+  ## Thsi target is very slow to build! 
   tar_target(
     p1_get_lakes_huc10_sf,
     st_read(p1_nhd_gpkg, layer = 'WBDHU10', quiet = TRUE) %>% 
       ## Filtering huc10 to within huc8 - (can move to process)
       st_transform(crs = st_crs(p1_get_lakes_huc8_sf)) %>%
       st_join(x = ., y = p1_get_lakes_huc8_sf[,c('HUC8','lake_w_state')]) %>%
-      filter(!is.na(HUC8))
+      filter(!is.na(HUC8)) %>% 
+      distinct()
     ),
 
   # Grab vector of our huc08s in order to run branching for nhd flowlines fetch  
