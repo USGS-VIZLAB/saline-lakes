@@ -13,8 +13,10 @@ p2_targets_list <- list(
     process_saline_lakes_sf(nhdhr_waterbodies = p1_nhdhr_lakes,
                             lakes_sf = p1_lakes_sf,
                             states_sf = p1_states_sf,
-                            selected_crs = selected_crs)
-  ), 
+                            selected_crs = selected_crs) %>%
+    bind_rows(p1_saline_lakes_bnds_sf %>%
+                  filter(GNIS_Name == 'Carson Sink'))
+  ),
   
   tar_target(
     p2_lake_tributaries, 
@@ -40,6 +42,7 @@ p2_targets_list <- list(
   ),
   
   ## Target to clean p1_get_lakes_huc10_sf and remove / add huc 10s that we need   
+  
 
   ## Watershed boundary
 #   tar_target(

@@ -4,6 +4,17 @@ source('1_fetch/src/fetch_nhdplus_data.R')
 
 p1_targets_list <- list(
   
+  ## Lake sf from Sharepoint
+  tar_target(
+    p1_saline_lakes_bnds_sf,
+    st_read('1_fetch/in/SalineLakeBnds.shp') %>% 
+      st_transform(crs=st_crs(p1_lakes_sf)) %>% 
+      ## Formatting for easier rbind with p2_saline_lakes_sf
+      rename(GNIS_Name = Name) %>% 
+      mutate(lake_w_state = paste0(GNIS_Name,',',State)) %>% 
+      select(lake_w_state, GNIS_Name, geometry)
+    ),
+  
   # Reading and cleaning list of saline lakes
   tar_target(
     p1_lakes_sf,
