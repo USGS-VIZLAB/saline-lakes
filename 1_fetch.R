@@ -4,7 +4,7 @@ source('1_fetch/src/fetch_nhdplus_data.R')
 
 p1_targets_list <- list(
   
-  ## Lake sf from Sharepoint
+  ## Lake sf dataset from Sharepoint - stakeholder provided
   ## This should be manually downloaded to local 1_fetch/in/ folder 
   tar_target(
     p1_saline_lakes_bnds_sf,
@@ -29,12 +29,12 @@ p1_targets_list <- list(
                                     state == 'California/Oregon' ~ 'CA', # Put lake crossing OR CA border as CA for now.  
                                     TRUE ~ 'NA'),
              lake = str_to_title(lake),
-             lake_w_state = paste(lake,state_abbr, sep = ','),
+             lake_w_state = paste(lake, state_abbr, sep = ','),
              lake_name_shrt = trimws(str_replace(lake, pattern = 'Lake', replacement = "")))
     }
       ),
   
-  # 1st fetch of huc08 to get high res nhd data (water bodies, huc8 areas) for focal laakes
+  # 1st fetch of huc08  to get high res nhd data (water bodies, huc8 areas) for focal lakes
   tar_target(
     p1_huc08_full_basin_sf,
     get_huc8(AOI = p1_lakes_sf$point_geometry)
@@ -43,7 +43,10 @@ p1_targets_list <- list(
   # Split huc ids to 04 to pull nhdhr
   tar_target(
     p1_huc04_for_download,
-    substr(p1_huc08_full_basin_sf$huc8, start = 1, stop = 4) %>% unique()
+    substr(p1_huc08_full_basin_sf$huc8, start = 1, stop = 4) %>%
+      unique() %>%
+      ## adding 1601 which is a HU4 that contains watersheds relevant to Great Salt Lake 
+      append('1601')
   ),
   
 # Download high res nhd data to get lake water bodies #
@@ -117,7 +120,7 @@ p1_targets_list <- list(
     pattern = map(p1_huc8_vec)
   ),
   
-  # Fetch NWIS sites along tributaries and in our huc08 regions. 
+  # Fetch NWIS sites along tributaries and in our huc08 regions 
   ## Will require further filtering (e.g. ftype == ST, along flowlines only)
   tar_target(
     p1_nwis_sites,
