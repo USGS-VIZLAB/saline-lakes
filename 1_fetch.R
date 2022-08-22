@@ -63,7 +63,7 @@ p1_targets_list <- list(
   tar_target(p1_nhd_gpkg, 
              get_downloaded_nhd_data(gdb_path = p1_download_nhdhr_lakes_path,
                                      out_gpkg_path = '1_fetch/in/nhd_WB_HU8_HU10.gpkg',
-                                     layer = c('NHDWaterbody','WBDHU8','WBDHU10')),
+                                     layer = c('NHDWaterbody','WBDHU6', 'WBDHU8', 'WBDHU10')),
              format = 'file'
   ),
 
@@ -74,14 +74,29 @@ p1_targets_list <- list(
                           query = 'SELECT * FROM NHDWaterbody WHERE Shape_Area > 7e-08',
                           quiet = TRUE)),
 
+
+  # Fetch watershed boundary areas filtered to our lakes - huc8 - HR
+  ## note possible duplicate polygons since some individual saline lakes have same huc08 
+  tar_target(
+    p1_get_lakes_huc6_sf,
+    st_read(p1_nhd_gpkg, layer = 'WBDHU6', quiet = TRUE) %>% 
+      distinct() %>% 
+      ## filter to lakes HUC6
+      st_transform(crs = st_crs(p2_saline_lakes_sf)) %>%
+      st_join(p2_saline_lakes_sf, left = FALSE) %>%
+      filter(!is.na(GNIS_Name))
+  ),
+
   # Fetch watershed boundary areas filtered to our lakes - huc8 - HR
   ## note possible duplicate polygons since some individual saline lakes have same huc08 
   tar_target(
     p1_get_lakes_huc8_sf,
     st_read(p1_nhd_gpkg, layer = 'WBDHU8', quiet = TRUE) %>% 
-      ## filter to lakes HUC12
-      st_transform(crs = st_crs(p2_saline_lakes_sf)) %>%
-      st_join(p2_saline_lakes_sf) %>% filter(!is.na(GNIS_Name)) %>% 
+      ## filter to huc8 in huc6
+      st_transform(crs = st_crs(p1_get_lakes_huc6_sf)) %>%
+      st_join(x = ., y = p1_get_lakes_huc6_sf[,c('HUC6','lake_w_state')],
+              join = st_within, left = FALSE) %>%
+      filter(!is.na(HUC6)) %>% 
       distinct()
     ),
 
@@ -91,9 +106,10 @@ p1_targets_list <- list(
   tar_target(
     p1_get_lakes_huc10_sf,
     st_read(p1_nhd_gpkg, layer = 'WBDHU10', quiet = TRUE) %>% 
-      ## Filtering huc10 to within huc8 - (can move to process)
+      ## Filtering huc10 to within huc6
       st_transform(crs = st_crs(p1_get_lakes_huc8_sf)) %>%
-      st_join(x = ., y = p1_get_lakes_huc8_sf[,c('HUC8','lake_w_state')]) %>%
+      st_join(x = ., y = p1_get_lakes_huc8_sf[,c('HUC8','lake_w_state')],
+              join = st_within, left = FALSE) %>%
       filter(!is.na(HUC8)) %>% 
       distinct()
     ),
