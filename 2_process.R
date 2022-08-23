@@ -55,26 +55,29 @@ p2_targets_list <- list(
     p2_huc_manual_verification_df,
       readxl::read_excel('1_fetch/in/lake_huc6_huc8_huc10_structure_table.xlsx',
                col_types = 'text') %>% 
-      mutate(`Part of Watershed (Yes/No)` = tolower(`Part of Watershed (Yes/No)`))
+      mutate(`Part of Watershed (Yes/No)` = tolower(`Part of Watershed (Yes/No)`)) %>%
+      filter(`Part of Watershed (Yes/No)` == 'yes')
+      
     ),
   
   ## Filtering HUC10 of our basin
   tar_target(
     p2_huc10_keep_remove_df,
     p1_get_lakes_huc10_sf %>% 
-               filter(HUC10 %in%
-                        p2_huc_manual_verification_df$HUC10[p2_huc_manual_verification_df$`Part of Watershed (Yes/No)` == 'yes'])
+               filter(HUC10 %in% p2_huc_manual_verification_df$HUC10)
   ),
 
   ## Watershed boundary - NOTE this watershed boundary currently not covering all lakes. 
   tar_target(
     p2_huc10_watershed_boundary,
-    p2_huc10_keep_remove_df %>% distinct(HUC10, lake_w_state, .keep_all = TRUE) %>%
-      rename(HUC10_Name = Name) %>% 
+    p2_huc_manual_verification_df %>% left_join(p2_huc10_keep_remove_df[c('HUC10', 'geom')], by = 'HUC10') %>%
+      sf::st_as_sf() %>% 
+    distinct(HUC10, lake_w_state, .keep_all = TRUE) %>%
       ## Dissolve huc10 polygons by common attribute in HUC8 (st_union is applied here, as group by but group by keeps all columns
-      group_by(HUC8, HUC10,
-               HUC10_Name,
-               lake_w_state) %>%
+      group_by(lake_w_state,
+               HUC8, HUC10,
+               HUC10_Name
+               ) %>%
       summarize(geometry = sf::st_union(geom)) %>%
       ungroup()
   )
