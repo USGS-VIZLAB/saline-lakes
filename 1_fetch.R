@@ -151,7 +151,7 @@ p1_targets_list <- list(
 
   tar_target(
     p1_site_no,
-    {p1_site_in_watersheds %>% pull(site_no)}
+    {p1_site_in_watersheds_sf %>% pull(site_no)}
   ),
 
   ###################
