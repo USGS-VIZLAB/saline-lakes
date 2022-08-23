@@ -32,11 +32,11 @@ p3_targets_list <- list(
                     huc_column = 'HUC8')
   ),
    
-  # tar_target(
-  #   p3_flowlines_sf,
-  #   prep_flowlines_viz_sf(flowlines_sf = p1_lake_flowlines_huc8_sf, 
-  #                         crs_plot = selected_crs)
-  # ),
+  tar_target(
+    p3_flowlines_sf,
+    prep_flowlines_viz_sf(flowlines_sf = p2_lake_tributaries,
+                          crs_plot = selected_crs)
+  ),
   
   tar_target(
     p3_gage_sites_sf,
@@ -65,14 +65,24 @@ p3_targets_list <- list(
                   manual_cols_to_add = 'Part of Watershed (Yes/No)',
                   out_file = '3_visualize/out/lake_huc8_huc10_structure_table.xlsx'),
   format = 'file'
-   )
-  # 
-  # tar_target(
-  #   p3_interactive_map_leaflet,
-  #   build_map_leaflet(p3_huc8_sf = p3_huc8_sf, 
-  #                     p3_saline_lakes_sf = p3_saline_lakes_sf, 
-  #                     p3_flowlines_sf = p3_flowlines_sf, 
-  #                     p3_gage_sites_sf = p3_gage_sites_sf)
-  #   
-  # )
+   ),
+
+  tar_target(
+    p3_interactive_map_leaflet,
+    build_map_leaflet(p3_huc8_sf = p3_huc8_sf,
+                      p3_saline_lakes_sf = p3_saline_lakes_sf,
+                      p3_flowlines_sf = p3_flowlines_sf,
+                      p3_gage_sites_sf = p3_gage_sites_sf)
+
+  ),
+  
+  tar_target(
+    p3_markdown,
+    {output_file <- '3_visualize/out/watershed_extent_update.html'
+    rmarkdown::render(input = 'watershed_extent_update.Rmd',
+                                output_format = 'html_document',
+                                output_file = output_file)
+    }, 
+    format = 'file')
+  
 )

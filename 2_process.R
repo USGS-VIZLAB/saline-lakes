@@ -17,7 +17,6 @@ p2_targets_list <- list(
                   filter(GNIS_Name == 'Carson Sink'))
   ),
   
-  
   ## Creating simplified df that structures the huc10 within the HUC 8 of our selected lakes -exporting the xlsx for manual review in view of feedback
   tar_target(
     p2_huc_boundary_xwalk_df, 
@@ -30,7 +29,7 @@ p2_targets_list <- list(
                                   lake_column = 'lake_w_state')
   ),
   
-  ## Get only tributaries of the Lakes
+  ## Get only tributaries of the Lakes using get_UT function
   tar_target(
     p2_lake_tributaries, 
     scope_lake_tributaries(fline_network = p1_lake_flowlines_huc8_sf,
@@ -49,7 +48,7 @@ p2_targets_list <- list(
                            stream_order = 3)
   ),
   
-  ## Target to clean p1_get_lakes_huc10_sf and remove / add huc 10s that we need   
+  ## Target to clean p1_get_lakes_huc10_sf and remove / add huc 10s that we need for our watershed boundary   
   ## Note: moved lakes_huc6_huc8_huc10_structure_table to the 1_fetch/in/ to be able to read in the manually edited excel
   tar_target(
     p2_huc_manual_verification_df,
