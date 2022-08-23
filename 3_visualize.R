@@ -28,7 +28,8 @@ p3_targets_list <- list(
     p3_huc8_sf,
     prep_huc_viz_sf(huc_sf = p1_get_lakes_huc8_sf,
                      assc_lakes_df = assc_lakes_df_huc8,
-                     crs_plot = selected_crs, huc_column = 'HUC8')
+                     crs_plot = selected_crs,
+                    huc_column = 'HUC8')
   ),
    
   # tar_target(

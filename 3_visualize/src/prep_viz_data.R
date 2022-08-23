@@ -22,7 +22,8 @@ prep_huc_viz_sf <- function(huc_sf, assc_lakes_df, crs_plot, huc_column = 'HUC8'
   huc_sf %>%
     distinct({{huc_column}}, lake_w_state, .keep_all = T) %>%
     left_join(assc_lakes_df, by = huc_column) %>%
-    mutate(label = paste0("HUC",gsub(huc_column,'HUC',''),": ", Name, "(", {{huc_column}}, ")",
+    mutate(label = paste0("HUC",gsub(huc_column,'HUC',''),": ",
+                          Name, "(", {{huc_column}}, ")",
                           "<br>", "Associated lake: ", assc_lakes)) %>%
     st_as_sf() %>%
     st_transform(crs = crs_plot)
@@ -33,7 +34,10 @@ prep_flowlines_viz_sf <- function(flowlines_sf, crs_plot){
 
   flowlines_sf %>%
     rmapshaper::ms_simplify() %>%
-    mutate(label = paste0("Stream: ", ifelse(gnis_name == " ", "No GNIS name/ID", paste0(gnis_name, " (", gnis_id, ")")), " <br> Stream order ", streamorde)) %>%
+    mutate(label = paste0("Stream: ",
+                          ifelse(gnis_name == " ", "No GNIS name/ID",
+                                 paste0(gnis_name, " (", gnis_id, ")")),
+                          " <br> Stream order ", streamorde)) %>%
     st_as_sf() %>%
     st_transform(crs = crs_plot)
 }

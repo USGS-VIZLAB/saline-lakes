@@ -17,6 +17,20 @@ p2_targets_list <- list(
                   filter(GNIS_Name == 'Carson Sink'))
   ),
   
+  
+  ## Creating simplified df that structures the huc10 within the HUC 8 of our selected lakes -exporting the xlsx for manual review in view of feedback
+  tar_target(
+    p2_huc_boundary_xwalk_df, 
+    create_huc_verification_table(huc10_sf = p1_get_lakes_huc10_sf,
+                                  huc10_name_col = 'Name',
+                                  huc8_sf = p1_get_lakes_huc8_sf,
+                                  huc8_name_col = 'Name',
+                                  huc6_sf = p1_get_lakes_huc6_sf,
+                                  huc6_name_col = 'Name',
+                                  lake_column = 'lake_w_state')
+  ),
+  
+  ## Get only tributaries of the Lakes
   tar_target(
     p2_lake_tributaries, 
     scope_lake_tributaries(fline_network = p1_lake_flowlines_huc8_sf,
@@ -35,51 +49,42 @@ p2_targets_list <- list(
                            stream_order = 3)
   ),
   
-  ## Creating simplified df that structures the huc10 within the HUC 8 of our selected lakes -exporting the xlsx for manual review in view of feedback
-  tar_target(
-    p2_huc_boundary_xwalk_df, 
-    create_huc_verification_table(huc10_sf = p1_get_lakes_huc10_sf,
-                                  huc10_name_col = 'Name',
-                                  huc8_sf = p1_get_lakes_huc8_sf,
-                                  huc8_name_col = 'Name',
-                                  huc6_sf = p1_get_lakes_huc6_sf,
-                                  huc6_name_col = 'Name',
-                                  lake_column = 'lake_w_state'
-                                  )
-
-  ),
-  
   ## Target to clean p1_get_lakes_huc10_sf and remove / add huc 10s that we need   
-  ## Note: moved lakes_huc8_huc10_structure_table to the 1_fetch/in/ to be able to read in the manually edited excel
+  ## Note: moved lakes_huc6_huc8_huc10_structure_table to the 1_fetch/in/ to be able to read in the manually edited excel
   tar_target(
     p2_huc_manual_verification_df,
       readxl::read_excel('1_fetch/in/lake_huc6_huc8_huc10_structure_table.xlsx',
                col_types = 'text') %>% 
       mutate(`Part of Watershed (Yes/No)` = tolower(`Part of Watershed (Yes/No)`)) %>%
       filter(`Part of Watershed (Yes/No)` == 'yes')
-      
-    ),
-  
-  ## Filtering HUC10 of our basin
-  tar_target(
-    p2_huc10_keep_remove_df,
-    p1_get_lakes_huc10_sf %>% 
-               filter(HUC10 %in% p2_huc_manual_verification_df$HUC10)
   ),
-
-  ## Watershed boundary - NOTE this watershed boundary currently not covering all lakes. 
+  
+  # creating vector of common cols to avoid duplicating cols in left join below 
+  tar_target(
+    p2_common_cols,
+    intersect(names(p2_huc_manual_verification_df), names(p1_get_lakes_huc10_sf))
+  ),
+  
+  ## Watershed boundary ungrouped df
   tar_target(
     p2_huc10_watershed_boundary,
-    p2_huc_manual_verification_df %>% left_join(p2_huc10_keep_remove_df[c('HUC10', 'geom')], by = 'HUC10') %>%
+    p2_huc_manual_verification_df %>% 
+      # Joining two df avoiding creating duplicate cols
+      left_join(p1_get_lakes_huc10_sf %>%
+                  select(!p2_common_cols, 'HUC10'),
+                by = 'HUC10') %>%
       sf::st_as_sf() %>% 
-    distinct(HUC10, lake_w_state, .keep_all = TRUE) %>%
-      ## Dissolve huc10 polygons by common attribute in HUC8 (st_union is applied here, as group by but group by keeps all columns
-      group_by(lake_w_state,
-               HUC8, HUC10,
-               HUC10_Name
-               ) %>%
+    distinct(HUC10, lake_w_state,
+             .keep_all = TRUE)
+  ),
+  
+  ## Dissolved watershed boundary
+  ## Dissolve huc10 polygons by common attribute in HUC8 (st_union is applied here, as group by but group by keeps all columns
+  tar_target(
+    p2_lake_watersheds_dissolved,
+    p2_huc10_watershed_boundary %>% 
+        group_by(lake_w_state) %>%
       summarize(geometry = sf::st_union(geom)) %>%
       ungroup()
   )
-
 )
