@@ -4,7 +4,9 @@ source('1_fetch/src/fetch_nhdplus_data.R')
 
 p1_targets_list <- list(
   
-  ## Lake sf dataset from Sharepoint - stakeholder provided
+  ## Lake sf dataset from sharepoint - stakeholder provided
+  ## This target is the same as p2_saline_lakes_sf but includes the manually drawn polygon Carson Sink.
+  ## This target is created to 1/ have a second multipolygon dataset for lakes 2/ append 
   ## This should be manually downloaded to local 1_fetch/in/ folder 
   tar_target(
     p1_saline_lakes_bnds_sf,
@@ -108,7 +110,7 @@ p1_targets_list <- list(
     st_read(p1_nhd_gpkg, layer = 'WBDHU10', quiet = TRUE) %>% 
       ## Filtering huc10 to within huc6
       st_transform(crs = st_crs(p1_get_lakes_huc8_sf)) %>%
-      st_join(x = ., y = p1_get_lakes_huc8_sf[,c('HUC8','lake_w_state')],
+      st_join(x = ., y = p1_get_lakes_huc8_sf[,c('HUC6','HUC8','lake_w_state')],
               join = st_within, left = FALSE) %>%
       filter(!is.na(HUC8)) %>% 
       distinct()

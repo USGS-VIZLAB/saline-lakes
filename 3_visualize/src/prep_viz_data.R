@@ -1,7 +1,7 @@
 # Create HUC8-Lake crosswalk
 assc_lakes_xwalk_df <- function(huc_sf, huc_column = 'HUC8'){
   
-  tmp <- huc_sf %>%
+  huc_sf %>%
     st_drop_geometry() %>%
     distinct(.data[[huc_column]], lake_w_state, .keep_all = F) %>%
     group_by(.data[[huc_column]]) %>%

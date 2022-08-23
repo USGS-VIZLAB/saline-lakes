@@ -6,7 +6,6 @@ p2_targets_list <- list(
 
   ## Fetch and Process saline lakes via specifically built function that creates the final saline lakes shapefile 
   ## This fun not yet generalized, special handling of lakes included in fun
-  ## NOTE - Change nhdhr_lakes_path param with either p1_download_nhdhr_lakes_path or p1_download_nhdhr_lakes_backup_path depending on where nhdhr lives
   
   tar_target(
     p2_saline_lakes_sf,
@@ -22,22 +21,31 @@ p2_targets_list <- list(
     p2_lake_tributaries, 
     scope_lake_tributaries(fline_network = p1_lake_flowlines_huc8_sf,
                            lakes_sf = p2_saline_lakes_sf,
-     buffer_dist = 10000, realization = 'flowline', stream_order = 3)
+     buffer_dist = 10000,
+     realization = 'flowline',
+     stream_order = 3)
   ),
   
   tar_target(
     p2_lake_tributaries_cat, 
     scope_lake_tributaries(fline_network = p1_lake_flowlines_huc8_sf,
                            lakes_sf = p2_saline_lakes_sf,
-                           buffer_dist = 10000, realization = 'catchment', stream_order = 3)
+                           buffer_dist = 10000,
+                           realization = 'catchment',
+                           stream_order = 3)
   ),
   
-  ## Creating simplified df that structured the huc10 within the HUC 8 of our selected lakes -exporting the xlsx for manual review in view of feedback
+  ## Creating simplified df that structures the huc10 within the HUC 8 of our selected lakes -exporting the xlsx for manual review in view of feedback
   tar_target(
     p2_huc_boundary_xwalk_df, 
-    create_huc_verification_table(huc10_sf = p1_get_lakes_huc10_sf, huc10_name_col = 'Name',
-                                  huc8_sf = p1_get_lakes_huc8_sf, huc8_name_col = 'Name',
-                                  lake_column = 'lake_w_state')
+    create_huc_verification_table(huc10_sf = p1_get_lakes_huc10_sf,
+                                  huc10_name_col = 'Name',
+                                  huc8_sf = p1_get_lakes_huc8_sf,
+                                  huc8_name_col = 'Name',
+                                  huc6_sf = p1_get_lakes_huc6_sf,
+                                  huc6_name_col = 'Name',
+                                  lake_column = 'lake_w_state'
+                                  )
 
   ),
   
@@ -45,23 +53,30 @@ p2_targets_list <- list(
   ## Note: moved lakes_huc8_huc10_structure_table to the 1_fetch/in/ to be able to read in the manually edited excel
   tar_target(
     p2_huc_manual_verification_df,
-      readxl::read_excel('1_fetch/in/lake_huc8_huc10_structure_table.xlsx',
-               col_types = 'text')
+      readxl::read_excel('1_fetch/in/lake_huc6_huc8_huc10_structure_table.xlsx',
+               col_types = 'text') %>% 
+      mutate(`Part of Watershed Boundary (Yes/No)` = tolower(`Part of Watershed Boundary (Yes/No)`))
     ),
   
-  ## filtering out 
+  ## Filtering HUC10 of our basin
   tar_target(
     p2_huc10_keep_remove_df,
-    p1_get_lakes_huc10_sf %>% filter(HUC10 %in%
-                                       p2_huc_manual_verification_df$HUC10[p2_huc_manual_verification_df$`Part of Watershed Boundary (Yes/No)` == 'Yes'])
+    p1_get_lakes_huc10_sf %>% 
+               filter(HUC10 %in%
+                        p2_huc_manual_verification_df$HUC10[p2_huc_manual_verification_df$`Part of Watershed Boundary (Yes/No)` == 'yes'])
   ),
 
   ## Watershed boundary - NOTE this watershed boundary currently not covering all lakes. 
   tar_target(
     p2_huc10_watershed_boundary,
     p2_huc10_keep_remove_df %>% distinct(HUC10, lake_w_state, .keep_all = TRUE) %>%
-      ## dissolve huc10 polygons by common attribute in HUC8 (st_union does same thing as group by but group by keeps all columns
-      group_by(HUC8, lake_w_state) %>% summarise(.) %>% ungroup()
+      rename(HUC10_Name = Name) %>% 
+      ## Dissolve huc10 polygons by common attribute in HUC8 (st_union is applied here, as group by but group by keeps all columns
+      group_by(HUC8, HUC10,
+               HUC10_Name,
+               lake_w_state) %>%
+      summarise(geometry = sf::st_union(geometry)) %>%
+      ungroup()
   )
 
 )

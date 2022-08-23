@@ -30,14 +30,7 @@ p3_targets_list <- list(
                      assc_lakes_df = assc_lakes_df_huc8,
                      crs_plot = selected_crs, huc_column = 'HUC8')
   ),
-  
-  # tar_target(
-  #   p3_huc10_sf,
-  #   prep_huc_viz_sf(huc_sf = p1_get_lakes_huc10_sf,
-  #                   assc_lakes_df = assc_lakes_df_huc10,
-  #                   crs_plot = selected_crs, huc_column = 'HUC10')
-  # ),
-  
+   
   # tar_target(
   #   p3_flowlines_sf,
   #   prep_flowlines_viz_sf(flowlines_sf = p1_lake_flowlines_huc8_sf, 
@@ -71,7 +64,7 @@ p3_targets_list <- list(
                   manual_cols_to_add = 'Part of Watershed (Yes/No)',
                   out_file = '3_visualize/out/lake_huc8_huc10_structure_table.xlsx'),
   format = 'file'
-  # ),
+   )
   # 
   # tar_target(
   #   p3_interactive_map_leaflet,
@@ -80,5 +73,5 @@ p3_targets_list <- list(
   #                     p3_flowlines_sf = p3_flowlines_sf, 
   #                     p3_gage_sites_sf = p3_gage_sites_sf)
   #   
-  )
+  # )
 )

@@ -54,6 +54,8 @@ create_huc_verification_table <- function(huc10_sf,
                                           huc10_name_col,
                                           huc8_sf,
                                           huc8_name_col,
+                                          huc6_sf,
+                                          huc6_name_col,
                                           lake_column){
 
   
@@ -68,14 +70,20 @@ create_huc_verification_table <- function(huc10_sf,
     ## rename second col
     rename(HUC8_Name = 2)
   
+  huc6_nonsf <- huc6_sf %>% sf::st_drop_geometry() %>%
+    select(all_of(c('HUC6', huc6_name_col))) %>% distinct() %>%
+    ## rename second col
+    rename(HUC6_Name = 2)
+  
   ## Tidy + left join 
   huc10_df <- huc10_sf %>%
     st_drop_geometry() %>% 
-    select({{lake_column}}, HUC8,HUC10) %>%
+    select({{lake_column}}, HUC6, HUC8, HUC10) %>%
     distinct() %>% 
     left_join(., huc10_nonsf, by = 'HUC10') %>% 
-    left_join(., huc8_nonsf, by = 'HUC8') %>% 
-    select({{lake_column}},HUC8, HUC8_Name, HUC10, HUC10_Name)
+    left_join(., huc8_nonsf, by = 'HUC8') %>%
+    left_join(., huc6_nonsf, by = 'HUC6') %>% 
+    select({{lake_column}},HUC6, HUC6_Name, HUC8, HUC8_Name, HUC10, HUC10_Name)
   
   ## return tidy dataset of HUC8 tied to our lakes and the HUC10s within these HUC8s - will use to verify HUC8/HUC10 scope
   return(huc10_df)
