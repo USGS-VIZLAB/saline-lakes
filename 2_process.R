@@ -55,7 +55,7 @@ p2_targets_list <- list(
     p2_huc_manual_verification_df,
       readxl::read_excel('1_fetch/in/lake_huc6_huc8_huc10_structure_table.xlsx',
                col_types = 'text') %>% 
-      mutate(`Part of Watershed Boundary (Yes/No)` = tolower(`Part of Watershed Boundary (Yes/No)`))
+      mutate(`Part of Watershed (Yes/No)` = tolower(`Part of Watershed (Yes/No)`))
     ),
   
   ## Filtering HUC10 of our basin
@@ -63,7 +63,7 @@ p2_targets_list <- list(
     p2_huc10_keep_remove_df,
     p1_get_lakes_huc10_sf %>% 
                filter(HUC10 %in%
-                        p2_huc_manual_verification_df$HUC10[p2_huc_manual_verification_df$`Part of Watershed Boundary (Yes/No)` == 'yes'])
+                        p2_huc_manual_verification_df$HUC10[p2_huc_manual_verification_df$`Part of Watershed (Yes/No)` == 'yes'])
   ),
 
   ## Watershed boundary - NOTE this watershed boundary currently not covering all lakes. 
@@ -75,7 +75,7 @@ p2_targets_list <- list(
       group_by(HUC8, HUC10,
                HUC10_Name,
                lake_w_state) %>%
-      summarise(geometry = sf::st_union(geometry)) %>%
+      summarize(geometry = sf::st_union(geom)) %>%
       ungroup()
   )
 
