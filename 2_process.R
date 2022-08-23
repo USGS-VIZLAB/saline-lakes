@@ -4,18 +4,7 @@ source('2_process/src/scope_lake_tributaries.R')
 
 p2_targets_list <- list(
 
-  ## Fetch and Process saline lakes via specifically built function that creates the final saline lakes shapefile 
-  ## This fun not yet generalized, special handling of lakes included in fun
-  
-  tar_target(
-    p2_saline_lakes_sf,
-    process_saline_lakes_sf(nhdhr_waterbodies = p1_nhdhr_lakes,
-                            lakes_sf = p1_lakes_sf,
-                            states_sf = p1_states_sf,
-                            selected_crs = selected_crs) %>%
-    bind_rows(p1_saline_lakes_bnds_sf %>%
-                  filter(GNIS_Name == 'Carson Sink'))
-  ),
+  # Lake Huc structure table #
   
   ## Creating simplified df that structures the huc10 within the HUC 8 of our selected lakes -exporting the xlsx for manual review in view of feedback
   tar_target(
@@ -29,16 +18,36 @@ p2_targets_list <- list(
                                   lake_column = 'lake_w_state')
   ),
   
+  
+  
+  # Lakes sf processing #
+  ## Fetch and Process saline lakes via specifically built function that creates the final saline lakes shapefile 
+  ## This fun not yet generalized, special handling of lakes included in fun
+  ## Note - this target is fed back into 1_fetch_spatial.R
+  
+  tar_target(
+    p2_saline_lakes_sf,
+    process_saline_lakes_sf(nhdhr_waterbodies = p1_nhdhr_lakes,
+                            lakes_sf = p1_lakes_sf,
+                            states_sf = p1_states_sf,
+                            selected_crs = selected_crs) %>%
+    bind_rows(p1_saline_lakes_bnds_sf %>%
+                  filter(GNIS_Name == 'Carson Sink'))
+  ),
+  
+  # Basin Flowlines Processing #
   ## Get only tributaries of the Lakes using get_UT function
   tar_target(
     p2_lake_tributaries, 
     scope_lake_tributaries(fline_network = p1_lake_flowlines_huc8_sf,
                            lakes_sf = p2_saline_lakes_sf,
-     buffer_dist = 10000,
-     realization = 'flowline',
-     stream_order = 3)
+                           buffer_dist = 10000,
+                           realization = 'flowline',
+                           stream_order = 3)
   ),
   
+  ## Get only tributaries of the Lakes using get_UT function 
+  ### No downstream use atm
   tar_target(
     p2_lake_tributaries_cat, 
     scope_lake_tributaries(fline_network = p1_lake_flowlines_huc8_sf,
@@ -46,15 +55,18 @@ p2_targets_list <- list(
                            buffer_dist = 10000,
                            realization = 'catchment',
                            stream_order = 3)
+
   ),
   
+  # Watershed boundary creation #
+  
   ## Target to clean p1_get_lakes_huc10_sf and remove / add huc 10s that we need for our watershed boundary   
-  ## Note: moved lakes_huc6_huc8_huc10_structure_table to the 1_fetch/in/ to be able to read in the manually edited excel
+  ## Note: MANUALLY moved lakes_huc6_huc8_huc10_structure_table to the 1_fetch/in/ to be able to read in the manually edited excel
   tar_target(
     p2_huc_manual_verification_df,
       readxl::read_excel('1_fetch/in/lake_huc6_huc8_huc10_structure_table.xlsx',
                col_types = 'text') %>% 
-      mutate(`Part of Watershed (Yes/No)` = tolower(`Part of Watershed (Yes/No)`)) %>%
+      mutate(`Part of Watershed (Yes/No)` = tolower(`Part of Watershed (Yes/No)`)) %>% # running a tolower to catch diff manual inputs in excel
       filter(`Part of Watershed (Yes/No)` == 'yes')
   ),
   
@@ -78,7 +90,7 @@ p2_targets_list <- list(
   ),
   
   ## Dissolved watershed boundary
-  ## Dissolve huc10 polygons by common attribute in HUC8 (st_union is applied here, as group by but group by keeps all columns
+  ### Note dissolve is done by the lake_w_state attr - no other attributes stay. Output sf object is a multi-polygon obj with continuous polygon per lake
   tar_target(
     p2_lake_watersheds_dissolved,
     p2_huc10_watershed_boundary %>% 

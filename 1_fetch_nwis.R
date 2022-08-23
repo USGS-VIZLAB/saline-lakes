@@ -1,10 +1,9 @@
-source("1_fetch/src/Download_nhd.R")
-source('1_fetch/src/download_states_shp.R')
-source('1_fetch/src/fetch_nhdplus_data.R')
+
 
 p1_nw_targets_list <- list(
   
   # Fetch NWIS sites along tributaries and in our huc08 regions 
+  ## NOTE - this is fetching nwis sites from the nhdplusTools package. In separate branch these sites are queries directly from dataRetrieval - output can then compare
   ## Will require further filtering (e.g. ftype == ST, along flowlines only)
   tar_target(
     p1_nwis_sites,

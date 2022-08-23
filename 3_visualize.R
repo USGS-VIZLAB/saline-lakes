@@ -32,7 +32,7 @@ p3_targets_list <- list(
                     huc_column = 'HUC8')
   ),
    
-  ## this takes a long time because rmapshaper::ms_simplify() is very slow for me when simplifyinh flowlines
+  ## this takes a long time because rmapshaper::ms_simplify() is very slow for me when simplifying flowlines
   tar_target(
     p3_flowlines_sf,
     prep_flowlines_viz_sf(flowlines_sf = p2_lake_tributaries,
