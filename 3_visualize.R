@@ -32,7 +32,7 @@ p3_targets_list <- list(
                     huc_column = 'HUC8')
   ),
    
-  ## this takes a long time because rmshaper is very slow for me when simplifies flowlines
+  ## this takes a long time because rmapshaper::ms_simplify() is very slow for me when simplifyinh flowlines
   tar_target(
     p3_flowlines_sf,
     prep_flowlines_viz_sf(flowlines_sf = p2_lake_tributaries,
@@ -62,9 +62,9 @@ p3_targets_list <- list(
   tar_target(
   p3_lake_HUC10_spreadsheet_xlsx,
   create_worksheet(df_to_export_as_wb = p2_huc_boundary_xwalk_df,
-                  worksheet_name = 'Lake_huc8_huc10',
+                  worksheet_name = 'Lake_huc6_huc8_huc10',
                   manual_cols_to_add = 'Part of Watershed (Yes/No)',
-                  out_file = '3_visualize/out/lake_huc8_huc10_structure_table.xlsx'),
+                  out_file = '3_visualize/out/lake_huc6_huc8_huc10_structure_table.xlsx'),
   format = 'file'
    ),
 
