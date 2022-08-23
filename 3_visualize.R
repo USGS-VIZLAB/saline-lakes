@@ -46,6 +46,7 @@ p3_targets_list <- list(
                      crs_plot = selected_crs)
   ),
   
+  # Output Spreadsheet #
 
   tar_target(
     p3_feedback_spreadsheet_xlsx,
@@ -59,6 +60,8 @@ p3_targets_list <- list(
     format = "file"
   ),
 
+  ## output huc6_huc8_huc10 structure spreadsheet from the xwalk table build in 2_process.R 
+  ## This is spreadsheet is designed to manually edited so that users can say whether a huc10 (a higher oder huc 8 and/or huc6 is in or out of watershed) 
   tar_target(
   p3_lake_HUC10_spreadsheet_xlsx,
   create_worksheet(df_to_export_as_wb = p2_huc_boundary_xwalk_df,
@@ -68,14 +71,17 @@ p3_targets_list <- list(
   format = 'file'
    ),
 
+  ## This is outdated but should run
   tar_target(
     p3_interactive_map_leaflet,
-    build_map_leaflet(p3_huc8_sf = p3_huc8_sf,
+    build_map_leaflet(p3_huc8_sf = p2_lake_watersheds_dissolved,
                       p3_saline_lakes_sf = p3_saline_lakes_sf,
                       p3_flowlines_sf = p3_flowlines_sf,
                       p3_gage_sites_sf = p3_gage_sites_sf)
 
   ),
+  
+  # Render Markdown #
   
   ## note this leaflet is adapted from previous leaflet output map and therefore still has the outdated gage sites outside boundary.
   tar_target(
