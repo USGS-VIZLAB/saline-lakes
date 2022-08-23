@@ -32,6 +32,7 @@ p3_targets_list <- list(
                     huc_column = 'HUC8')
   ),
    
+  ## this takes a long time because rmshaper is very slow for me when simplifies flowlines
   tar_target(
     p3_flowlines_sf,
     prep_flowlines_viz_sf(flowlines_sf = p2_lake_tributaries,
@@ -76,12 +77,14 @@ p3_targets_list <- list(
 
   ),
   
+  ## note this leaflet is adapted from previous leaflet output map and therefore still has the outdated gage sites outside boundary.
   tar_target(
     p3_markdown,
     {output_file <- '3_visualize/out/watershed_extent_update.html'
     rmarkdown::render(input = 'watershed_extent_update.Rmd',
                                 output_format = 'html_document',
                                 output_file = output_file)
+    return(output_file)
     }, 
     format = 'file')
   
