@@ -2,19 +2,25 @@
 #' https://code.usgs.gov/wma/proxies/habs/wq-data-download/-/blob/main/1_fetch/src/fetch_by_pcode_and_service_using_hucs.R#L34
 
 fetch_by_site_and_service <- function(sites, pcodes, service, start_date, end_date, incrementally = FALSE, split_num = 10) {
-  
+
   ## incrementally added as binomial param to chunk the sites in order to send requests incrementally through an lapply 
   if(incrementally == TRUE){
+
     sites_list <- sites %>% split(., ceiling(seq_along(.)/split_num))
+    
     start <- Sys.time()
-    message('nwis data fetch starting at', start)
-    raw_data <- lapply(sites_list, function(sites_subset){fetch_nwis_fault_tolerantly(sites_subset,
-                                                                                     pcodes,
-                                                                                     service,
-                                                                                     start_date,
-                                                                                     end_date)}) %>% bind_rows()
+    message('Nwis data fetch starting at ', start)
+    
+    raw_data <- lapply(sites_list, function(sites_subset){
+      fetch_nwis_fault_tolerantly(sites_subset,
+                                  pcodes,
+                                  service,
+                                  start_date,
+                                  end_date)}) %>% bind_rows()
+    
     end <- Sys.time()
-    message('nwis data fetch finished at', end)
+    message('nwis data fetch finished at ', end)
+    
   }else{
     raw_data <- fetch_nwis_fault_tolerantly(sites, pcodes, service, start_date, end_date)
   }
@@ -30,6 +36,7 @@ fetch_by_site_and_service <- function(sites, pcodes, service, start_date, end_da
 
 
 fetch_nwis_fault_tolerantly <- function(sites, pcodes, service, start_date, end_date, max_tries = 10) {
+  
   ## adding condition for surface water because service = 'measurements' does not work with readNWISdata
   if(service == 'measurements'){
     data_returned <- tryCatchLog(
