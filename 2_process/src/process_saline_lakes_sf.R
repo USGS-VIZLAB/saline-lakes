@@ -4,6 +4,7 @@ process_saline_lakes_sf<- function(nhdhr_waterbodies, lakes_sf, states_sf, selec
   #'@param nhdhr_waterbodies downloaded nhd hr water body data for teh selected huc regions
   #'@param states_sf states sf object
   #'@param lakes_sf lakes df object that lists lakes and lat long (from Lakes List csv)
+  #'@param selected_crs crs of lake sf shapefile
   
   ## Cleaning dataframe
   nhdhr_saline_lakes_sf <- nhdhr_waterbodies %>%
@@ -23,7 +24,7 @@ process_saline_lakes_sf<- function(nhdhr_waterbodies, lakes_sf, states_sf, selec
   lakes_sf_nhdhr <- nhdhr_saline_lakes_sf %>%
     filter(GNIS_ID %in% buf_nhdhr_saline_lakes_sf$GNIS_ID) %>% 
     group_by(lake_w_state,GNIS_Name) %>%
-    summarize(geometry = st_union(Shape)) %>% 
+    summarize(geometry = st_union(geom)) %>% 
     ungroup()
   
   ## Handling Lake Winnemucca which does not exist in nhd hr
@@ -65,7 +66,7 @@ process_saline_lakes_sf<- function(nhdhr_waterbodies, lakes_sf, states_sf, selec
   
   Warner_lakes_sf <- Warner %>%
     group_by(lake_w_state) %>%
-    summarize(geometry = st_union(Shape)) %>% 
+    summarize(geometry = st_union(geom)) %>% 
     ungroup()
   
   final_lakes <- lakes_sf_nhdhr %>% 

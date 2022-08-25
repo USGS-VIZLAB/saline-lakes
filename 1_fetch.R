@@ -123,6 +123,7 @@ p1_targets_list <- list(
   ),
   
   # Fetch NWIS sites along tributaries and in our huc08 regions. 
+
   ## Will require further filtering (e.g. ftype == ST, along flowlines only)
   tar_target(
     p1_nwis_sites,
@@ -147,12 +148,33 @@ p1_targets_list <- list(
     get_NWIS_site_no(basin_huc08 = p1_huc08_df$huc8,
                      lake_watershed_sf = p1_get_lakes_huc8_sf %>% select(HUC8, Shape), 
                      crs = selected_crs)
-    ),
+),
 
-  tar_target(
+tar_target(
     p1_site_no,
     {p1_site_in_watersheds_sf %>% pull(site_no)}
-  ),
+),
+  
+ tar_target(
+    p1_site_ids,
+    {p1_nwis_sites %>% pull(site_no) %>% unique()}
+),
+  
+# Download states shp
+ tar_target(
+  p1_download_states_shp,
+  download_states_shp(url = states_download_url, 
+                      out_path = '1_fetch/in/states_shp'),
+  format = 'file'
+),
+
+ tar_target(
+   p1_states_sf,
+   st_read(file.path(p1_download_states_shp,'statesp010g.shp'), quiet = TRUE) %>%
+     filter(STATE_ABBR %in% c('CA',"NV",'UT','OR')) %>% 
+     st_transform(crs = st_crs(p1_lakes_sf)) %>% 
+     select(NAME,STATE_ABBR, geometry)
+),
 
   ###################
   # NWIS Data Queries
@@ -225,3 +247,4 @@ p1_targets_list <- list(
                               end_date = p0_end)
   )
 )
+
