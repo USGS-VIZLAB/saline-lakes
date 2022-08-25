@@ -6,7 +6,7 @@ p1_sp_targets_list <- list(
   
   # Lake locations (lat/lon) Fetch #
   
-  ## Lake sf dataset from sharepoint - stakeholder provided
+  ## Lake sf dataset from sharepoint - project team provided
   ## This target is the same as p2_saline_lakes_sf but includes the manually drawn polygon Carson Sink.
   ## This target is created to 1/ have a second multipolygon dataset for lakes 2/ append Carson Sink to p2_saline_lakes_sf
   ## This should be manually downloaded to local 1_fetch/in/ folder 
