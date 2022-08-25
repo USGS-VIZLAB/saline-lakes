@@ -1,0 +1,111 @@
+---
+title: "End of Summer Report"
+author: |
+  | Vizlab, Data Science Branch, IIDD 
+  | Contacts: Margaux Sleckman (msleckman@usgs.gov), Anthony Martinez (ajmartinez@usgs.gov) and Cee Nell (cnell@usgs.gov)
+  
+date: "8/23/2022"
+output: html_document
+---
+
+The purpose of this document is to establish agreed upon spatial extent for each of the saline lakes, including:
+
+1. Lake polygons - incl. Carson Sink
+2. Updated Watershed boundaries
+3. Upstream flowlines within each watershed
+
+```{r load, echo = FALSE, warnings = FALSE} 
+
+library(targets)
+library(leaflet)
+library(scico)
+library(scales)
+source('3_visualize/src/prep_viz_data.R')
+source('3_visualize/src/interactive_map.R')
+
+tar_load(p2_lake_watersheds_dissolved)
+tar_load(p3_saline_lakes_sf)
+tar_load(p3_flowlines_sf)
+tar_load(p3_gage_sites_sf)
+
+```
+
+
+```{r adapted_function_leaflet, message =FALSE, echo = FALSE, warnings = FALSE}
+
+## Build interactive map with leaflet - only difference from function in build_map_leaflet()
+build_map_leaflet_updated_082322 <- function(p3_watershed_sf, p3_saline_lakes_sf, p3_flowlines_sf, p3_gage_sites_sf){
+  
+  # Define color ramp for gages
+  pal_gage <- colorFactor(
+    palette = scico::scico(16, palette = 'davos')[c(11, 1)],
+    domain = p3_gage_sites_sf$in_HUC8)
+  
+  # Build map
+  leaflet_map <- leaflet() %>% 
+    #Add Basemap (baseGroups)
+    addProviderTiles("Esri.WorldGrayCanvas", group = c("No labels", "Labels"))  %>%
+    addProviderTiles("CartoDB.PositronOnlyLabels", group = "Labels") %>%
+    # Add data layers (overlayGroups)
+    ## NOTE - compared to previos version of function - I've removed label param (no label column like below)
+    addPolygons(data = p3_watershed_sf, group = "Watershed Extent",
+                color = 'black', fillColor = "#C3CB9F", opacity = 0.4, weight = 3) %>% 
+    addPolygons(data = p3_saline_lakes_sf, group = "Saline lakes",
+                color = '#3A6DB7', opacity = 0.8, weight = 2,
+                popup = ~label) %>%
+    addLabelOnlyMarkers(data = p3_saline_lakes_sf, lng = ~X, lat = ~Y, group = "Lake labels",
+                        label = ~lake_w_state,
+                        labelOptions = labelOptions(noHide = T, textOnly = T)) %>%
+    
+    # Add dynamic width stream layers
+    addPolylines(data = p3_flowlines_sf, group = "Streams (large)",
+                 color = scico(9, palette = 'davos')[5], opacity = 0.8,
+                 weight = ~rescale(streamorde, to = c(1, 4)),
+                 popup = ~label) %>%
+    addPolylines(data = p3_flowlines_sf, group = "Streams (small)",
+                 color = scico(9, palette = 'davos')[5], opacity = 0.8,
+                 weight = ~rescale(streamorde, to = c(0.25, 1)),
+                 popup = ~label) %>%
+    groupOptions("Streams (small)", zoomLevels = 1:7) %>%
+    groupOptions("Streams (large)", zoomLevels = 8:20) %>%
+    
+    # Add dynamic size gage sites
+    addCircleMarkers(data = p3_gage_sites_sf, group = c("Gage sites (large)"),
+                     color = ~pal_gage(in_HUC8), radius = 5, weight = 2,
+                     popup = ~label) %>%
+    addCircleMarkers(data = p3_gage_sites_sf, group = c("Gage sites (small)"),
+                     color = ~pal_gage(in_HUC8), radius = 3, weight = 1,
+                     popup = ~label) %>%
+    groupOptions("Gage sites (small)", zoomLevels = 1:7) %>%
+    groupOptions("Gage sites (large)", zoomLevels = 8:20) %>%
+    
+    # # Add legend
+    # addLegend(data = p3_gage_sites_sf, group = c("Gage sites"),
+    #           title = "Within saline lake subbasin",
+    #           pal = pal_gage, values = ~in_HUC8,
+    #           position = "bottomright") %>%
+    
+    # Add layer controls
+    addLayersControl(baseGroups = c("Labels", "No Labels"),
+                     overlayGroups = c("Saline lakes", "Lake labels", "Watershed Extent", "Streams (small)", "Streams (large)", "Gage sites (small)", "Gage sites (large)"),
+                     position = "topright",
+                     options = layersControlOptions(collapsed = F)) #%>%
+  #hideGroup(c("Streams", "Gage sites"))
+  
+
+  return(leaflet_map)
+  
+}
+
+```
+
+```{r adapted_function_leaflet_output, echo = FALSE, message =FALSE, warnings = FALSE, out.width = '100%'}
+
+build_map_leaflet_updated_082322(p3_watershed_sf = p2_lake_watersheds_dissolved, 
+                      p3_saline_lakes_sf = p3_saline_lakes_sf, 
+                      p3_flowlines_sf = p3_flowlines_sf, 
+                      p3_gage_sites_sf = p3_gage_sites_sf)
+
+## note - a warning appears because Carson sink has not point coords (lat lon) - ignore and can incorporate when loading in carson sink
+
+```

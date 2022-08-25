@@ -1,8 +1,9 @@
-source("1_fetch/src/Download_nhd.R")
 
-p1_targets_list <- list(
+
+p1_nw_targets_list <- list(
   
   # Fetch NWIS sites along tributaries and in our huc08 regions 
+  ## NOTE - this is fetching nwis sites from the nhdplusTools package. In separate branch these sites are queries directly from dataRetrieval - output can then compare
   ## Will require further filtering (e.g. ftype == ST, along flowlines only)
   tar_target(
     p1_nwis_sites,
@@ -18,21 +19,7 @@ p1_targets_list <- list(
   tar_target(
     p1_site_ids,
     {p1_nwis_sites %>% pull(site_no) %>% unique()}
-  ),
-# Download states shp
-tar_target(
-  p1_download_states_shp,
-  download_states_shp(url = states_download_url, 
-                      out_path = '1_fetch/in/states_shp'),
-  format = 'file'
-),
+  )
 
-tar_target(
-  p1_states_sf,
-  st_read(file.path(p1_download_states_shp,'statesp010g.shp'), quiet = TRUE) %>%
-    filter(STATE_ABBR %in% c('CA',"NV",'UT','OR')) %>% 
-    st_transform(crs = st_crs(p1_lakes_sf)) %>% 
-    select(NAME,STATE_ABBR, geometry)
-)
 
 )

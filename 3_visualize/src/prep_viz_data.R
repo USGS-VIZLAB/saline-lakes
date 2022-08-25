@@ -1,9 +1,10 @@
-# Create HUC9-Lake crosswalk
-assc_lakes_xwalk_df <- function(huc8_sf){
-  huc8_sf %>%
+# Create HUC8-Lake crosswalk
+assc_lakes_xwalk_df <- function(huc_sf, huc_column = 'HUC8'){
+  
+  huc_sf %>%
     st_drop_geometry() %>%
-    distinct(HUC8, lake_w_state, .keep_all = F) %>%
-    group_by(HUC8) %>%
+    distinct(.data[[huc_column]], lake_w_state, .keep_all = F) %>%
+    group_by(.data[[huc_column]]) %>%
     summarise(assc_lakes = paste(lake_w_state, collapse =  "; "))
 }
 
@@ -16,26 +17,32 @@ prep_lakes_viz_sf <- function(lakes_sf, crs_plot){
     st_transform(crs = crs_plot)
 }
 
-# Prep HUC8 data for leaflet map
-prep_huc8_viz_sf <- function(huc8_sf, assc_lakes_df, crs_plot){
-  huc8_sf %>%
-    distinct(HUC8, lake_w_state, .keep_all = T) %>%
-    left_join(assc_lakes_df, by = "HUC8") %>%
-    mutate(label = paste0("HUC8: ", Name, "(", HUC8, ")", "<br>", "Associated lake: ", assc_lakes)) %>%
+# Prep HUC data for leaflet map
+prep_huc_viz_sf <- function(huc_sf, assc_lakes_df, crs_plot, huc_column = 'HUC8'){
+  huc_sf %>%
+    distinct({{huc_column}}, lake_w_state, .keep_all = T) %>%
+    left_join(assc_lakes_df, by = huc_column) %>%
+    mutate(label = paste0("HUC",gsub(huc_column,'HUC',''),": ",
+                          Name, "(", {{huc_column}}, ")",
+                          "<br>", "Associated lake: ", assc_lakes)) %>%
     st_as_sf() %>%
     st_transform(crs = crs_plot)
 }
 
 # Prep stream data for leaflet map
 prep_flowlines_viz_sf <- function(flowlines_sf, crs_plot){
+
   flowlines_sf %>%
-    ms_simplify() %>%
-    mutate(label = paste0("Stream: ", ifelse(gnis_name == " ", "No GNIS name/ID", paste0(gnis_name, " (", gnis_id, ")")), " <br> Stream order ", streamorde)) %>%
+    rmapshaper::ms_simplify() %>%
+    mutate(label = paste0("Stream: ",
+                          ifelse(gnis_name == " ", "No GNIS name/ID",
+                                 paste0(gnis_name, " (", gnis_id, ")")),
+                          " <br> Stream order ", streamorde)) %>%
     st_as_sf() %>%
     st_transform(crs = crs_plot)
 }
 
-# Prep gage site data for leaflet map
+# Prep gage site data for leaflet map - for HUC8 
 prep_gage_viz_sf <- function(nwis_sites, huc8_sf, crs_plot){
   nwis_sites %>%
     left_join(nwis_sites %>%
