@@ -25,4 +25,4 @@ states_download_url <- 'https://prd-tnm.s3.amazonaws.com/StagedProducts/Small-sc
 additional_GSL_huc8 <- c('16010202','16010203', '16010204')
 
 # Return the complete list of targets
-c(p1_sp_targets_list, p1_nw_targets_list, p2_targets_list, p3_targets_list)
+c(p0_targets_list, p1_sp_targets_list, p1_nw_targets_list, p2_targets_list, p3_targets_list)
