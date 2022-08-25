@@ -95,7 +95,7 @@ p1_sp_targets_list <- list(
   ## Read in all nhd hr waterbodies in our entire basin
   ## This is then processed to our focal lakes in 2_process.R
   tar_target(p1_nhdhr_lakes,
-             sf::st_read('1_fetch/in/nhd_WB_HUC6_HU8_HU10.gpkg',
+             sf::st_read(p1_nhd_gpkg,
                          layer = 'NHDWaterbody',
                          ## filtering to larger lakes because nhdhr has a lot of very small lake polygons
                          query = 'SELECT * FROM NHDWaterbody WHERE Shape_Area > 7e-08',
