@@ -71,15 +71,15 @@ p3_targets_list <- list(
   format = 'file'
    ),
 
-  ## This is outdated but should run
-  tar_target(
-    p3_interactive_map_leaflet,
-    build_map_leaflet(p3_huc8_sf = p2_lake_watersheds_dissolved,
-                      p3_saline_lakes_sf = p3_saline_lakes_sf,
-                      p3_flowlines_sf = p3_flowlines_sf,
-                      p3_gage_sites_sf = p3_gage_sites_sf)
-
-  ),
+  ## This is outdated and will not run
+  # tar_target(
+  #   p3_interactive_map_leaflet,
+  #   build_map_leaflet(p3_huc8_sf = p2_lake_watersheds_dissolved,
+  #                     p3_saline_lakes_sf = p3_saline_lakes_sf,
+  #                     p3_flowlines_sf = p3_flowlines_sf,
+  #                     p3_gage_sites_sf = p3_gage_sites_sf)
+  # 
+  # ),
   
   # Render Markdown #
   

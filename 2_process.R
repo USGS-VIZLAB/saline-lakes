@@ -62,6 +62,7 @@ p2_targets_list <- list(
   
   ## Target to clean p1_get_lakes_huc10_sf and remove / add huc 10s that we need for our watershed boundary   
   ## Note: MANUALLY moved lakes_huc6_huc8_huc10_structure_table to the 1_fetch/in/ to be able to read in the manually edited excel
+  ## Note: If the lake excel is edited (change to yes/no), you must force build of this target to see change. Target does not notice changes made to the spreadsheet since it is done off-pipeline 
   tar_target(
     p2_huc_manual_verification_df,
       readxl::read_excel('1_fetch/in/lake_huc6_huc8_huc10_structure_table.xlsx',
