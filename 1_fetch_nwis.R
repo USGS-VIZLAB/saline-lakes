@@ -64,7 +64,7 @@ p1_nw_targets_list <- list(
   tar_target(
     p1_nwis_dv_gw_data,
     fetch_by_site_and_service(sites = p1_site_no,
-                              pcodes = p0_gw_pcodes,
+                              pcodes = p0_gw_params,
                               service = 'dv',
                               start_date = p0_start,
                               end_date = p0_end)
@@ -76,7 +76,7 @@ p1_nw_targets_list <- list(
   tar_target(
     p1_nwis_iv_gw_data,
     fetch_by_site_and_service(sites = unique(p1_nwis_dv_gw_data$site_no),
-                              pcodes = p0_gw_pcodes,
+                              pcodes = p0_gw_params,
                               service = 'iv',
                               start_date = p0_start,
                               end_date = p0_end)
