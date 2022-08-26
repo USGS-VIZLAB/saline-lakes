@@ -22,7 +22,15 @@ fetch_by_site_and_service <- function(sites, pcodes, service, start_date, end_da
     message('nwis data fetch finished at ', end)
     
   }else{
+    
+    start <- Sys.time()
+    message('Nwis data fetch starting at ', start)
+    
     raw_data <- fetch_nwis_fault_tolerantly(sites, pcodes, service, start_date, end_date)
+    
+    end <- Sys.time()
+    message('nwis data fetch finished at ', end)
+    
   }
   # Remove attributes, which typically have a timestamp associated
   #  with them this can cause strange rebuilds of downstream data, 
