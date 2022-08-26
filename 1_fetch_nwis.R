@@ -7,16 +7,18 @@ p1_nw_targets_list <- list(
   ## subsetting huc8 multipolygon to simplify join in get_NWIS_site_no() 
   tar_target(
     p1_site_in_watersheds_sf,
-    get_NWIS_site_no(basin_huc08 = p1_huc08_df$huc8,
-                     lake_watershed_sf = p1_get_lakes_huc8_sf %>% select(HUC8, Shape), 
-                     crs = selected_crs)
+    get_NWIS_site_no(basin_huc08 = p1_huc08_full_basin_sf$huc8,
+                     lake_watershed_sf = p1_get_lakes_huc8_sf %>% select(HUC8, geom), 
+                     crs = selected_crs) %>% 
+      # filtering point to only those within the watershed area
+      st_join(., p2_lake_watersheds_dissolved,
+              join = st_within, left = FALSE)
   ),
   
   tar_target(
     p1_site_no,
-    {p1_site_in_watersheds_sf %>% pull(site_no)}
+    {p1_site_in_watersheds_sf %>% pull(site_no) %>% unique()}
   ),
-  
   
   ###################
   # NWIS Data Queries
@@ -37,7 +39,7 @@ p1_nw_targets_list <- list(
   ## iv data is much heavier so we provided a filtered list to lighten the load of request
   tar_target(
     p1_nwis_iv_sw_data,
-    fetch_by_site_and_service(sites = unique(p1_nwis_dv_sw_data$site_no),
+    fetch_by_site_and_service(sites = unique(p1_nwis_dv_sw_data$site_no)[1:10],
                               pcodes = p0_sw_params,
                               service = 'iv',
                               start_date = p0_start,
