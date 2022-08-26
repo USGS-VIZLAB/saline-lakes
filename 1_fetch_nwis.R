@@ -11,7 +11,7 @@ p1_nw_targets_list <- list(
                      lake_watershed_sf = p1_get_lakes_huc8_sf %>% select(HUC8, geom), 
                      crs = selected_crs) %>% 
       # filtering point to only those within the watershed area
-      st_join(., p2_lake_watersheds_dissolved,
+      st_join(., p2_huc10_watershed_boundary,
               join = st_within, left = FALSE)
   ),
   
