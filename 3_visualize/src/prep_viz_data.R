@@ -44,6 +44,7 @@ prep_flowlines_viz_sf <- function(flowlines_sf, crs_plot){
 
 # Prep gage site data for leaflet map - for HUC8 
 prep_gage_viz_sf <- function(nwis_sites, huc8_sf, crs_plot){
+  
   nwis_sites %>%
     left_join(nwis_sites %>%
                 st_within(huc8_sf) %>%
