@@ -25,7 +25,7 @@ p1_nw_targets_list <- list(
   
   # SW
   ## SW - dv
-  # Time: This took about  <5 min for all 15,000 sites. Note: many sites have no data. 
+  # Time: This took about  <25 min for all 15,000 sites. Note: many sites have no data. 
   tar_target(
     p1_nwis_dv_sw_data,
     fetch_by_site_and_service(sites = p1_site_no,
