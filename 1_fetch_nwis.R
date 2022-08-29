@@ -4,7 +4,7 @@ source('1_fetch/src/get_NWIS_site_no.R')
 p1_nw_targets_list <- list(
   
   # Pulling site data retrieval using whatNWISsites(). This target is a sf object can be joined to nwis datasets below via site_no 
-  ## subsetting huc8 multipolygon to simplify join in get_NWIS_site_no() 
+  ## subsetting huc8 multipolygon to simplify join in get_NWIS_site_no()
   tar_target(
     p1_site_in_watersheds_sf,
     get_NWIS_site_no(basin_huc08 = p1_huc08_full_basin_sf$huc8,
@@ -34,17 +34,26 @@ p1_nw_targets_list <- list(
   
   ## SW - iv
   ## dv data is summarized from iv data, therefore any site with dv data will have iv data and vis versa
-  ## iv data is much heavier so we provided a filtered list to lighten the load of request
+  ## iv data is much heavier so we provided a filtered list from dv to lighten the load of request
   # Time: This took about  <45 min for all unique sites (length(unique(p1_nwis_dv_sw_data$site_no)) = 263). Note: many sites have no data. 
+  
+  tar_target(
+    p1_nwis_iv_sw_sites,
+    unique(p1_nwis_dv_sw_data$site_no)[1:100] %>% 
+      as.list()
+  ),
+  
+  
   tar_target(
     p1_nwis_iv_sw_data,
-    fetch_by_site_and_service(sites = unique(p1_nwis_dv_sw_data$site_no)[1:50],
+    fetch_by_site_and_service(sites = p1_nwis_iv_sw_sites,
                               pcodes = p0_sw_params,
                               service = 'iv',
                               start_date = p0_start,
                               end_date = p0_end,
                               incrementally = TRUE,
-                              split_num = 10)
+                              split_num = 10),
+    pattern = map(p1_nwis_iv_sw_sites)
   ),
   
   ## SW - field measurements
