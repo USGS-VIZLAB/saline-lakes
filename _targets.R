@@ -5,7 +5,6 @@ tar_option_set(packages = c("tidyverse","sbtools","sf",'dataRetrieval',"nhdplusT
                             'leaflet', 'httr', 'scico', 'openxlsx', 'rmapshaper', 'scales', 'retry','tryCatchLog'))
 
 source('0_config.R')
-source("1_fetch.R")
 source("1_fetch_spatial.R")
 source("1_fetch_nwis.R")
 source("2_process.R")
