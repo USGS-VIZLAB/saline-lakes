@@ -41,7 +41,7 @@ p1_nw_targets_list <- list(
   # Time: This took about  <45 min for all unique sites (length(unique(p1_nwis_dv_sw_data$site_no)) = 263). Note: many sites have no data. 
   tar_target(
     p1_nwis_iv_sw_data,
-    fetch_by_site_and_service(sites = unique(p1_nwis_dv_sw_data$site_no),
+    fetch_by_site_and_service(sites = unique(p1_nwis_dv_sw_data$site_no)[1:50],
                               pcodes = p0_sw_params,
                               service = 'iv',
                               start_date = p0_start,
