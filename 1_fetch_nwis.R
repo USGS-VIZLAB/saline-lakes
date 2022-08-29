@@ -8,12 +8,9 @@ p1_nw_targets_list <- list(
   tar_target(
     p1_site_in_watersheds_sf,
     get_NWIS_site_no(basin_huc08 = p1_huc08_full_basin_sf$huc8,
-                     lake_watershed_sf = p1_get_lakes_huc8_sf %>% select(HUC8, geom), 
-                     crs = selected_crs) %>% 
-      # filtering point to only those within the watershed area
-      st_join(., p2_huc10_watershed_boundary,
-              join = st_within, left = FALSE)
-  ),
+                     lake_watershed_sf = p2_huc10_watershed_boundary,
+                     crs = selected_crs)
+    ),
   
   tar_target(
     p1_site_no,
