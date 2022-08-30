@@ -4,6 +4,7 @@
 fetch_by_site_and_service <- function(sites_df, sites_col, lake_col, pcodes, service, start_date, end_date, incrementally = FALSE, split_num = 10) {
   
   lake_name <- sites_df %>% pull(.data[[lake_col]]) %>% head(1)
+  message('Fetching nwis data from sites in ', lake_name, ' Watershed')
   
   if(!is.na(sites_df[lake_col])){
     start <- Sys.time()
@@ -12,12 +13,12 @@ fetch_by_site_and_service <- function(sites_df, sites_col, lake_col, pcodes, ser
     ## pulling just sites no into a vector R 
     sites <- sites_df %>% pull(.data[[sites_col]])
     
-    ## incrementally added as binomial param to chunk the sites in order to send requests incrementally through an lapply 
+    ## Incrementally added as binomial param to chunk the sites in order to send requests incrementally through the lapply 
+    ## set iv requests as incrementally == T since it is many more data points, while dv requests incrementally == F
     if(incrementally == TRUE){
   
       sites_list <- sites %>% split(., ceiling(seq_along(.)/split_num))
       
-  
       raw_data <- lapply(sites_list, function(sites_subset){
         fetch_nwis_fault_tolerantly(sites_subset,
                                     pcodes,
@@ -27,13 +28,18 @@ fetch_by_site_and_service <- function(sites_df, sites_col, lake_col, pcodes, ser
       
     } else{
       
-      raw_data <- fetch_nwis_fault_tolerantly(sites, pcodes, service, start_date, end_date)
+      raw_data <- fetch_nwis_fault_tolerantly(sites,
+                                              pcodes,
+                                              service,
+                                              start_date,
+                                              end_date)
       
     }
     
-    # printing type to see if select can be applied to raw_data. If emplty cannot be applied
-    
+    # Prepping final dataframe to be returned - should be easy to bind even if lake has no data 
+    ## printing type to see if select can be applied to raw_data. If empty cannot be applied
     print(class(raw_data))
+    
     if(is.data.frame(raw_data)){
       raw_data$lake_w_state <- lake_name
       raw_data <- raw_data %>% select(agency_cd, lake_w_state, site_no, everything())
@@ -44,19 +50,21 @@ fetch_by_site_and_service <- function(sites_df, sites_col, lake_col, pcodes, ser
                              site_no = NA)
     }
     
-  
-    
     end <- Sys.time()
     message('Nwis data fetch finished at ', end)
     
-    # Remove attributes, which typically have a timestamp associated
-    #  with them this can cause strange rebuilds of downstream data, 
-    #   even if the data itself is the same.
+    # Outdated code from source that does not affect output here 
+    # LP - Remove attributes, which typically have a timestamp associated
+    # with them this can cause strange rebuilds of downstream data, 
+    # even if the data itself is the same.
     attr(raw_data, "comment") <- NULL
     attr(raw_data, "queryTime") <- NULL
     attr(raw_data, "headerInfo") <- NULL
   
-  } else{
+  } 
+  
+  # If no sites exists in the watershed site_no == NA. In that case, we return an empty dataframe
+  else{
     
     message(paste(lake_name, ' has no NWIS sites'))
     
