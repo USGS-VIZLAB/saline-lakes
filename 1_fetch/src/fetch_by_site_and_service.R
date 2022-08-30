@@ -2,43 +2,67 @@
 #' https://code.usgs.gov/wma/proxies/habs/wq-data-download/-/blob/main/1_fetch/src/fetch_by_pcode_and_service_using_hucs.R#L34
 
 fetch_by_site_and_service <- function(sites_df, sites_col, lake_col, pcodes, service, start_date, end_date, incrementally = FALSE, split_num = 10) {
-
-  start <- Sys.time()
-  message('Nwis data fetch starting at ', start)
   
-  ## pulling just sites no into a vector R 
-  sites <- sites_df %>% pull(.data[[sites_col]])
+  lake_name <- sites_df %>% pull(.data[[lake_col]]) %>% head(1)
   
-  ## incrementally added as binomial param to chunk the sites in order to send requests incrementally through an lapply 
-  if(incrementally == TRUE){
-
-    sites_list <- sites %>% split(., ceiling(seq_along(.)/split_num))
+  if(!is.na(sites_df[lake_col])){
+    start <- Sys.time()
+    message('Nwis data fetch starting at ', start)
     
-
-    raw_data <- lapply(sites_list, function(sites_subset){
-      fetch_nwis_fault_tolerantly(sites_subset,
-                                  pcodes,
-                                  service,
-                                  start_date,
-                                  end_date)}) %>% bind_rows()
+    ## pulling just sites no into a vector R 
+    sites <- sites_df %>% pull(.data[[sites_col]])
     
+    ## incrementally added as binomial param to chunk the sites in order to send requests incrementally through an lapply 
+    if(incrementally == TRUE){
+  
+      sites_list <- sites %>% split(., ceiling(seq_along(.)/split_num))
+      
+  
+      raw_data <- lapply(sites_list, function(sites_subset){
+        fetch_nwis_fault_tolerantly(sites_subset,
+                                    pcodes,
+                                    service,
+                                    start_date,
+                                    end_date)}) %>% bind_rows()
+      
+    } else{
+      
+      raw_data <- fetch_nwis_fault_tolerantly(sites, pcodes, service, start_date, end_date)
+      
+    }
+    
+    # printing type to see if select can be applied to raw_data. If emplty cannot be applied
+    
+    print(class(raw_data))
+    if(is.data.frame(raw_data)){
+      raw_data$lake_w_state <- lake_name
+      raw_data <- raw_data %>% select(agency_cd, lake_w_state, site_no, everything())
+    }
+    
+    if(is.null(raw_data)){
+      raw_data <- data.frame(lake_w_state = lake_name,
+                             site_no = NA)
+    }
+    
+  
+    
+    end <- Sys.time()
+    message('Nwis data fetch finished at ', end)
+    
+    # Remove attributes, which typically have a timestamp associated
+    #  with them this can cause strange rebuilds of downstream data, 
+    #   even if the data itself is the same.
+    attr(raw_data, "comment") <- NULL
+    attr(raw_data, "queryTime") <- NULL
+    attr(raw_data, "headerInfo") <- NULL
+  
   } else{
     
-    raw_data <- fetch_nwis_fault_tolerantly(sites, pcodes, service, start_date, end_date)
+    message(paste(lake_name, ' has no NWIS sites'))
     
+    raw_data <- data.frame(lake_w_state = lake_name,
+                           site_no = NA)
   }
-  
-  raw$lake_w_state <- sites_df %>% pull(.data[[lake_col]]) %>% head(1)
-  
-  end <- Sys.time()
-  message('Nwis data fetch finished at ', end)
-  
-  # Remove attributes, which typically have a timestamp associated
-  #  with them this can cause strange rebuilds of downstream data, 
-  #   even if the data itself is the same.
-  attr(raw_data, "comment") <- NULL
-  attr(raw_data, "queryTime") <- NULL
-  attr(raw_data, "headerInfo") <- NULL
   
   return(raw_data)
 }
