@@ -12,6 +12,10 @@ p1_nw_targets_list <- list(
                      crs = selected_crs)
     ),
   
+  ###################
+  # NWIS Data Queries
+  
+  ## Target to allow branching across lakes
   tar_target(
     p1_site_no_by_lake,
     {p1_site_in_watersheds_sf %>%
@@ -24,15 +28,12 @@ p1_nw_targets_list <- list(
     iteration = 'group'
   ),
   
-  ###################
-  # NWIS Data Queries
-  
   # SW
   
   # SW - field measurements - - branched by lake with grouped target p1_site_no_by_lake
-  ## output target is a list of dfs split by lake name 
-  ## Use `bind_rows()` to bind list into df and group_by() lake name (lake_w_state) to summarize results by lake.
-
+  ## output target is a list of dfs split by lake name. second target is list binded
+  
+  # list of dfs
   tar_target(
     p1_nwis_meas_sw_data_lst,
     fetch_by_site_and_service(sites_df = p1_site_no_by_lake,
@@ -48,17 +49,26 @@ p1_nw_targets_list <- list(
     iteration = 'list'
   ),
   
+  ## creating single df
   tar_target(
     p1_nwis_meas_sw_data,
     p1_nwis_meas_sw_data_lst %>%
+      ## making measurement_nu col same type to allow rbind
       map(~ mutate(.x, across(starts_with('measurement_nu'), as.character))) %>% 
       bind_rows()
   ),
   
-
+  ## xwalk branch to lake for sw meas
+  tar_target(
+    p1_br_lk_xwalk_meas_sw,
+    tibble(branch_name = names(p1_nwis_d_sw_data_lst),
+           lake_names = p1_site_no_by_lake %>% arrange(tar_group) %>% pull(lake_w_state) %>% unique())
+  ),
+  
   # SW - dv - branched by lake with grouped target p1_site_no_by_lake
-  ## Use `bind_rows()` to bind list into df and group_by() lake name (lake_w_state) to summarize results by lake.
-
+  ## output target is a list of dfs split by lake name. second target is that list of dfs binded
+  
+  # list of dfs
   tar_target(
     p1_nwis_dv_sw_data_lst,
     fetch_by_site_and_service(sites_df = p1_site_no_by_lake,
@@ -72,6 +82,14 @@ p1_nw_targets_list <- list(
     iteration = 'list'
   ),
   
+  
+  tar_target(
+    p1_br_lk_xwalk_dv_sw,
+    tibble(branch_name = names(p1_nwis_dv_sw_data_lst),
+           lake_names = p1_site_no_by_lake %>% arrange(tar_group) %>% pull(lake_w_state) %>% unique())
+  ),
+    
+  ## creating single df
   tar_target(
     p1_nwis_dv_sw_data,
     p1_nwis_dv_sw_data_lst %>% 
@@ -82,7 +100,7 @@ p1_nw_targets_list <- list(
   ## dv data is summarized from iv data, therefore any site with dv data will have iv data and vis versa
   ## iv data is much heavier so we provided a filtered list from dv to lighten the load of request
   
-  ## Use `bind_rows()` to bind list into df (maybe data.table works better given size of df) 
+  ## Used `bind_rows()` to bind list into df (maybe data.table works better given size of df) 
   ## and group_by() lake name (lake_w_state) to summarize results by lake.
 
   ## Specific mapping target for sw iv data fetch
@@ -111,7 +129,14 @@ p1_nw_targets_list <- list(
                               split_num = 10),
     pattern = map(p1_site_no_by_lake_sw_iv),
     iteration = 'list'
+  ),
+  
+  tar_target(
+    p1_br_lk_xwalk_iv_sw,
+    tibble(branch_name = names(p1_nwis_iv_sw_data_lst),
+           lake_names = p1_site_no_by_lake_sw_iv %>% arrange(tar_group) %>% pull(lake_w_state) %>% unique())
   )
+    
    
    
   # GW
