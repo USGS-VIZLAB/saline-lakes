@@ -4,9 +4,9 @@
 fetch_by_site_and_service <- function(sites_df, sites_col, lake_col, pcodes, service, start_date, end_date, incrementally = FALSE, split_num = 10) {
   
   lake_name <- sites_df %>% pull(.data[[lake_col]]) %>% head(1)
-  message('Fetching nwis data from sites in ', lake_name, ' Watershed')
+  message('Fetching nwis data from sites in ', lake_name, ' watershed')
   
-  if(!is.na(sites_df[lake_col])){
+  if(!is.na(sites_df[sites_col])){
     start <- Sys.time()
     message('Nwis data fetch starting at ', start)
     
