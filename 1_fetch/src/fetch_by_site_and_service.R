@@ -1,10 +1,13 @@
 #' This function is derived and minorly adjusted from habs proxies fetch source function fetch_by_pcode_and_service_using_hucs.R
 #' https://code.usgs.gov/wma/proxies/habs/wq-data-download/-/blob/main/1_fetch/src/fetch_by_pcode_and_service_using_hucs.R#L34
 
-fetch_by_site_and_service <- function(sites, pcodes, service, start_date, end_date, incrementally = FALSE, split_num = 10) {
-  
+fetch_by_site_and_service <- function(sites_df, sites_col, lake_col, pcodes, service, start_date, end_date, incrementally = FALSE, split_num = 10) {
+
   start <- Sys.time()
   message('Nwis data fetch starting at ', start)
+  
+  ## pulling just sites no into a vector R 
+  sites <- sites_df %>% pull(.data[[sites_col]])
   
   ## incrementally added as binomial param to chunk the sites in order to send requests incrementally through an lapply 
   if(incrementally == TRUE){
@@ -24,6 +27,8 @@ fetch_by_site_and_service <- function(sites, pcodes, service, start_date, end_da
     raw_data <- fetch_nwis_fault_tolerantly(sites, pcodes, service, start_date, end_date)
     
   }
+  
+  raw$lake_w_state <- sites_df %>% pull(.data[[lake_col]]) %>% head(1)
   
   end <- Sys.time()
   message('Nwis data fetch finished at ', end)

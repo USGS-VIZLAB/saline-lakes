@@ -4,10 +4,10 @@ get_NWIS_site_no <- function(basin_huc08, lake_watershed_sf, crs){
   #' @param lake_watershed_sf lake watershed multipolygon 
   #' @param selected_crs crs of the shapefile
   
-  # basin_huc08 <- p1_huc08_df$huc8
-  # lake_watershed_sf <- p1_get_lakes_huc8_sf %>% select(HUC8, Shape)
-  # selected_crs <- 4326
-  
+  # basin_huc08 = p1_huc08_full_basin_sf$huc8
+  # lake_watershed_sf = p2_huc10_watershed_boundary
+  # crs = 4326
+  # 
   huc_grps <- split(basin_huc08,
                     ceiling(seq_along(basin_huc08)/10))
   
@@ -24,7 +24,7 @@ get_NWIS_site_no <- function(basin_huc08, lake_watershed_sf, crs){
   }
   
   ## filter sites to only those within watershed (multi)polygons
-  sites_in_watersheds <- st_join(sites_sf, lake_watershed_sf, left = FALSE) %>%
+  sites_in_watersheds <- st_join(sites_sf,lake_watershed_sf, left = FALSE) %>%
     distinct(site_no, .keep_all = TRUE)
   
   return(sites_in_watersheds)
