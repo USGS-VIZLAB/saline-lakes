@@ -34,9 +34,12 @@ p1_nw_targets_list <- list(
   ## Use `bind_rows()` to bind list into df and group_by() lake name (lake_w_state) to summarize results by lake.
 
   tar_target(
-    p1_nwis_meas_sw_data,
-    fetch_by_site_and_service(sites = p1_site_no_by_lake,
-                              ## note - for service = measurements, pcodes is irrelevant
+    p1_nwis_meas_sw_data_lst,
+    fetch_by_site_and_service(sites_df = p1_site_no_by_lake,
+                              sites_col = 'site_no',
+                              lake_col = 'lake_w_state',
+                              ## note - for service = measurements, pcodes are irrelevant because 
+                              ## we are pulling specific surface water measurement function readNWISmeas()
                               pcodes = p0_sw_params,
                               service = 'measurements',
                               start_date = p0_start,
@@ -45,11 +48,19 @@ p1_nw_targets_list <- list(
     iteration = 'list'
   ),
   
+  tar_target(
+    p1_nwis_meas_sw_data,
+    p1_nwis_meas_sw_data_lst %>%
+      map(~ mutate(.x, across(starts_with('measurement_nu'), as.character))) %>% 
+      bind_rows()
+  ),
+  
+
   # SW - dv - branched by lake with grouped target p1_site_no_by_lake
   ## Use `bind_rows()` to bind list into df and group_by() lake name (lake_w_state) to summarize results by lake.
 
   tar_target(
-    p1_nwis_dv_sw_data,
+    p1_nwis_dv_sw_data_lst,
     fetch_by_site_and_service(sites_df = p1_site_no_by_lake,
                               sites_col = 'site_no',
                               lake_col = 'lake_w_state',
@@ -59,6 +70,12 @@ p1_nw_targets_list <- list(
                               end_date = p0_end),
     pattern = map(p1_site_no_by_lake),
     iteration = 'list'
+  ),
+  
+  tar_target(
+    p1_nwis_dv_sw_data,
+    p1_nwis_dv_sw_data_lst %>% 
+      bind_rows()
   ),
   
   # SW - iv - branched by lake with specifically created grouped target p1_site_no_by_lake_sw_iv
@@ -71,8 +88,7 @@ p1_nw_targets_list <- list(
   ## Specific mapping target for sw iv data fetch
   tar_target(
     p1_site_no_by_lake_sw_iv,
-    {p1_nwis_dv_sw_data %>%
-        bind_rows() %>% 
+    {p1_nwis_dv_sw_data %>%  
         select(lake_w_state, site_no) %>%
         distinct() %>%
         group_by(lake_w_state) %>% 
@@ -83,7 +99,7 @@ p1_nw_targets_list <- list(
   
   ## Fetch iv data
   tar_target(
-    p1_nwis_iv_sw_data,
+    p1_nwis_iv_sw_data_lst,
     fetch_by_site_and_service(sites_df = p1_site_no_by_lake_sw_iv,
                               sites_col = 'site_no',
                               lake_col = 'lake_w_state',
@@ -105,7 +121,9 @@ p1_nw_targets_list <- list(
   
   # tar_target(
   #   p1_nwis_meas_gw_data,
-  #   fetch_by_site_and_service(sites = p1_site_no_by_lake,
+  #   fetch_by_site_and_service(sites_df = p1_site_no_by_lake,
+  #                             sites_col = 'site_no',
+  #                             lake_col = 'lake_w_state',
   #                             pcodes = p0_gw_params,
   #                             service = 'gwlevels',
   #                             start_date = p0_start,
@@ -119,7 +137,9 @@ p1_nw_targets_list <- list(
 
   # tar_target(
   #   p1_nwis_dv_gw_data,
-  #   fetch_by_site_and_service(sites = p1_site_no_by_lake,
+  #   fetch_by_site_and_service(sites_df = p1_site_no_by_lake,
+  #                             sites_col = 'site_no',
+  #                             lake_col = 'lake_w_state',
   #                             pcodes = p0_gw_params,
   #                             service = 'dv',
   #                             start_date = p0_start,
@@ -148,7 +168,9 @@ p1_nw_targets_list <- list(
   
   # tar_target(
   #   p1_nwis_iv_gw_data,
-  #   fetch_by_site_and_service(sites = p1_site_no_by_lake_gw_iv,
+  #   fetch_by_site_and_service(sites_df = p1_site_no_by_lake_gw_iv,
+  #                             sites_col = 'site_no',
+  #                             lake_col = 'lake_w_state',
   #                             pcodes = p0_gw_params,
   #                             service = 'iv',
   #                             start_date = p0_start,

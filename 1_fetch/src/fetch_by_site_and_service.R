@@ -2,17 +2,29 @@
 #' https://code.usgs.gov/wma/proxies/habs/wq-data-download/-/blob/main/1_fetch/src/fetch_by_pcode_and_service_using_hucs.R#L34
 
 fetch_by_site_and_service <- function(sites_df, sites_col, lake_col, pcodes, service, start_date, end_date, incrementally = FALSE, split_num = 10) {
+#  sites_df = p1_site_no_by_lake %>% add_row(lake_w_state = 'tst',site_no = NA) %>% add_row(lake_w_state = 'tst',site_no = '11') %>% filter(lake_w_state == 'tst')
+  # sites_df = p1_site_no_by_lake %>% filter(lake_w_state == 'Eagle Lake,CA')
+  # sites_col = 'site_no'
+  # lake_col = 'lake_w_state'
+  # ## note - for service = measurements, pcodes is irrelevant
+  # pcodes = p0_sw_params
+  # service = 'measurements'
+  # start_date = p0_start
+  # end_date = p0_end
+  # incrementally = FALSE
+  # split_num = 10
+  # 
   
   lake_name <- sites_df %>% pull(.data[[lake_col]]) %>% head(1)
   message('Fetching nwis data from sites in ', lake_name, ' watershed')
   
-  if(!is.na(sites_df[sites_col])){
+  if(!all(is.na(sites_df[sites_col]))){
     start <- Sys.time()
     message('Nwis data fetch starting at ', start)
     
     ## pulling just sites no into a vector R 
-    sites <- sites_df %>% pull(.data[[sites_col]])
-    
+    sites <- sites_df %>% filter(!is.na(site_no)) %>% pull(.data[[sites_col]])
+
     ## Incrementally added as binomial param to chunk the sites in order to send requests incrementally through the lapply 
     ## set iv requests as incrementally == T since it is many more data points, while dv requests incrementally == F
     if(incrementally == TRUE){
@@ -40,16 +52,17 @@ fetch_by_site_and_service <- function(sites_df, sites_col, lake_col, pcodes, ser
     ## printing type to see if select can be applied to raw_data. If empty cannot be applied
     print(class(raw_data))
     
-    if(is.data.frame(raw_data)){
-      raw_data$lake_w_state <- lake_name
-      raw_data <- raw_data %>% select(agency_cd, lake_w_state, site_no, everything())
-    }
-    
-    if(is.null(raw_data)){
+    if(is.null(raw_data) | "No.sites.data.found.using.the.selection.criteria.specified." %in% colnames(raw_data)){
       raw_data <- data.frame(lake_w_state = lake_name,
                              site_no = NA)
     }
     
+    else if(is.data.frame(raw_data)){
+      raw_data$lake_w_state <- lake_name
+      raw_data <- raw_data %>% select(agency_cd, lake_w_state, site_no, everything())
+    }
+    
+        
     end <- Sys.time()
     message('Nwis data fetch finished at ', end)
     
@@ -90,7 +103,7 @@ fetch_nwis_fault_tolerantly <- function(sites, pcodes, service, start_date, end_
     )
   }else{
   data_returned <- tryCatchLog(
-    retry::retry(readNWISdata(sites = sites , 
+    retry::retry(readNWISdata(sites = sites, 
                        parameterCd = pcodes,
                        startDate = start_date,
                        endDate = end_date,
