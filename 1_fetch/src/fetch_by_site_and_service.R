@@ -2,20 +2,19 @@
 #' https://code.usgs.gov/wma/proxies/habs/wq-data-download/-/blob/main/1_fetch/src/fetch_by_pcode_and_service_using_hucs.R#L34
 
 fetch_by_site_and_service <- function(sites_df, sites_col, lake_col, pcodes, service, start_date, end_date, incrementally = FALSE, split_num = 10) {
-  # targets::tar_load(p1_site_no_by_lake)
-  # sites_df = p1_site_no_by_lake %>% add_row(lake_w_state = 'tst',site_no = NA) %>% add_row(lake_w_state = 'tst',site_no = '11') %>% filter(lake_w_state == 'tst')
-  # sites_df = p1_site_no_by_lake %>% filter(lake_w_state == 'Eagle Lake,CA')
-  # sites_col = 'site_no'
-  # lake_col = 'lake_w_state'
-  # ## note - for service = measurements, pcodes is irrelevant
-  # pcodes = p0_sw_params
-  # service = 'iv'
-  # start_date = p0_start
-  # end_date = p0_end
-  # incrementally = TRUE
-  # split_num = 10
-
+  #' @description Pull nwis data for selected sites. This function expected a sites-df input for it to be applied as on branched target
+  #' @param sites_df dataframe that contains list of sites. THis data frame should outline all sites belonging to each lake
+  #' @param sites_col col name as string of the sites_df that contains list of sites
+  #' @param lake_col col name as string from teh sites_sf that contains lakes.  
+  #' @param pcodes nwis parameter codes. str or vector of str
+  #' @param service NWIS data service. See NWIS readNWISdata() fun for details (e.g. 'measurements', 'gwlevels', 'dv', 'iv')
+  #' @param start_date str. start date of data query
+  #' @param end_date str. end date of data query
+  #' @param incrementally logical. If using fun for a large data pull across large list of sites, worth running this incrementally
+  #' @param split_num default = 10. If incrementally = TRUE, the list of sites will be split into groups to incrementally fetch nwis data
   
+  ## Pulling lake names. Useful as this fun is used in target branching and this allow to populate the branch output
+  ## Note - this likely will be confusing if the function is used outside of branched format
   lake_name <- sites_df %>% pull(.data[[lake_col]]) %>% head(1)
   message('Fetching nwis data from sites in ', lake_name, ' watershed')
   
@@ -23,7 +22,7 @@ fetch_by_site_and_service <- function(sites_df, sites_col, lake_col, pcodes, ser
     start <- Sys.time()
     message('Nwis data fetch starting at ', start)
     
-    ## pulling just sites no into a vector R 
+    ## Pulling just sites no into a vector R 
     sites <- sites_df %>% filter(!is.na(site_no)) %>% pull(.data[[sites_col]])
 
     ## Incrementally added as binomial param to chunk the sites in order to send requests incrementally through the lapply 
