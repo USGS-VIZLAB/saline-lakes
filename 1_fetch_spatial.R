@@ -175,7 +175,7 @@ p1_sp_targets_list <- list(
   # Fetch nhdplus flowlines for each selected huc8 region separately through dynamic branching - note difference between branches 
   tar_target(
     p1_lake_flowlines_huc8_sf,
-    {get_nhdplus(AOI = {p1_get_lakes_huc8_sf %>% filter(HUC8 == p1_huc8_vec)},
+    {get_nhdplus(AOI = {p1_get_lakes_huc8_sf %>% filter(HUC8 %in% p1_huc8_vec)},
                  realization = 'flowline') %>%
         ## fixing col that are automatically transforming to char
         mutate(across(c(surfarea, lakefract, rareahload), ~as.numeric(.x)),
