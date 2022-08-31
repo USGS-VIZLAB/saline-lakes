@@ -21,6 +21,14 @@ Data source table:
 |[National Hydrological Dataset - high res](https://www.usgs.gov/national-hydrography/nhdplus-high-resolution) - water body attributes | X 
 
 
+Definitions: 
+
+Water body and watershed extent definitions:
+
+  * **Lake boundary: ** Border of water body
+  * **Lake boundary and Wetlands:** Broader outline of our focal lakes that includes lake wetlands
+  * **Watershed Extents:**
+
 ```{r load, echo = FALSE, warnings = FALSE} 
 
 library(targets)
