@@ -16,26 +16,25 @@ The purpose of this document is to establish an agreed upon spatial extent for e
 
 Data source table: 
 
-| Feature  |Database: | Notes     |
+| Feature  |Source/Database | Notes     |
 | ---------|----------|-----------| 
 |Water Bodies |[National Hydrological Dataset - high res](https://www.usgs.gov/national-hydrography/nhdplus-high-resolution) - water body attributes | Carson sink was manually drawn 
 | Huc | [National Hydrological Dataset - high res](https://www.usgs.gov/national-hydrography/nhdplus-high-resolution) - HUC6,8,10,12 | X
 |Flowlines | [National Hydrological Dataset - medium res](https://www.usgs.gov/national-hydrography/nhdplus) - NHDFLowlines
-
-| Gauge sites | NWIS
-| field measurements |  
+| Gauge sites | NWIS |
+| field measurements | NWIS |  
 
 #### Definitions: 
 
 Water body and watershed extent definitions:
 
   * **Lake boundary: ** Lake polygon, outlined by the border of water body
-  * **Lake boundary and Wetlands*: ** Broader outline of our focal lakes that includes lake wetlands
+  * **Lake boundary and Wetlands:** * Broader outline of our focal lakes that includes lake wetlands
   * **Watershed Extents:**
 
-/* note yet created 
+* note yet created 
 
-#### Defining watershed extents:
+### Defining watershed extents:
 
 To obtain watershed extents for each lake (layer:Watershed Extent), we went through an iterative process of identifying the HUC6: basin of each lake and the scaled down to collect all the huc8 and huc10s of the region. 
 Once we determined all the Huc6,Hu8, and Huc10 associated with each lake, we  (see sharepoint excel [here](https://doimspp.sharepoint.com/:x:/s/IIDDStaff/EdhaQ9_tsPNIhW32hI9nydAB9RO5CDXSHx3yGLVWtaxwNA?e=wl8wS4)) carefully reviewed and consulted on theses HU and selected the units that are considered 'in' given lake's watershed scope, noting "Yes" in the excel when included. In some cases, the watershed of a given lake is the entire HUC6 within which that lake belong's to (e.g. Pyramid Lake, CA), this is the default if no more precise information is provided. In other cases, the watershed of a given lake comprises of one or several huc10s (Eagle Lake, CA). Our output watershed extent shapefile is displayed by the layer Watershed Extent 
@@ -99,7 +98,7 @@ targets::tar_load(p1_site_in_watersheds_sf)
 
 
 
-## Map 1 Huc 6 Lake basins
+### Defining watershed extents: Map
 ```{r huc_basins, message =FALSE, echo = FALSE, warnings = FALSE}
 
 leaflet_map_huc <- leaflet() %>% 
@@ -131,8 +130,7 @@ leaflet_map_huc <- leaflet() %>%
     #            pal = pal_gage, values = ~in_HUC8,
     #            position = "bottomright") %>%
   addLayersControl(baseGroups = c("Labels", "No Labels"),
-                     overlayGroups = c("Great Basin HUC6", "Great Basin HUC8", "Great Basin HUC10",
-                                       "Saline lakes", "Watershed Extent","Watershed Extent v2",
+                     overlayGroups = c("Saline lakes", "Great Basin HUC6", "Great Basin HUC8", "Great Basin HUC10", "Watershed Extent","Watershed Extent v2",
                                        "Watershed Extent by huc10", "Lake labels"),
                      position = "topright",
                      options = layersControlOptions(collapsed = F))
