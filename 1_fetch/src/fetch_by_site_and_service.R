@@ -93,12 +93,12 @@ fetch_by_site_and_service <- function(sites_df, sites_col, lake_col, pcodes, ser
 
 
 fetch_nwis_fault_tolerantly <- function(sites, pcodes, service, start_date, end_date, max_tries = 10) {
-  
-  # sites
-  # pcodes
-  # service = 'iv'
-  # start_date
-  # end_date
+  #' @param sites str or vector of str. single site or vector of sites to query nwis data from
+  #' @param pcodes str or vector of str. parameter codes to get data from (e.g. c('00060','00065'))
+  #' @param service NWIS data service. See NWIS readNWISdata() fun for details (e.g. 'measurements', 'gwlevels', 'dv', 'iv')
+  #' @param start_date str. start date of data query
+  #' @param end_date str. end date of data query
+  #' @param max_tries default 10. Number of tries for fetching NWIS data before returning NULL
   
   ## adding condition for surface water because service = 'measurements' does not work with readNWISdata
   if(service == 'measurements'){
