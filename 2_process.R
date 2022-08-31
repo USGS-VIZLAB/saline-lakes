@@ -32,7 +32,9 @@ p2_targets_list <- list(
                             states_sf = p1_states_sf,
                             selected_crs = selected_crs) %>%
     bind_rows(p1_saline_lakes_bnds_sf %>%
-                  filter(GNIS_Name == 'Carson Sink'))
+                  filter(GNIS_Name == 'Carson Sink') %>%
+                mutate(X = unlist(st_centroid(geometry))[1],
+                       Y = unlist(st_centroid(geometry))[2]))
   ),
   
   # Basin Flowlines Processing #
