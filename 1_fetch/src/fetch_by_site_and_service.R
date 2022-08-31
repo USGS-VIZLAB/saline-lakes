@@ -2,18 +2,19 @@
 #' https://code.usgs.gov/wma/proxies/habs/wq-data-download/-/blob/main/1_fetch/src/fetch_by_pcode_and_service_using_hucs.R#L34
 
 fetch_by_site_and_service <- function(sites_df, sites_col, lake_col, pcodes, service, start_date, end_date, incrementally = FALSE, split_num = 10) {
-#  sites_df = p1_site_no_by_lake %>% add_row(lake_w_state = 'tst',site_no = NA) %>% add_row(lake_w_state = 'tst',site_no = '11') %>% filter(lake_w_state == 'tst')
+  # targets::tar_load(p1_site_no_by_lake)
+  # sites_df = p1_site_no_by_lake %>% add_row(lake_w_state = 'tst',site_no = NA) %>% add_row(lake_w_state = 'tst',site_no = '11') %>% filter(lake_w_state == 'tst')
   # sites_df = p1_site_no_by_lake %>% filter(lake_w_state == 'Eagle Lake,CA')
   # sites_col = 'site_no'
   # lake_col = 'lake_w_state'
   # ## note - for service = measurements, pcodes is irrelevant
   # pcodes = p0_sw_params
-  # service = 'measurements'
+  # service = 'iv'
   # start_date = p0_start
   # end_date = p0_end
-  # incrementally = FALSE
+  # incrementally = TRUE
   # split_num = 10
-  # 
+
   
   lake_name <- sites_df %>% pull(.data[[lake_col]]) %>% head(1)
   message('Fetching nwis data from sites in ', lake_name, ' watershed')
@@ -50,16 +51,19 @@ fetch_by_site_and_service <- function(sites_df, sites_col, lake_col, pcodes, ser
     
     # Prepping final dataframe to be returned - should be easy to bind even if lake has no data 
     ## printing type to see if select can be applied to raw_data. If empty cannot be applied
+    # Checking output of raw_data
     print(class(raw_data))
     
-    if(is.null(raw_data) | "No.sites.data.found.using.the.selection.criteria.specified." %in% colnames(raw_data)){
-      raw_data <- data.frame(lake_w_state = lake_name,
+    ## Creating empty df if output is null. Getting various outputs so aiming catching them all in this if statement 
+    if((is.null(raw_data)) | (any(nrow(raw_data) == 0)) | ("No.sites.data.found.using.the.selection.criteria.specified." %in% colnames(raw_data))){
+      final_data <- data.frame(lake_w_state = lake_name,
                              site_no = NA)
     }
     
+    ## for dataframes larger than nrow() == 0 
     else if(is.data.frame(raw_data)){
-      raw_data$lake_w_state <- lake_name
-      raw_data <- raw_data %>% select(agency_cd, lake_w_state, site_no, everything())
+      final_data <- raw_data %>% mutate(lake_w_state = lake_name) %>% 
+        select(agency_cd, lake_w_state, site_no, everything())
     }
     
         
@@ -70,9 +74,9 @@ fetch_by_site_and_service <- function(sites_df, sites_col, lake_col, pcodes, ser
     # LP - Remove attributes, which typically have a timestamp associated
     # with them this can cause strange rebuilds of downstream data, 
     # even if the data itself is the same.
-    attr(raw_data, "comment") <- NULL
-    attr(raw_data, "queryTime") <- NULL
-    attr(raw_data, "headerInfo") <- NULL
+    attr(final_data, "comment") <- NULL
+    attr(final_data, "queryTime") <- NULL
+    attr(final_data, "headerInfo") <- NULL
   
   } 
   
@@ -81,15 +85,21 @@ fetch_by_site_and_service <- function(sites_df, sites_col, lake_col, pcodes, ser
     
     message(paste(lake_name, ' has no NWIS sites'))
     
-    raw_data <- data.frame(lake_w_state = lake_name,
+    final_data <- data.frame(lake_w_state = lake_name,
                            site_no = NA)
   }
   
-  return(raw_data)
+  return(final_data)
 }
 
 
 fetch_nwis_fault_tolerantly <- function(sites, pcodes, service, start_date, end_date, max_tries = 10) {
+  
+  # sites
+  # pcodes
+  # service = 'iv'
+  # start_date
+  # end_date
   
   ## adding condition for surface water because service = 'measurements' does not work with readNWISdata
   if(service == 'measurements'){
