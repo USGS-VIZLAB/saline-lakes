@@ -16,34 +16,61 @@ The purpose of this document is to establish an agreed upon spatial extent for e
 
 Data source table: 
 
-|Database: | Use:     |
-| ---------|----------|
-|[National Hydrological Dataset - high res](https://www.usgs.gov/national-hydrography/nhdplus-high-resolution) - water body attributes | X 
+| Feature  |Database: | Notes     |
+| ---------|----------|-----------| 
+|Water Bodies |[National Hydrological Dataset - high res](https://www.usgs.gov/national-hydrography/nhdplus-high-resolution) - water body attributes | Carson sink was manually drawn 
+| Huc | [National Hydrological Dataset - high res](https://www.usgs.gov/national-hydrography/nhdplus-high-resolution) - HUC6,8,10,12 | X
+|Flowlines | [National Hydrological Dataset - medium res](https://www.usgs.gov/national-hydrography/nhdplus) - NHDFLowlines
 
+| Gauge sites | NWIS
+| field measurements |  
 
-Definitions: 
+#### Definitions: 
 
 Water body and watershed extent definitions:
 
-  * **Lake boundary: ** Border of water body
-  * **Lake boundary and Wetlands:** Broader outline of our focal lakes that includes lake wetlands
+  * **Lake boundary: ** Lake polygon, outlined by the border of water body
+  * **Lake boundary and Wetlands*: ** Broader outline of our focal lakes that includes lake wetlands
   * **Watershed Extents:**
 
-```{r load_lbs, echo = FALSE, warnings = FALSE} 
+/* note yet created 
+
+#### Defining watershed extents:
+
+To obtain watershed extents for each lake (layer:Watershed Extent), we went through an iterative process of identifying the HUC6: basin of each lake and the scaled down to collect all the huc8 and huc10s of the region. 
+Once we determined all the Huc6,Hu8, and Huc10 associated with each lake, we  (see sharepoint excel [here](https://doimspp.sharepoint.com/:x:/s/IIDDStaff/EdhaQ9_tsPNIhW32hI9nydAB9RO5CDXSHx3yGLVWtaxwNA?e=wl8wS4)) carefully reviewed and consulted on theses HU and selected the units that are considered 'in' given lake's watershed scope, noting "Yes" in the excel when included. In some cases, the watershed of a given lake is the entire HUC6 within which that lake belong's to (e.g. Pyramid Lake, CA), this is the default if no more precise information is provided. In other cases, the watershed of a given lake comprises of one or several huc10s (Eagle Lake, CA). Our output watershed extent shapefile is displayed by the layer Watershed Extent 
+
+_Note: Watershed Extent V.2 is an alternative Watershed Extent layer that excludes the large HUC6:Humboldt. this HUC6 overlaps with Carson Sink, however may deem this area out of the lake's watershed scope do to size)._ 
+
+You may explore the following map to visualize the different HUC areas within our basin and the final watershed extents determined after careful iteration on feedback. 
+
+Layer definitions: 
+ Great Basin HUC6:
+ Great Basin HUC8:
+ Great Basin HUC10:
+ Saline lakes:
+ Watershed Extent:
+ Watershed Extent by huc10:
+ Watershed Extent v2:
+
+
+```{r load_lbs, echo = FALSE,message = FALSE, warnings = FALSE} 
 
 library(targets)
 library(leaflet)
 library(scico)
 library(scales)
-library(tidyverse)
 library(dplyr)
+#library(vctrs)
+library(rmapshaper)
+
 source('3_visualize/src/prep_viz_data.R')
 source('3_visualize/src/interactive_map.R')
 
 ```
 
 
-```{r load_targets, echo = FALSE, warnings = FALSE}
+```{r load_targets, echo = FALSE, message = FALSE, warnings = FALSE}
 
 ## HUC
 tar_load(p1_get_lakes_huc6_sf)
@@ -58,8 +85,9 @@ tar_load(p3_saline_lakes_sf)
 tar_load(p2_huc10_watershed_boundary)
 tar_load(p2_huc10_watershed_boundary_no_humbolt_huc6)
 tar_load(p2_lake_watersheds_dissolved)
+tar_load(p2_lake_watersheds_dissolved_no_humbolt_huc6)
 
-## 
+## flowlines
 tar_load(p2_lake_tributaries)
 tar_load(p3_flowlines_sf)
 
@@ -69,20 +97,10 @@ targets::tar_load(p1_site_in_watersheds_sf)
 
 ```
 
-```{r minor_processing, echo = FALSE, warnings = FALSE}
-
-p2_lake_watersheds_dissolved_no_humbolt_huc6 <- p2_huc10_watershed_boundary_no_humbolt_huc6 %>% 
-  group_by(lake_w_state) %>%
-  summarize(geometry = sf::st_union(geom)) %>%
-  ungroup()
-
-```
-
-You may explore the following map to visualize the different HUC areas within our basin and the final watershed extents determined after careful iteration on feedback. 
 
 
 ## Map 1 Huc 6 Lake basins
-```{r huc_basins}
+```{r huc_basins, message =FALSE, echo = FALSE, warnings = FALSE}
 
 leaflet_map_huc <- leaflet() %>% 
   addProviderTiles("Esri.WorldGrayCanvas", group = c("No labels", "Labels"))  %>%
@@ -90,12 +108,14 @@ leaflet_map_huc <- leaflet() %>%
     addProviderTiles("CartoDB.PositronOnlyLabels", group = "Labels") %>%
     ## NOTE - compared to previos version of function - I've removed label param (no label column like below)
       # Add data layers (overlayGroups)
-    addPolygons(data = p1_get_lakes_huc6_sf, group = "Great Basin HUC6",
+    addPolygons(data = p1_get_lakes_huc6_sf %>% ms_simplify(), group = "Great Basin HUC6",
                 color = 'green', fillColor = "#C3CB9F", opacity = 0.4, weight = 1) %>% 
-    addPolygons(data = p1_get_lakes_huc8_sf, group = "Great Basin HUC8",
+    addPolygons(data = p1_get_lakes_huc8_sf %>% ms_simplify(), group = "Great Basin HUC8",
                 color = 'blue', fillColor = "#C3CB9F", opacity = 0.4, weight = 1) %>% 
-    addPolygons(data = p1_get_lakes_huc10_sf, group = "Great Basin HUC10",
+    addPolygons(data = p1_get_lakes_huc10_sf %>% ms_simplify(), group = "Great Basin HUC10",
                 color = '#3A6DB7', opacity = 0.4, weight = 1) %>% 
+    addPolygons(data = p2_huc10_watershed_boundary %>% ms_simplify(), group = "Watershed Extent by huc10",
+                color = 'black', opacity = 0.4, weight = 2) %>%
     addPolygons(data = p2_lake_watersheds_dissolved, group = "Watershed Extent",
                 color = 'black', opacity = 0.4, weight = 3) %>% 
     addPolygons(data = p2_lake_watersheds_dissolved_no_humbolt_huc6, group = "Watershed Extent v2",
@@ -106,15 +126,22 @@ leaflet_map_huc <- leaflet() %>%
       addLabelOnlyMarkers(data = p3_saline_lakes_sf, lng = ~X, lat = ~Y, group = "Lake labels",
                         label = ~lake_w_state,
                         labelOptions = labelOptions(noHide = T, textOnly = T)) %>% 
-    # addLegend(data = , group = c("Gage sites"),
+    # addLegend(data = , group = c("Watershed"),
     #            title = "Within saline lake subbasin",
     #            pal = pal_gage, values = ~in_HUC8,
     #            position = "bottomright") %>%
   addLayersControl(baseGroups = c("Labels", "No Labels"),
                      overlayGroups = c("Great Basin HUC6", "Great Basin HUC8", "Great Basin HUC10",
-                                       "Saline lakes", "Watershed Extent","Watershed Extent v2", 
-                                       "Lake labels"),
+                                       "Saline lakes", "Watershed Extent","Watershed Extent v2",
+                                       "Watershed Extent by huc10", "Lake labels"),
                      position = "topright",
                      options = layersControlOptions(collapsed = F))
+
+```
+
+
+```{r message =FALSE, echo = FALSE, warnings = FALSE}
+
+leaflet_map_huc
 
 ```

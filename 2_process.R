@@ -108,5 +108,15 @@ p2_targets_list <- list(
         group_by(lake_w_state) %>%
       summarize(geometry = sf::st_union(geom)) %>%
       ungroup()
+  ),
+  
+  ## Creating a dissolved version of the watershed boundary without huc6:humboldt
+  tar_target(
+    p2_lake_watersheds_dissolved_no_humbolt_huc6,
+    p2_huc10_watershed_boundary_no_humbolt_huc6 %>% 
+      group_by(lake_w_state) %>%
+      summarize(geometry = sf::st_union(geom)) %>%
+      ungroup()
   )
+  
 )
