@@ -2,6 +2,9 @@
 .Rhistory
 .RData
 .Ruserdata
+.RProfile
+.Renviron
+.Renvironment
 1_fetch/in/*
 !1_fetch/in/saline_lakes.csv
 !1_fetch/in/states_shp/.placeholder

@@ -83,12 +83,19 @@ p2_targets_list <- list(
     p2_huc_manual_verification_df %>% 
       # Joining two df avoiding creating duplicate cols
       left_join(p1_get_lakes_huc10_sf %>%
-                  select(!p2_common_cols, 'HUC10'),
+                  select(!all_of(p2_common_cols), 'HUC10'),
                 by = 'HUC10') %>%
       sf::st_as_sf() %>% 
     distinct(HUC10, lake_w_state,
              .keep_all = TRUE)
   ),
+  
+  ## Watershed boundary ungrouped df - version that removes extra Carson Sink HUC6-Humboldt in northern NV 
+  tar_target(
+    p2_huc10_watershed_boundary_no_humbolt_huc6,
+    p2_huc10_watershed_boundary %>% filter(HUC6_Name != 'Humboldt')
+  ),
+  
   
   ## Dissolved watershed boundary
   ### Note dissolve is done by the lake_w_state attr - no other attributes stay. Output sf object is a multi-polygon obj with continuous polygon per lake

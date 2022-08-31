@@ -17,7 +17,8 @@ process_saline_lakes_sf<- function(nhdhr_waterbodies, lakes_sf, states_sf, selec
     filter(lake_w_state %in% lakes_sf$lake_w_state)
   
   ## filter out incorrect lakes (e.g. Eagles lakes in CA) using the lat long of Lakes and spatial join
-  buf_nhdhr_saline_lakes_sf <- nhdhr_saline_lakes_sf %>% st_buffer(dist = 10^4) %>% st_join(y = lakes_sf) %>% filter(!is.na(lake))
+  buf_nhdhr_saline_lakes_sf <- nhdhr_saline_lakes_sf %>% st_buffer(dist = 10^4) %>%
+    st_join(y = lakes_sf) %>% filter(!is.na(lake))
   
   ## Spatial group by
   lakes_sf_nhdhr <- nhdhr_saline_lakes_sf %>%
@@ -85,8 +86,9 @@ process_saline_lakes_sf<- function(nhdhr_waterbodies, lakes_sf, states_sf, selec
                          ifelse(GNIS_Name == 'Warner Lakes',
                                 'From nhd hr. The Warner lakes (aka Warner Wetlands) consist of 12 shallow lakes in South East Oregon, and include Pelican, Crump, Hart lakes, among others', 'From nhd hr')))
   
+
   remove(buf_nhdhr_saline_lakes_sf)
-  
+
   return(final_lakes)
   
 }

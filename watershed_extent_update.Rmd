@@ -8,11 +8,26 @@ date: "8/23/2022"
 output: html_document
 ---
 
-The purpose of this document is to establish agreed upon spatial extent for each of the saline lakes, including:
+The purpose of this document is to establish an agreed upon spatial extent for each of the saline lakes, including:
 
 1. Lake polygons - incl. Carson Sink
 2. Updated Watershed boundaries
 3. Upstream flowlines within each watershed
+
+Data source table: 
+
+|Database: | Use:     |
+| ---------|----------|
+|[National Hydrological Dataset - high res](https://www.usgs.gov/national-hydrography/nhdplus-high-resolution) - water body attributes | X 
+
+
+Definitions: 
+
+Water body and watershed extent definitions:
+
+  * **Lake boundary: ** Border of water body
+  * **Lake boundary and Wetlands:** Broader outline of our focal lakes that includes lake wetlands
+  * **Watershed Extents:**
 
 ```{r load, echo = FALSE, warnings = FALSE} 
 
