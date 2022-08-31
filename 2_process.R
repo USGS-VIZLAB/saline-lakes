@@ -45,7 +45,8 @@ p2_targets_list <- list(
                            lakes_sf = p2_saline_lakes_sf,
                            buffer_dist = 10000,
                            realization = 'flowline',
-                           stream_order = 3)
+                           stream_order = 3) %>% 
+      filter(streamorde >= 3)
   ),
   
   ## Get only tributaries of the Lakes using get_UT function 
