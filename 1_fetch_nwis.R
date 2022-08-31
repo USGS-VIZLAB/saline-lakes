@@ -12,7 +12,7 @@ p1_nw_targets_list <- list(
                      crs = selected_crs)
     ),
   
-  ###################
+  ##########################################
   # NWIS Data Queries
   
   ## Target to allow branching across lakes
@@ -155,7 +155,7 @@ p1_nw_targets_list <- list(
     
    
    
-  # GW
+  # GW #
   
   # GW - field measurements - - branched by lake with grouped target p1_site_no_by_lake
   ## Use `bind_rows()` to bind list into single df and group_by() lake name (lake_w_state) to summarize results by lake.
@@ -218,7 +218,7 @@ p1_nw_targets_list <- list(
   #                             end_date = p0_end),
   # pattern = map(p1_site_no_by_lake_gw_iv),
   # iteration = 'list'
-  # ),
+  # )
   # 
 
 )
