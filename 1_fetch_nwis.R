@@ -131,6 +131,22 @@ p1_nw_targets_list <- list(
     iteration = 'list'
   ),
   
+  ## Fetch iv data
+  tar_target(
+    p1_nwis_iv_sw_data_lst_shrt,
+    fetch_by_site_and_service(sites_df = p1_site_no_by_lake_sw_iv,
+                              sites_col = 'site_no',
+                              lake_col = 'lake_w_state',
+                              pcodes = p0_sw_params,
+                              service = 'iv',
+                              start_date = '2015-01-01',
+                              end_date = '2016-01-01',
+                              incrementally = TRUE,
+                              split_num = 10),
+    pattern = map(p1_site_no_by_lake_sw_iv),
+    iteration = 'list'
+  ),
+  
   tar_target(
     p1_br_lk_xwalk_iv_sw,
     tibble(branch_name = names(p1_nwis_iv_sw_data_lst),
