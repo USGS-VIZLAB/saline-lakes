@@ -54,10 +54,10 @@ fetch_by_site_and_service <- function(sites_df, sites_col, lake_col, pcodes, ser
     # Checking output of raw_data
     print(class(raw_data))
     
-    ## Creating empty df if output is null. Getting various outputs so aiming catching them all in this if statement 
+    ## Creating empty df if output is null. Getting various invalid outputs so aiming catching them all in this if statement 
     if((is.null(raw_data)) | (any(nrow(raw_data) == 0)) | ("No.sites.data.found.using.the.selection.criteria.specified." %in% colnames(raw_data))){
-      final_data <- data.frame(lake_w_state = lake_name,
-                             site_no = NA)
+      
+      final_data <- data.frame(lake_w_state = lake_name, site_no = NA)
     }
     
     ## for dataframes larger than nrow() == 0 
