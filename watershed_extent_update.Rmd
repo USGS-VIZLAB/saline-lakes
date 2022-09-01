@@ -26,22 +26,22 @@ Data source table:
 
 #### Definitions: 
 
-Water body and watershed extent definitions:
+Geospatial features: 
+  * Water body and watershed extent definitions:
 
-  * **Lake boundary: ** Lake polygon, outlined by the border of water body
-  * **Lake boundary and Wetlands:** * Broader outline of our focal lakes that includes lake wetlands
-  * **Watershed Extents:**
+    * **Saline Lake: ** Lake polygon, outlined by the border of the water body feature
+    * **Lake boundary and Wetlands:** * Broader outline of our focal lakes that includes lake wetlands
+    * **Watershed Extents:** Extent of the lake's watershed containing 
 
-* not yet created 
+_* not yet created_
 
-### Defining watershed extents:
+### Defining watershed extents: Steps:
 
-To obtain watershed extents for each lake (layer:Watershed Extent), we went through an iterative process of identifying the HUC6: basin of each lake and the scaled down to collect all the huc8 and huc10s of the region. 
-Once we determined all the Huc6,Hu8, and Huc10 associated with each lake, we  (see sharepoint excel [here](https://doimspp.sharepoint.com/:x:/s/IIDDStaff/EdhaQ9_tsPNIhW32hI9nydAB9RO5CDXSHx3yGLVWtaxwNA?e=wl8wS4)) carefully reviewed and consulted on theses HU and selected the units that are considered 'in' given lake's watershed scope, noting "Yes" in the excel when included. In some cases, the watershed of a given lake is the entire HUC6 within which that lake belong's to (e.g. Pyramid Lake, CA), this is the default if no more precise information is provided. In other cases, the watershed of a given lake comprises of one or several huc10s (Eagle Lake, CA). Our output watershed extent shapefile is displayed by the layer Watershed Extent 
-
-_Note: Watershed Extent V.2 is an alternative Watershed Extent layer that excludes the large HUC6:Humboldt. this HUC6 overlaps with Carson Sink, however may deem this area out of the lake's watershed scope do to size)._ 
-
-You may explore the following map to visualize the different HUC areas within our basin and the final watershed extents determined after careful iteration on feedback. 
+**Watershed Extent**
+  1. Identified HUC6: basin of each lake
+  2. Collected all the huc8 and huc10s within those HUC6 
+  3. Created spreadsheet mapping Huc6,Hu8,and Huc10 associated with each lake (see sharepoint excel [here](https://doimspp.sharepoint.com/:x:/s/IIDDStaff/EdhaQ9_tsPNIhW32hI9nydAB9RO5CDXSHx3yGLVWtaxwNA?e=wl8wS4)), then reviewed and consulted on theses HU to identify the units considered within a given lake's watershed scope. 
+    In some cases, the watershed of a given lake is the entire HUC6 within which that lake belong's to (e.g. Pyramid Lake,     CA), this is the default if no more precise information is provided. In other cases, the watershed of a given lake         comprises of one or several huc10s (Eagle Lake, CA). Our output watershed extent shapefile is displayed by the layer       Watershed Extent.
 
 Layer definitions: 
  Great Basin HUC6:
@@ -148,6 +148,85 @@ leaflet_map_huc
 
 ```
 
+
+_Note: Watershed Extent V.2 is an alternative Watershed Extent layer that excludes the large HUC6:Humboldt. this HUC6 overlaps with Carson Sink, however may deem this area out of the lake's watershed scope do to size)._ 
+
+You may explore the following map to visualize the different HUC areas within our basin and the final watershed extents determined after careful iteration on feedback. 
+
+**Some initial questions:**
+
+- **Carson Sink:** Carson Sink in the manner it is drawn overlaps with two HUC6 – since default is to take HUC6 – the basin of the lake – both HUC6-Humbolt and HUC6-Carson Desert basins are currently included as part of that lakes watershed extent. However, through quick review of literature, HUC6: Carson Desert seems to be the agreed-upon basin for Carson Sink. Is this correct? 
+
+```{r message =FALSE, echo = FALSE, warnings = FALSE}
+
+crsn_sk_bbox <- p2_lake_watersheds_dissolved %>%
+  filter(lake_w_state == 'Carson Sink,NV') %>% 
+  sf::st_bbox() %>% as.vector()
+
+leaflet_map_crsn_sk <- leaflet() %>% 
+  addProviderTiles("Esri.WorldGrayCanvas", group = c("No labels", "Labels"))  %>%
+    #addProviderTiles("HERE.satelliteDay", group = c("No labels", "Labels"))  %>%
+    addProviderTiles("CartoDB.PositronOnlyLabels", group = "Labels") %>%
+  fitBounds(crsn_sk_bbox[1], crsn_sk_bbox[2], crsn_sk_bbox[3], crsn_sk_bbox[4]) %>% 
+    ## NOTE - compared to previos version of function - I've removed label param (no label column like below)
+      # Add data layers (overlayGroups)
+    addPolygons(data = p2_lake_watersheds_dissolved, group = "Watershed Extent",
+                color = 'black', opacity = 0.4, weight = 3) %>% 
+    addPolygons(data = p2_lake_watersheds_dissolved_no_humbolt_huc6, group = "Watershed Extent v2",
+                color = 'black', fillColor = "#C3CB9F", opacity = 0.4, weight = 3) %>% 
+    addPolygons(data = p3_saline_lakes_sf, group = "Saline lakes",
+                color = '#3A6DB7', opacity = 0.6, weight = 1,
+                popup = ~label) %>% 
+      addLabelOnlyMarkers(data = p3_saline_lakes_sf, lng = ~X, lat = ~Y, group = "Lake labels",
+                        label = ~lake_w_state,
+                        labelOptions = labelOptions(noHide = T, textOnly = T)) %>% 
+  addLayersControl(baseGroups = c("Labels", "No Labels"),
+                     overlayGroups = c("Saline lakes", "Watershed Extent","Watershed Extent v2",
+                                       "Lake labels"),
+                     position = "topright",
+                     options = layersControlOptions(collapsed = F))
+
+leaflet_map_crsn_sk
+
+```
+
+- **Sevier Lake, UT:** Should Sevier Lake incl. Middle and Upper sevier
+
+```{r message =FALSE, echo = FALSE, warnings = FALSE}
+
+sevier_bbox <- p2_lake_watersheds_dissolved %>%
+  filter(lake_w_state == 'Sevier Lake,UT') %>% 
+  sf::st_bbox() %>% as.vector()
+
+leaflet_map_sevier <- leaflet() %>% 
+  addProviderTiles("Esri.WorldGrayCanvas", group = c("No labels", "Labels"))  %>%
+    #addProviderTiles("HERE.satelliteDay", group = c("No labels", "Labels"))  %>%
+    addProviderTiles("CartoDB.PositronOnlyLabels", group = "Labels") %>%
+  fitBounds(sevier_bbox[1], sevier_bbox[2], sevier_bbox[3], sevier_bbox[4]) %>% 
+    ## NOTE - compared to previos version of function - I've removed label param (no label column like below)
+      # Add data layers (overlayGroups)
+    addPolygons(data = p2_lake_watersheds_dissolved, group = "Watershed Extent",
+                color = 'black', opacity = 0.4, weight = 3) %>% 
+    addPolygons(data = p1_get_lakes_huc6_sf %>% ms_simplify(), group = "Great Basin HUC6",
+                color = 'green', fillColor = "#C3CB9F", opacity = 0.4, weight = 1, popup = ~Name) %>% 
+    addPolygons(data = p1_get_lakes_huc8_sf %>% ms_simplify(), group = "Great Basin HUC8",
+                color = 'blue', fillColor = "#C3CB9F", opacity = 0.4, weight = 1, popup = ~Name) %>% 
+    addPolygons(data = p3_saline_lakes_sf, group = "Saline lakes",
+                color = '#3A6DB7', opacity = 0.6, weight = 1,
+                popup = ~label) %>% 
+      addLabelOnlyMarkers(data = p3_saline_lakes_sf, lng = ~X, lat = ~Y, group = "Lake labels",
+                        label = ~lake_w_state,
+                        labelOptions = labelOptions(noHide = T, textOnly = T)) %>% 
+  addLayersControl(baseGroups = c("Labels", "No Labels"),
+                     overlayGroups = c("Saline lakes", "Watershed Extent",
+                                       "Great Basin HUC6","Great Basin HUC8",
+                                       "Lake labels"),
+                     position = "topright",
+                     options = layersControlOptions(collapsed = F))
+
+leaflet_map_sevier
+
+```
 
 
 ### NWIS Sites and Flowlines Map

@@ -7,7 +7,8 @@ get_NWIS_site_no <- function(basin_huc08, lake_watershed_sf, crs){
   # basin_huc08 = p1_huc08_full_basin_sf$huc8
   # lake_watershed_sf = p2_huc10_watershed_boundary
   # crs = 4326
-  # 
+  
+  ## Extract sites
   huc_grps <- split(basin_huc08,
                     ceiling(seq_along(basin_huc08)/10))
   
