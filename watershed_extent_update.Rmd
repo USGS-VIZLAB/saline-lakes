@@ -1,7 +1,7 @@
 ---
 title: "End of Summer Report"
 author: |
-  | Vizlab, Data Science Branch, IIDD 
+  | Data Science Branch, IIDD, USGS WMA 
   | Contacts: Margaux Sleckman (msleckman@usgs.gov), Anthony Martinez (ajmartinez@usgs.gov) and Cee Nell (cnell@usgs.gov)
   
 date: "9/01/2022"
@@ -32,7 +32,7 @@ Water body and watershed extent definitions:
   * **Lake boundary and Wetlands:** * Broader outline of our focal lakes that includes lake wetlands
   * **Watershed Extents:**
 
-* note yet created 
+* not yet created 
 
 ### Defining watershed extents:
 
@@ -141,7 +141,8 @@ leaflet_map_huc <- leaflet() %>%
 
 ```
 
-```{r message =FALSE, echo = FALSE, warnings = FALSE}
+
+```{r message =FALSE, echo = FALSE, warnings = FALSE, out.width = '100%'}
 
 leaflet_map_huc
 
