@@ -190,7 +190,7 @@ leaflet_map_crsn_sk
 
 ```
 
-- **Sevier Lake, UT:** Should Sevier Lake incl. Middle and Upper sevier
+- **Sevier Lake, UT:** What Huc8's are included in Sevier Lake watershed? SHould it include Middle and Upper Sevier?
 
 ```{r message =FALSE, echo = FALSE, warnings = FALSE}
 
@@ -289,7 +289,7 @@ field_meas_sites_in_watershed <- p1_site_in_watersheds_sf %>%
 ```
 
 
-```{r message =FALSE, echo = FALSE, warnings = FALSE, outwidth = '100%}
+```{r message =FALSE, echo = FALSE, warnings = FALSE}
 
 leaflet_map_sites
 
