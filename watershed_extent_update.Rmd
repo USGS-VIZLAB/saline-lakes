@@ -94,6 +94,10 @@ tar_load(p3_flowlines_sf)
 targets::tar_load(p3_gage_sites_sf)
 targets::tar_load(p1_site_in_watersheds_sf)
 
+## nwis data 
+targets::tar_load(p1_nwis_dv_sw_data)
+targets::tar_load(p1_nwis_meas_sw_data)
+
 ```
 
 
@@ -137,9 +141,79 @@ leaflet_map_huc <- leaflet() %>%
 
 ```
 
-
 ```{r message =FALSE, echo = FALSE, warnings = FALSE}
 
 leaflet_map_huc
 
 ```
+
+
+
+### NWIS Sites and Flowlines Map
+```{r lake_watershed_nwis_sites, message =FALSE, echo = FALSE, warnings = FALSE}
+
+dv_sites_in_watershed <- p1_site_in_watersheds_sf %>%
+  filter(site_no %in% unique( p1_nwis_dv_sw_data$site_no)) %>% 
+  mutate(service = 'dv',
+         label = paste(site_no,': ', station_nm))
+
+field_meas_sites_in_watershed <- p1_site_in_watersheds_sf %>%
+  filter(site_no %in% unique( p1_nwis_meas_sw_data$site_no)) %>% 
+  mutate(service = 'measurements',
+         label = paste(site_no,': ', station_nm))
+
+  # Build map
+  leaflet_map_sites <- leaflet() %>% 
+    #Add Basemap (baseGroups)
+    addProviderTiles("Esri.WorldGrayCanvas", group = c("No labels", "Labels"))  %>%
+    #addProviderTiles("HERE.satelliteDay", group = c("No labels", "Labels"))  %>%
+    addProviderTiles("CartoDB.PositronOnlyLabels", group = "Labels") %>%
+    # Add data layers (overlayGroups)
+    addPolygons(data = p2_lake_watersheds_dissolved,
+                group = "Watershed Extent", color = 'black',
+                fillColor = "#C3CB9F",
+                opacity = 0.4, weight = 1,) %>% 
+    addPolygons(data = p3_saline_lakes_sf, group = "Saline lakes",
+                color = '#3A6DB7', opacity = 0.8, weight = 2,
+                popup = ~label) %>%
+        addCircleMarkers(data = dv_sites_in_watershed,
+                         group = c("Gage sites (dv)"),
+                         radius = 3, weight = 1,
+                         color = 'grey',
+                         fillColor = 'firebrick', popup = ~label) %>%
+        addCircleMarkers(data = field_meas_sites_in_watershed,
+                         group = c("Gage sites (field measurements)"),
+                         radius = 3, weight = 1,
+                          color = 'grey',
+                         fillColor = 'green', popup = ~label) %>%
+    addLabelOnlyMarkers(data = p3_saline_lakes_sf,
+                        lng = ~X, lat = ~Y,
+                        group = "Lake labels", label = ~lake_w_state,
+                        labelOptions = labelOptions(noHide = T, textOnly = T)
+                        ) %>% 
+    addPolylines(data = p3_flowlines_sf, group = "Streams",
+                 color = scico(9, palette = 'davos')[5], opacity = 0.8,
+                 weight = ~rescale(streamorde, to = c(1, 4)),
+                 popup = ~label) %>% 
+    addLayersControl(baseGroups = c("Labels", "No Labels"),
+                     overlayGroups = c("Saline lakes", "Lake labels",
+                                       "Watershed Extent",
+                                       "Gage sites (dv)",
+                                       "Gage sites (field measurements)",
+                                       'Streams'
+                                       ),
+                     position = "topright",
+                     options = layersControlOptions(collapsed = F))
+  
+  
+```
+
+
+```{r message =FALSE, echo = FALSE, warnings = FALSE, outwidth = '100%}
+
+leaflet_map_sites
+
+```
+
+#### Observations 
+Many of field measurements were made at nwis sites where dv data was collected. 
