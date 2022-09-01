@@ -32,7 +32,7 @@ Water body and watershed extent definitions:
   * **Lake boundary and Wetlands:** * Broader outline of our focal lakes that includes lake wetlands
   * **Watershed Extents:**
 
-* note yet created 
+* not yet created 
 
 ### Defining watershed extents:
 
