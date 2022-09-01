@@ -138,7 +138,7 @@ leaflet_map_huc <- leaflet() %>%
 ```
 
 
-```{r message =FALSE, echo = FALSE, warnings = FALSE}
+```{r message =FALSE, echo = FALSE, warnings = FALSE, out.width = '100%'}
 
 leaflet_map_huc
 
