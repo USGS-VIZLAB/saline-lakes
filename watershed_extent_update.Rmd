@@ -29,8 +29,8 @@ Data source table:
 Geospatial features: 
   * Water body and watershed extent definitions:
 
-    * **Saline Lake: ** Lake polygon, outlined by the border of the water body feature
-    * **Lake boundary and Wetlands:** * Broader outline of our focal lakes that includes lake wetlands
+  * **Saline Lake: ** Lake polygon, outlined by the border of the water body feature
+  * **Lake boundary and wetlands:** * Broader outline of our focal lakes that includes lake wetlands
     * **Watershed Extents:** Extent of the lake's watershed containing 
 
 _* not yet created_
@@ -38,9 +38,13 @@ _* not yet created_
 ### Defining watershed extents: Steps:
 
 **Watershed Extent**
+
   1. Identified HUC6: basin of each lake
+
   2. Collected all the huc8 and huc10s within those HUC6 
+
   3. Created spreadsheet mapping Huc6,Hu8,and Huc10 associated with each lake (see sharepoint excel [here](https://doimspp.sharepoint.com/:x:/s/IIDDStaff/EdhaQ9_tsPNIhW32hI9nydAB9RO5CDXSHx3yGLVWtaxwNA?e=wl8wS4)), then reviewed and consulted on theses HU to identify the units considered within a given lake's watershed scope. 
+
     In some cases, the watershed of a given lake is the entire HUC6 within which that lake belong's to (e.g. Pyramid Lake,     CA), this is the default if no more precise information is provided. In other cases, the watershed of a given lake         comprises of one or several huc10s (Eagle Lake, CA). Our output watershed extent shapefile is displayed by the layer       Watershed Extent.
 
 Layer definitions: 
@@ -67,7 +71,6 @@ source('3_visualize/src/prep_viz_data.R')
 source('3_visualize/src/interactive_map.R')
 
 ```
-
 
 ```{r load_targets, echo = FALSE, message = FALSE, warnings = FALSE}
 
@@ -101,9 +104,8 @@ targets::tar_load(p1_nwis_meas_sw_data)
 ```
 
 
-
 ### Defining watershed extents: Map
-```{r huc_basins, message =FALSE, echo = FALSE, warnings = FALSE}
+```{r huc_basins, message =FALSE, echo = FALSE, warnings = FALSE, out.width = '100%'}
 
 leaflet_map_huc <- leaflet() %>% 
   addProviderTiles("Esri.WorldGrayCanvas", group = c("No labels", "Labels"))  %>%
@@ -159,7 +161,7 @@ You may explore the following map to visualize the different HUC areas within ou
 
 ```{r message =FALSE, echo = FALSE, warnings = FALSE}
 
-crsn_sk_bbox <- p2_lake_watersheds_dissolved %>%
+bbox <- p2_lake_watersheds_dissolved %>%
   filter(lake_w_state == 'Carson Sink,NV') %>% 
   sf::st_bbox() %>% as.vector()
 
@@ -167,7 +169,7 @@ leaflet_map_crsn_sk <- leaflet() %>%
   addProviderTiles("Esri.WorldGrayCanvas", group = c("No labels", "Labels"))  %>%
     #addProviderTiles("HERE.satelliteDay", group = c("No labels", "Labels"))  %>%
     addProviderTiles("CartoDB.PositronOnlyLabels", group = "Labels") %>%
-  fitBounds(crsn_sk_bbox[1], crsn_sk_bbox[2], crsn_sk_bbox[3], crsn_sk_bbox[4]) %>% 
+  fitBounds(bbox[1], bbox[2], bbox[3], bbox[4]) %>% 
     ## NOTE - compared to previos version of function - I've removed label param (no label column like below)
       # Add data layers (overlayGroups)
     addPolygons(data = p2_lake_watersheds_dissolved, group = "Watershed Extent",
@@ -190,22 +192,26 @@ leaflet_map_crsn_sk
 
 ```
 
-- **Sevier Lake, UT:** What Huc8's are included in Sevier Lake watershed? SHould it include Middle and Upper Sevier?
+- **Sevier Lake, UT:** What Huc8's are included in Sevier Lake watershed? Should it include Middle and Upper Sevier?
+<br>
 
 ```{r message =FALSE, echo = FALSE, warnings = FALSE}
 
-sevier_bbox <- p2_lake_watersheds_dissolved %>%
-  filter(lake_w_state == 'Sevier Lake,UT') %>% 
+selected_lake <- 'Sevier Lake,UT'
+
+bbox <- p2_lake_watersheds_dissolved %>%
+  filter(lake_w_state == selected_lake) %>% 
   sf::st_bbox() %>% as.vector()
 
 leaflet_map_sevier <- leaflet() %>% 
   addProviderTiles("Esri.WorldGrayCanvas", group = c("No labels", "Labels"))  %>%
     #addProviderTiles("HERE.satelliteDay", group = c("No labels", "Labels"))  %>%
     addProviderTiles("CartoDB.PositronOnlyLabels", group = "Labels") %>%
-  fitBounds(sevier_bbox[1], sevier_bbox[2], sevier_bbox[3], sevier_bbox[4]) %>% 
+  fitBounds(bbox[1], bbox[2], bbox[3], bbox[4]) %>% 
     ## NOTE - compared to previos version of function - I've removed label param (no label column like below)
       # Add data layers (overlayGroups)
-    addPolygons(data = p2_lake_watersheds_dissolved, group = "Watershed Extent",
+    addPolygons(data = p2_lake_watersheds_dissolved[p2_lake_watersheds_dissolved$lake_w_state == selected_lake],
+                group = "Watershed Extent",
                 color = 'black', opacity = 0.4, weight = 3) %>% 
     addPolygons(data = p1_get_lakes_huc6_sf %>% ms_simplify(), group = "Great Basin HUC6",
                 color = 'green', fillColor = "#C3CB9F", opacity = 0.4, weight = 1, popup = ~Name) %>% 
@@ -227,6 +233,51 @@ leaflet_map_sevier <- leaflet() %>%
 leaflet_map_sevier
 
 ```
+
+- **Honey Lake, CA:** In the feedback provided about the watershed of Honey Lake, two HUC 10 are ruled out. This explains why there is are holes in the honey lake watershed basin. Is this correct? 
+
+```{r message =FALSE, echo = FALSE, warnings = FALSE}
+
+selected_lake <- 'Honey Lake,CA'
+
+bbox <- p2_lake_watersheds_dissolved %>%
+  filter(lake_w_state == selected_lake) %>% 
+  sf::st_bbox() %>% as.vector()
+
+leaflet_map_sevier <- leaflet() %>% 
+  addProviderTiles("Esri.WorldGrayCanvas", group = c("No labels", "Labels"))  %>%
+    #addProviderTiles("HERE.satelliteDay", group = c("No labels", "Labels"))  %>%
+    addProviderTiles("CartoDB.PositronOnlyLabels", group = "Labels") %>%
+  fitBounds(bbox[1], bbox[2], bbox[3], bbox[4]) %>% 
+    ## NOTE - compared to previos version of function - I've removed label param (no label column like below)
+      # Add data layers (overlayGroups)
+    addPolygons(data = p2_lake_watersheds_dissolved[p2_lake_watersheds_dissolved$lake_w_state == selected_lake],
+                group = "Watershed Extent",
+                color = 'black', opacity = 0.4, weight = 3) %>% 
+    addPolygons(data = p1_get_lakes_huc6_sf %>% ms_simplify() %>% , group = "Great Basin HUC6",
+                color = 'green', fillColor = "#C3CB9F", opacity = 0.4, weight = 1, popup = ~Name) %>% 
+    addPolygons(data = p1_get_lakes_huc8_sf %>% ms_simplify(), group = "Great Basin HUC8",
+                color = 'blue', fillColor = "#C3CB9F", opacity = 0.4, weight = 1, popup = ~Name) %>% 
+    addPolygons(data = p3_saline_lakes_sf[p3_saline_lakes_sf$lake_w_state == selected_lake],
+                group = "Saline lakes",
+                color = '#3A6DB7', opacity = 0.6, weight = 1,
+                popup = ~label) %>% 
+      addLabelOnlyMarkers(data = p3_saline_lakes_sf, lng = ~X, lat = ~Y, group = "Lake labels",
+                        label = ~lake_w_state,
+                        labelOptions = labelOptions(noHide = T, textOnly = T)) %>% 
+  addLayersControl(baseGroups = c("Labels", "No Labels"),
+                     overlayGroups = c("Saline lakes", "Watershed Extent",
+                                       "Great Basin HUC6","Great Basin HUC8",
+                                       "Lake labels"),
+                     position = "topright",
+                     options = layersControlOptions(collapsed = F))
+
+leaflet_map_sevier
+
+```
+
+- **Lakes that Share same Watershed**:
+
 
 
 ### NWIS Sites and Flowlines Map
@@ -295,5 +346,12 @@ leaflet_map_sites
 
 ```
 
-#### Observations 
-Many of field measurements were made at nwis sites where dv data was collected. 
+### Summary:  
+This is a preliminary look at surface water (sw) and groundwater (gw) site data from the National Water Information System (NWIS). For each lake, all sw and gw sites within the watershed boundaries [link to other rmd] were found. Daily and instantaneous data, as well as field measurements were queried for each site from 2000 - 2020.
+
+
+
+We have intentionally cast a wide net to include as many sites as possible. We expect further filtering to fit the needs of the project, and seek SME feedback on:
+1. watershed boundaries (spatial filtering)
+2. relevant time periods (temporal filtering)
+3. defining "active sites" (temporal filtering)
