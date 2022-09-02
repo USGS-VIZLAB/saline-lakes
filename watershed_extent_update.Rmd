@@ -462,7 +462,7 @@ field_meas_sites_in_watershed <- p1_site_in_watersheds_sf %>%
                                        ),
                      position = "topright",
                      options = layersControlOptions(collapsed = F)) %>% 
-    hideGroup(c("Gage sites (dv)","Gage sites (field measurements)","Streams"))
+    hideGroup(c("Gage sites (dv)","Gage sites (field measurements)","Streams (order 3)"))
   
   
 ```
