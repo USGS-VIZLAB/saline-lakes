@@ -174,9 +174,8 @@ leaflet_map_huc
 
 1.**Carson Sink** 
 
-* Carson Sink, in the manner it has been manually drawn, overlaps with two HUC6. Since the default is to take the overlapping of each lake, _HUC6 - Humboldt_ and _HUC6 - Carson Desert_ are currently included as part of that lakes watershed extent. However, through quick review of literature, HUC6: Carson Desert seems to be the agreed-upon basin for Carson Sink. 
-
-What is the best representation of the watershed? 
+* Carson Sink, in the manner it has been manually drawn, overlaps with two HUC6. Since the default is to take the overlapping of each lake, _HUC6 - Humboldt_ and _HUC6 - Carson Desert_ are currently included as part of that lakes watershed extent. However, through quick review of literature, HUC6: Carson Desert seems to be the agreed-upon basin for Carson Sink.  
+  What is the best representation of the watershed? 
 <br>
 ```{r message =FALSE, echo = FALSE, warnings = FALSE}
 
@@ -231,10 +230,8 @@ leaflet_map_crsn_sk
 2. **Sevier Lake, UT**
 
 * From the feedback already provided, Sevier Lake watershed extent includes HUC8:Sevier Lake, and HUC8:Lower Sevier.
-
-Why do we exclude the HUC8:Middle Sevier and HUC8: Upper Sevier for our defined watershed, even through those sub-basins contains headwater tributaries of Sevier Lake?
-
-Do you agree on this watershed extent, or should it be expanded?
+  Why do we exclude the HUC8:Middle Sevier and HUC8: Upper Sevier for our defined watershed, even through those sub-basins contains headwater tributaries of Sevier Lake?  
+  Do you agree on this watershed extent, or should it be expanded?
 <br>
 ```{r message =FALSE, echo = FALSE, warnings = FALSE}
 
@@ -280,10 +277,9 @@ leaflet_map_sevier
 
 3. **Honey Lake, CA**
 
-* In the feedback provided about the Honey Lake, we find that two HUC10s are ruled out of the watershed extent. This explains why there we see a hole in the Honey Lake watershed basin. 
-
-Do you agree with this watershed extent?
-
+* In the feedback provided about the Honey Lake, we find that two HUC10s are ruled out of the watershed extent. This explains why there we see a hole in the Honey Lake watershed basin.  
+  Do you agree with this watershed extent?
+<br>
 ```{r message =FALSE, echo = FALSE, warnings = FALSE}
 
 selected_lake <- 'Honey Lake,CA'
@@ -333,12 +329,10 @@ leaflet_map_honey
 
 4. **Lakes that Share same Watershed**:
 
-* From the SME feedback already provided, some lakes share either the same watershed or have overlapping watersheds. This is the case for Pyramid and Winnemucca Lakes, and Harney and Malheur Lakes. 
-
-Do we agree with the current watershed extents of these lakes?
-
-How should we distinguish the data in the watersheds of these lake pairs?
-
+* From the SME feedback already provided, some lakes share either the same watershed or have overlapping watersheds. This is the case for Pyramid and Winnemucca Lakes, and Harney and Malheur Lakes.  
+  Do we agree with the current watershed extents of these lakes?  
+  How should we distinguish the data in the watersheds of these lake pairs?  
+<br>
 ```{r message =FALSE, echo = FALSE, warnings = FALSE}
 
 selected_lake <- c('Winnemucca Lake,NV','Pyramid Lake,NV','Harney Lake,OR','Malheur Lake,OR') 
@@ -403,11 +397,11 @@ Finally,
 <br>
 
 ### NWIS Sites and Flowlines Map
+<br>
+We have already taken a preliminary look at the water site data, surface water (sw) and groundwater (gw) data from the National Water Information System (NWIS). For each lake, all sw and gw sites within the watershed extents, as they are currently defined, were found. Daily (dv) and instantaneous data (iv), as well as field measurements were queried for each site from 2000 - 2020.  
 
-We have already taken a preliminary look at the water site data, surface water (sw) and groundwater (gw) data from the National Water Information System (NWIS). For each lake, all sw and gw sites within the watershed extents, as they are currently defined, were found. Daily (dv) and instantaneous data (iv), as well as field measurements were queried for each site from 2000 - 2020.
-
-Mapped below are these active sites across the basin where we find daily values and field measurement values for the surface water measurements (discharge, gage height). Please note that instantaneous data values are collected on the same sites as daily values. 
-
+Mapped below are these active sites across the basin where we find daily values and field measurement values for the surface water measurements (discharge, gage height). Please note that instantaneous data values are collected on the same sites as daily values.  
+<br>
 ```{r lake_watershed_nwis_sites, message =FALSE, echo = FALSE, warnings = FALSE, out.width = '100%'}
 
 dv_sites_in_watershed <- p1_site_in_watersheds_sf %>%
@@ -462,7 +456,7 @@ field_meas_sites_in_watershed <- p1_site_in_watersheds_sf %>%
                                        ),
                      position = "topright",
                      options = layersControlOptions(collapsed = F)) %>% 
-    hideGroup(c("Gage sites (dv)","Gage sites (field measurements)","Streams (order 3)"))
+    hideGroup(c("Gage sites (dv, iv)","Gage sites (field measurements)","Streams (order 3)"))
   
   
 ```
@@ -472,7 +466,7 @@ field_meas_sites_in_watershed <- p1_site_in_watersheds_sf %>%
 leaflet_map_sites
 
 ```
-
+<br>
 #### NWIS Sites and Flowlines Map Questions
 
 * The number of NWIS gage sites from where we collect data depend on the watershed extents. With a visual of the sites within all watersheds, do you have further feedback on the currently determined extents for each these lakes?
@@ -500,7 +494,7 @@ Here are the next steps for the IIDD - data science team team moving forward:
 | Feature  |Source/Database | Notes |
 | ---------|----------|-----------| 
 |Water Bodies |[National Hydrological Dataset - high res](https://www.usgs.gov/national-hydrography/nhdplus-high-resolution) - water body attributes | The nhdplusTools R package was used to collect this data. Carson sink was manually drawn and appended to the lakes geospatial file 
-| Huc | [National Hydrological Dataset - high res](https://www.usgs.gov/national-hydrography/nhdplus-high-resolution) - HUC6,8,10,12 | The nhdplusTools R package was used to collect this data
+| HUC Boundaries | [National Hydrological Dataset - high res](https://www.usgs.gov/national-hydrography/nhdplus-high-resolution) - HUC6,8,10,12 | The nhdplusTools R package was used to collect this data
 |Flowlines | [National Hydrological Dataset - medium res](https://www.usgs.gov/national-hydrography/national-hydrography-dataset) - NHDFLowlines | The nhdplusTools R package was used to collect this data
 | Gauge sites | [NWIS](https://waterdata.usgs.gov/nwis?) | The NWIS [dataRetrieval](https://cran.r-project.org/web/packages/dataRetrieval/index.html) R package was used to collect these site
 | field measurements | [NWIS](https://waterdata.usgs.gov/nwis?) | The NWIS [dataRetrieval](https://cran.r-project.org/web/packages/dataRetrieval/index.html) R package was used to collect these data metrics
