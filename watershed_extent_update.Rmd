@@ -93,7 +93,7 @@ To start off, here our our initial definitions for our geospatial features. It i
 
   2. Collected all the huc8 and huc10 boundaries within those HUC6 
 
-  3. Created a spreadsheet that maps all the HUC6, HUC8,and HUC10 associated with each of our lakes (see HUC to Lake sharepoint excel [here](https://doimspp.sharepoint.com/:x:/s/IIDDStaff/EdhaQ9_tsPNIhW32hI9nydAB9RO5CDXSHx3yGLVWtaxwNA?e=wl8wS4)). We then narrowed the scope of the extent following the feedback and consultation with experts. We identified the HUC units considered within a given lake's watershed scope (checking 'Yes' in the spreadsheet if included).  
+  3. Created a spreadsheet that maps all the HUC6, HUC8,and HUC10 associated with each of our lakes (see HUC to Lake sharepoint excel [here](https://doimspp.sharepoint.com/:x:/s/IIDDStaff/EdhaQ9_tsPNIhW32hI9nydAB4ajOGW_y8qQHYSYYlhJKKA?e=nUCWgr)). We then narrowed the scope of the extent following the feedback and consultation with experts. We identified the HUC units considered within a given lake's watershed scope (checking 'Yes' in the spreadsheet if included).  
 Therefore, in some cases, the watershed of a given lake is the entire HUC6 within which that lake belong's to (e.g. Pyramid Lake, CA), this is the default if no more precise information is provided. In other cases, the watershed of a given lake is defined by one or several huc10s (e.g. Eagle Lake, CA).
 
 ##### Defining watershed extents - Map
@@ -163,7 +163,7 @@ leaflet_map_huc
 
 #### Watershed extents Questions
 
-* Please visit the HUC to Lake excel spreadsheet. Does the aggregation and selection of HUC6/HUC8/HUC10 within watershed boundary appear correct? Please provided feedback and edits where you see fit.
+* Please take a look at the [HUC to Lake excel spreadsheet](https://doimspp.sharepoint.com/:x:/s/IIDDStaff/EdhaQ9_tsPNIhW32hI9nydAB4ajOGW_y8qQHYSYYlhJKKA?e=nUCWgr), which was used to define the watershed extents. Does the aggregation and selection of HUC6/HUC8/HUC10 within each lake watershed boundary seem correct? Please provide feedback and edits where you see fit.
 
 * Are there any watershed extents displayed on the map that stand out and need adjustment? If so, please describe the changes that need to be made. 
 
