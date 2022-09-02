@@ -87,7 +87,7 @@ To start off, here our our initial definitions for our geospatial features. It i
 
 ### Watershed extents
 
-##### **Steps to creating watershed extent**
+##### Steps to creating watershed extent
 
   1. Identified HUC6: basin of each lake. After discussion with SME and literature research, the HUC6 boundary is chosen as the widest scope boundary of a given lakes' watershed, if no more narrow definition is provided. 
 
@@ -97,7 +97,7 @@ To start off, here our our initial definitions for our geospatial features. It i
 Therefore, in some cases, the watershed of a given lake is the entire HUC6 within which that lake belong's to (e.g. Pyramid Lake, CA), this is the default if no more precise information is provided. In other cases, the watershed of a given lake is defined by one or several huc10s (e.g. Eagle Lake, CA).
 
 ##### Defining watershed extents - Map
-
+<br>
 **Layer definitions for the map:**
 
   *  Great Basin HUC6: HUC6 basin of each lake
@@ -107,7 +107,7 @@ Therefore, in some cases, the watershed of a given lake is the entire HUC6 withi
   *  Watershed Extent: Watershed extent given feedback provided
   *  Watershed Extent by huc10: Defined lake watershed extent within huc10 polygons
   *  Watershed Extent v2: Alternative version of watershed extent excluded HUC6:Humboldt which currently tied to Carson Sink via the northern edge.
-
+<br>
 ```{r huc_basins, message =FALSE, echo = FALSE, warnings = FALSE, out.width = '100%'}
 
 leaflet_map_huc <- leaflet() %>% 
@@ -170,7 +170,7 @@ leaflet_map_huc
 * Do you have any questions about the steps to creating this lake watershed boundary? If so, please share these thoughts below.
 
 
-#####Lake-specific Questions:
+##### Lake-specific Questions:
 
 1.**Carson Sink** 
 
@@ -392,7 +392,7 @@ leaflet_map_pairs
 
 ```
 
-Finally, 
+
 <br> 
 <br>
 
@@ -467,7 +467,8 @@ leaflet_map_sites
 
 ```
 <br>
-#### NWIS Sites and Flowlines Map Questions
+
+#### NWIS Sites and Flowlines Map Questions  
 
 * The number of NWIS gage sites from where we collect data depend on the watershed extents. With a visual of the sites within all watersheds, do you have further feedback on the currently determined extents for each these lakes?
 
