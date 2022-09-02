@@ -3,58 +3,13 @@ title: "Saline Lakes Spatial Data Update"
 author: |
   | Data Science Branch, IIDD, USGS WMA 
   |
-  | Contacts: Margaux Sleckman (msleckman@usgs.gov), Anthony Martinez (ajmartinez@usgs.gov) and Cee Nell (cnell@usgs.gov)
+  Contacts: Margaux Sleckman (msleckman@usgs.gov),
+   Anthony Martinez (ajmartinez@usgs.gov),
+   and Cee Nell (cnell@usgs.gov)
   
 date: "9/01/2022"
 output: html_document
 ---
-
-### Data source table: 
-
-| Feature  |Source/Database | Notes     |
-| ---------|----------|-----------| 
-|Water Bodies |[National Hydrological Dataset - high res](https://www.usgs.gov/national-hydrography/nhdplus-high-resolution) - water body attributes | Carson sink was manually drawn 
-| Huc | [National Hydrological Dataset - high res](https://www.usgs.gov/national-hydrography/nhdplus-high-resolution) - HUC6,8,10,12 | X
-|Flowlines | [National Hydrological Dataset - medium res](https://www.usgs.gov/national-hydrography/national-hydrography-dataset) - NHDFLowlines
-| Gauge sites | NWIS |
-| field measurements | NWIS |  
-
-
-### Definitions: 
-
-Geospatial features:
-
-  * Water body and watershed extent definitions:
-  
-    * **Saline Lake: ** Lake polygon, outlined by the border of the water body feature
-    * **Lake boundary and wetlands:** * Broader outline of our focal lakes that includes lake wetlands
-    * **Watershed Extents:** Extent of the lake's watershed containing focal lakes
-
-_* not yet created_
-
-
-### Defining watershed extents: Steps:
-
-**Watershed Extent**
-
-  1. Identified HUC6: basin of each lake
-
-  2. Collected all the huc8 and huc10s within those HUC6 
-
-  3. Created spreadsheet mapping Huc6,Hu8,and Huc10 associated with each lake (see sharepoint excel [here](https://doimspp.sharepoint.com/:x:/s/IIDDStaff/EdhaQ9_tsPNIhW32hI9nydAB9RO5CDXSHx3yGLVWtaxwNA?e=wl8wS4)), then reviewed and consulted on theses HU to identify the units considered within a given lake's watershed scope. 
-
-  In some cases, the watershed of a given lake is the entire HUC6 within which that lake belong's to (e.g. Pyramid Lake,     CA), this is the default if no more precise information is provided. In other cases, the watershed of a given lake         comprises of one or several huc10s (Eagle Lake, CA). Our output watershed extent shapefile is displayed by the layer       Watershed Extent.
-
-**Layer definitions:**
-
-*  Great Basin HUC6: HUC6 basin of each lake
-*  Great Basin HUC8: HUC8 within the HUC6 basin 
-*  Great Basin HUC10:HUC10 within the HUC6 basin
-*  Saline lakes: Selected lakes, pulled from NHDPlus high - resolution, as well as medium resolution if not available.
-*  Watershed Extent: Defined lake watershed extent given feedback provided
-*  Watershed Extent by huc10: Defined lake watershed extent within huc10 polygons 
-*  Watershed Extent v2: Alternative version of Watershed extent excluded HUC6:humboldt which currently tied to Carson Sink.
-
 
 ```{r load_lbs, echo = FALSE,message = FALSE, warnings = FALSE} 
 
@@ -102,9 +57,56 @@ targets::tar_load(p1_nwis_meas_sw_data)
 
 ```
 
+### Objective
+
+The objective of this report is to update and display the latest version of our spatial data from which we collect water quality and availability data across the relevant watersheds of our selected saline lakes in the Great Basin.
+
+Keep in mind that we intentionally casted a wide net as we gathered these geospatial and water quality data, to include as many sites as possible. We expect further filtering (spatial and temporal) to fit the needs of the project, and seek subject matter expert (SME) feedback. 
+Therefore, we have listed out a series of comments and questions across this report that we hope you can respond to. The questions are listed under their specific sections. More general questions can be found further below.   
+
+### Definitions of the geospatial features: 
+
+To start off, here our our initial definitions for our geospatial features. It is important that we establish an agree-upon understanding of these spatial features to guide the water budget data collection and processing for our saline lakes. 
+
+  * Water body and watershed extent definitions:
+  
+    * **Saline Lakes**: The saline lake geospatial polygons stem from the national hydrological dataset high-resolution (NHDhr) database, USGS's primary database of the US-wide hydrological network. The boundary of the layer is the border of the water body feature, and excludes wetland areas that are found beyond this waterbody boundary.
+    
+     * **Watershed Extents**: This is the extent of the lake's watershed containing focal lakes and it's primary tributaries. This geospatial file draws upon the defined hydrological units (HUC) boundaries from NHDhr (HUC6, HUC8, and HUC10) as well as SME feedback provided by members of the project team.
+     
+     * **USGS NWIS gage sites**: Point locations where water measurements have been collected, whether at regular intervals (continuous (15 min), or daily) by permanent gages or lcoations where field measurements were taken by a USGS staff.
+     
+    * **Lake boundary including wetlands**: A broader outline of our focal saline lakes that include lake wetlands upon which bird and other critical habitat. This layer is not yet created, but may be a useful addition to visualize alongside our lake water body polygons and watershed extents. 
+
+#### Questions: 
+
+* Please provide any edits or adjustments to these definitions provided above.
+
+* What other geospatial features require an established project definition as we move forward?
 
 
-#### Defining watershed extents - Map
+### Watershed extents
+
+##### **Steps to creating watershed extent**
+
+  1. Identified HUC6: basin of each lake. After discussion with SME and literature research, the HUC6 boundary is chosen as the widest scope boundary of a given lakes' watershed, if no more narrow definition is provided. 
+
+  2. Collected all the huc8 and huc10 boundaries within those HUC6 
+
+  3. Created a spreadsheet that maps all the HUC6, HUC8,and HUC10 associated with each of our lakes (see HUC to Lake sharepoint excel [here](https://doimspp.sharepoint.com/:x:/s/IIDDStaff/EdhaQ9_tsPNIhW32hI9nydAB9RO5CDXSHx3yGLVWtaxwNA?e=wl8wS4)). We then narrowed the scope of the extent following the feedback and consultation with experts. We identified the HUC units considered within a given lake's watershed scope (checking 'Yes' in the spreadsheet if included).  
+Therefore, in some cases, the watershed of a given lake is the entire HUC6 within which that lake belong's to (e.g. Pyramid Lake, CA), this is the default if no more precise information is provided. In other cases, the watershed of a given lake is defined by one or several huc10s (e.g. Eagle Lake, CA).
+
+##### Defining watershed extents - Map
+
+**Layer definitions for the map:**
+
+  *  Great Basin HUC6: HUC6 basin of each lake
+  *  Great Basin HUC8: HUC8 within the HUC6 basin 
+  *  Great Basin HUC10: HUC10 within the HUC6 basin
+  *  Saline lakes: Selected lakes, pulled from NHDPlus high - resolution, as well as medium resolution if not available.
+  *  Watershed Extent: Watershed extent given feedback provided
+  *  Watershed Extent by huc10: Defined lake watershed extent within huc10 polygons
+  *  Watershed Extent v2: Alternative version of watershed extent excluded HUC6:Humboldt which currently tied to Carson Sink via the northern edge.
 
 ```{r huc_basins, message =FALSE, echo = FALSE, warnings = FALSE, out.width = '100%'}
 
@@ -152,22 +154,30 @@ leaflet_map_huc <- leaflet() %>%
 
 ```
 
-
-```{r message =FALSE, echo = FALSE, warnings = FALSE, out.width = '100%'}
+```{r Watershed, message =FALSE, echo = FALSE, warnings = FALSE, out.width = '100%'}
 
 leaflet_map_huc
 
 ```
 
+
 #### Watershed extents Questions
 
-**Initial Lake-specific Questions:**
+* Please visit the HUC to Lake excel spreadsheet. Does the aggregation and selection of HUC6/HUC8/HUC10 within watershed boundary appear correct? Please provided feedback and edits where you see fit.
 
-- **Carson Sink:** 
+* Are there any watershed extents displayed on the map that stand out and need adjustment? If so, please describe the changes that need to be made. 
 
-* Carson Sink in the manner it is drawn overlaps with two HUC6. Since default is to take HUC6 – the basin of the lake – both HUC6 - Humboldt and HUC6-Carson Desert basins are currently included as part of that lakes watershed extent. However, through quick review of literature, HUC6: Carson Desert seems to be the agreed-upon basin for Carson Sink. 
+* Do you have any questions about the steps to creating this lake watershed boundary? If so, please share these thoughts below.
+
+
+#####Lake-specific Questions:
+
+1.**Carson Sink** 
+
+* Carson Sink, in the manner it has been manually drawn, overlaps with two HUC6. Since the default is to take the overlapping of each lake, _HUC6 - Humboldt_ and _HUC6 - Carson Desert_ are currently included as part of that lakes watershed extent. However, through quick review of literature, HUC6: Carson Desert seems to be the agreed-upon basin for Carson Sink. 
+
 What is the best representation of the watershed? 
-
+<br>
 ```{r message =FALSE, echo = FALSE, warnings = FALSE}
 
 
@@ -218,11 +228,14 @@ leaflet_map_crsn_sk
 
 ```
 
-- **Sevier Lake, UT:**
+2. **Sevier Lake, UT**
 
-* What Huc8's are included in the Sevier Lake watershed? Should it include Middle and Upper Sevier?
+* From the feedback already provided, Sevier Lake watershed extent includes HUC8:Sevier Lake, and HUC8:Lower Sevier.
+
+Why do we exclude the HUC8:Middle Sevier and HUC8: Upper Sevier for our defined watershed, even through those sub-basins contains headwater tributaries of Sevier Lake?
+
+Do you agree on this watershed extent, or should it be expanded?
 <br>
-
 ```{r message =FALSE, echo = FALSE, warnings = FALSE}
 
 selected_lake <- 'Sevier Lake,UT'
@@ -265,10 +278,11 @@ leaflet_map_sevier
 
 ```
 
-- **Honey Lake, CA:**
+3. **Honey Lake, CA**
 
-* In the feedback provided about the watershed of Honey Lake, two HUC 10 are ruled out of the watershed. This explains why there is are holes in the Honey Lake watershed basin. 
-Is this correct? 
+* In the feedback provided about the Honey Lake, we find that two HUC10s are ruled out of the watershed extent. This explains why there we see a hole in the Honey Lake watershed basin. 
+
+Do you agree with this watershed extent?
 
 ```{r message =FALSE, echo = FALSE, warnings = FALSE}
 
@@ -317,9 +331,13 @@ leaflet_map_honey
 
 ```
 
-- **Lakes that Share same Watershed**:
+4. **Lakes that Share same Watershed**:
 
-* Some Lakes share the same watershed or have overlapping watersheds. How should we distinguish the data in the watersheds of these lake pairs?
+* From the SME feedback already provided, some lakes share either the same watershed or have overlapping watersheds. This is the case for Pyramid and Winnemucca Lakes, and Harney and Malheur Lakes. 
+
+Do we agree with the current watershed extents of these lakes?
+
+How should we distinguish the data in the watersheds of these lake pairs?
 
 ```{r message =FALSE, echo = FALSE, warnings = FALSE}
 
@@ -380,12 +398,15 @@ leaflet_map_pairs
 
 ```
 
+Finally, 
 <br> 
 <br>
 
-### NWIS Sites and Flowlines Map.
+### NWIS Sites and Flowlines Map
 
-This map shows the active sites across the basin with daily values and field measurement values for the surface water measurements (discharge, gage height). These sites have data for the time frame between 2000 and 2020
+We have already taken a preliminary look at the water site data, surface water (sw) and groundwater (gw) data from the National Water Information System (NWIS). For each lake, all sw and gw sites within the watershed extents, as they are currently defined, were found. Daily (dv) and instantaneous data (iv), as well as field measurements were queried for each site from 2000 - 2020.
+
+Mapped below are these active sites across the basin where we find daily values and field measurement values for the surface water measurements (discharge, gage height). Please note that instantaneous data values are collected on the same sites as daily values. 
 
 ```{r lake_watershed_nwis_sites, message =FALSE, echo = FALSE, warnings = FALSE, out.width = '100%'}
 
@@ -414,7 +435,7 @@ field_meas_sites_in_watershed <- p1_site_in_watersheds_sf %>%
                 color = '#3A6DB7', opacity = 0.8, weight = 2,
                 popup = ~label) %>%
         addCircleMarkers(data = dv_sites_in_watershed,
-                         group = c("Gage sites (dv)"),
+                         group = c("Gage sites (dv, iv)"),
                          radius = 3, weight = 1,
                          color = 'grey',
                          fillColor = 'firebrick', popup = ~label) %>%
@@ -428,16 +449,16 @@ field_meas_sites_in_watershed <- p1_site_in_watersheds_sf %>%
                         group = "Lake labels", label = ~lake_w_state,
                         labelOptions = labelOptions(noHide = T, textOnly = T)
                         ) %>% 
-    addPolylines(data = p3_flowlines_sf, group = "Streams",
+    addPolylines(data = p3_flowlines_sf, group = "Streams (order 3)",
                  color = scico(9, palette = 'davos')[5], opacity = 0.8,
                  weight = ~rescale(streamorde, to = c(1, 4)),
                  popup = ~label) %>% 
     addLayersControl(baseGroups = c("Labels", "No Labels"),
                      overlayGroups = c("Saline lakes", "Lake labels",
                                        "Watershed Extent",
-                                       "Gage sites (dv)",
+                                       "Gage sites (dv, iv)",
                                        "Gage sites (field measurements)",
-                                       'Streams'
+                                       'Streams (order 3)'
                                        ),
                      position = "topright",
                      options = layersControlOptions(collapsed = F)) %>% 
@@ -452,24 +473,35 @@ leaflet_map_sites
 
 ```
 
-### Summary:  
+#### NWIS Sites and Flowlines Map Questions
 
-This is a preliminary look at surface water (sw) and groundwater (gw) site and site data from the National Water Information System (NWIS). For each lake, all sw and gw sites within the watershed boundaries [link to other rmd] were found. Daily and instantaneous data, as well as field measurements were queried for each site from 2000 - 2020.
+* The number of NWIS gage sites from where we collect data depend on the watershed extents. With a visual of the sites within all watersheds, do you have further feedback on the currently determined extents for each these lakes?
 
-We have intentionally cast a wide net to include as many sites as possible. We expect further filtering to fit the needs of the project, and seek SME feedback on:
+* What is the relevant time period to determine "active sites" ?
 
-* 1. watershed boundaries (spatial filtering)
-
-* 2. relevant time periods (temporal filtering)
-
-* 3. defining "active sites" (temporal filtering)
+* What is the minimum number of observations to include a site?
 
 
-### Questions
-- What is the relevant time period to determine "active sites"?
-- What is the minimum number of observations to include a site?
+### Next Steps 
 
-### Next Steps
-- include additional gw parameters measuring water level
-- query Water Quality Portal
-- data harmonization  
+Here are the next steps for the IIDD - data science team team moving forward: 
+
+* Review SME feedback (after September 9) and incorporate any changes to our data processing pipeline
+
+* include additional gw parameters measuring water level
+
+* query Water Quality Portal
+
+* data harmonization  
+
+
+#### Data source table: 
+
+| Feature  |Source/Database | Notes |
+| ---------|----------|-----------| 
+|Water Bodies |[National Hydrological Dataset - high res](https://www.usgs.gov/national-hydrography/nhdplus-high-resolution) - water body attributes | Carson sink was manually drawn 
+| Huc | [National Hydrological Dataset - high res](https://www.usgs.gov/national-hydrography/nhdplus-high-resolution) - HUC6,8,10,12 | X
+|Flowlines | [National Hydrological Dataset - medium res](https://www.usgs.gov/national-hydrography/national-hydrography-dataset) - NHDFLowlines
+| Gauge sites | NWIS |
+| field measurements | NWIS |  
+
