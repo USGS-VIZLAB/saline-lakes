@@ -36,7 +36,8 @@ p3_targets_list <- list(
   tar_target(
     p3_flowlines_sf,
     prep_flowlines_viz_sf(flowlines_sf = p2_lake_tributaries,
-                          crs_plot = selected_crs)
+                          crs_plot = selected_crs) %>% 
+      filter(streamorde >= 3)
   ),
   
   # tar_target(

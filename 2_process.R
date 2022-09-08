@@ -32,7 +32,9 @@ p2_targets_list <- list(
                             states_sf = p1_states_sf,
                             selected_crs = selected_crs) %>%
     bind_rows(p1_saline_lakes_bnds_sf %>%
-                  filter(GNIS_Name == 'Carson Sink'))
+                  filter(GNIS_Name == 'Carson Sink') %>%
+                mutate(X = unlist(st_centroid(geometry))[1],
+                       Y = unlist(st_centroid(geometry))[2]))
   ),
   
   # Basin Flowlines Processing #
@@ -43,7 +45,8 @@ p2_targets_list <- list(
                            lakes_sf = p2_saline_lakes_sf,
                            buffer_dist = 10000,
                            realization = 'flowline',
-                           stream_order = 3)
+                           stream_order = 3) %>% 
+      filter(streamorde >= 3)
   ),
   
   ## Get only tributaries of the Lakes using get_UT function 
@@ -105,5 +108,15 @@ p2_targets_list <- list(
         group_by(lake_w_state) %>%
       summarize(geometry = sf::st_union(geom)) %>%
       ungroup()
+  ),
+  
+  ## Creating a dissolved version of the watershed boundary without huc6:humboldt
+  tar_target(
+    p2_lake_watersheds_dissolved_no_humbolt_huc6,
+    p2_huc10_watershed_boundary_no_humbolt_huc6 %>% 
+      group_by(lake_w_state) %>%
+      summarize(geometry = sf::st_union(geom)) %>%
+      ungroup()
   )
+  
 )
