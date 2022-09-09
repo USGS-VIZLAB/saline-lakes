@@ -2,7 +2,8 @@
 p0_targets_list <- list(
   
   # initial vars
-  tar_target(pO_selected_crs, 5070),
+  tar_target(p0_selected_crs, 4326),
+  # tar_target(pO_selected_crs, 5070),
   tar_target(pO_states_dwnld_url, 'https://prd-tnm.s3.amazonaws.com/StagedProducts/Small-scale/data/Boundaries/statesp010g.shp_nt00938.tar.gz'),
   
   # Date range
@@ -10,6 +11,10 @@ p0_targets_list <- list(
   tar_target(p0_end, "2020-01-01"),
   
   # HUC Codes
+  tar_target(
+  p0_additional_GSL_huc8,
+  c('16010202','16010203', '16010204')
+  ),
 
   # NWIS Parameter Codes
   
@@ -17,4 +22,5 @@ p0_targets_list <- list(
   tar_target(p0_sw_params, c('00060','00065')),
   ## GW: water depth, water altitude, tritium, C-13 / C-14, similar chem constituents as listed at left
   tar_target(p0_gw_params, c('72019'))
+  ## WQ: 
 )

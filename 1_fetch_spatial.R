@@ -43,7 +43,7 @@ p1_sp_targets_list <- list(
   ## Download states shp
   tar_target(
     p1_download_states_shp,
-    download_states_shp(url = states_download_url, 
+    download_states_shp(url = pO_states_dwnld_url, 
                         out_path = '1_fetch/in/states_shp'),
     format = 'file'
   ),
@@ -146,7 +146,7 @@ p1_sp_targets_list <- list(
       st_join(x = ., y = p1_get_lakes_huc6_sf[,c('HUC6','lake_w_state')],
               join = st_within, left = FALSE) %>%
       filter(!is.na(HUC6)) %>% 
-      bind_rows(p1_basin_huc8_sf %>% filter(HUC8 %in% additional_GSL_huc8)) %>% 
+      bind_rows(p1_basin_huc8_sf %>% filter(HUC8 %in% p0_additional_GSL_huc8)) %>% 
       distinct()
   ),
   
