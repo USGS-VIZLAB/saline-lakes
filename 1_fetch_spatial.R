@@ -24,7 +24,7 @@ p1_sp_targets_list <- list(
   tar_target(
     p1_lakes_sf,
     {read_csv('1_fetch/in/saline_lakes.csv', col_types = 'ccnn') %>% 
-        st_as_sf(coords = c('Lon','Lat'), crs = selected_crs) %>% 
+        st_as_sf(coords = c('Lon','Lat'), crs = p0_selected_crs) %>% 
         rename(point_geometry = geometry, lake = `Lake Ecosystem`, state = State) %>% 
         mutate(state_abbr = case_when(state == 'California' ~ 'CA',
                                       state == 'Nevada' ~ 'NV',

@@ -9,7 +9,7 @@ p1_nw_targets_list <- list(
     p1_site_in_watersheds_sf,
     get_NWIS_site_no(basin_huc08 = p1_huc08_full_basin_sf$huc8,
                      lake_watershed_sf = p2_huc10_watershed_boundary,
-                     crs = selected_crs)
+                     crs = p0_selected_crs)
     ),
   
   ##########################################
@@ -61,7 +61,7 @@ p1_nw_targets_list <- list(
   ## xwalk branch to lake for sw meas
   tar_target(
     p1_br_lk_xwalk_meas_sw,
-    tibble(branch_name = names(p1_nwis_d_sw_data_lst),
+    tibble(branch_name = names(p1_nwis_dv_sw_data_lst),
            lake_names = p1_site_no_by_lake %>% arrange(tar_group) %>% pull(lake_w_state) %>% unique())
   ),
   

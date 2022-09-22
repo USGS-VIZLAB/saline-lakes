@@ -21,14 +21,14 @@ p3_targets_list <- list(
   tar_target(
     p3_saline_lakes_sf,
     prep_lakes_viz_sf(lakes_sf = p2_saline_lakes_sf, 
-                      crs_plot = selected_crs)
+                      crs_plot = p0_selected_crs)
   ),
   
   tar_target(
     p3_huc8_sf,
     prep_huc_viz_sf(huc_sf = p1_get_lakes_huc8_sf,
                      assc_lakes_df = assc_lakes_df_huc8,
-                     crs_plot = selected_crs,
+                     crs_plot = p0_selected_crs,
                     huc_column = 'HUC8')
   ),
    
@@ -36,7 +36,7 @@ p3_targets_list <- list(
   tar_target(
     p3_flowlines_sf,
     prep_flowlines_viz_sf(flowlines_sf = p2_lake_tributaries,
-                          crs_plot = selected_crs) %>% 
+                          crs_plot = p0_selected_crs) %>% 
       filter(streamorde >= 3)
   ),
   
@@ -44,7 +44,7 @@ p3_targets_list <- list(
   #   p3_gage_sites_sf,
   #   prep_gage_viz_sf(nwis_sites = p1_nwis_sites_from_nhdplus %>% st_as_sf(), 
   #                    huc8_sf = p3_huc8_sf, 
-  #                    crs_plot = selected_crs)
+  #                    crs_plot = p0_selected_crs)
   # ),
   
   # Output Spreadsheet #
@@ -87,10 +87,11 @@ p3_targets_list <- list(
   ## note this leaflet is adapted from previous leaflet output map and therefore still has the outdated gage sites outside boundary.
   tar_target(
     p3_markdown,
-    {output_file <- '3_visualize/out/watershed_extent_update.html'
+    {output_file <- '3_visualize/src/watershed_extent_update.html'
     rmarkdown::render(input = 'watershed_extent_update.Rmd',
                                 output_format = 'html_document',
-                                output_file = output_file)
+                                output_file = output_file
+                      )
     return(output_file)
     }, 
     format = 'file')
