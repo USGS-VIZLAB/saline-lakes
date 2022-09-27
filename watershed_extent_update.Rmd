@@ -535,6 +535,8 @@ Here are the next steps for the IIDD - data science team team moving forward:
 ```{r }
 
 
+## map to explore the lake extents
+
 leaflet_map_huc <- leaflet() %>% 
   addProviderTiles("Esri.WorldGrayCanvas", group = c("No labels", "Labels"))  %>%
     #addProviderTiles("HERE.satelliteDay", group = c("No labels", "Labels"))  %>%
@@ -550,13 +552,13 @@ leaflet_map_huc <- leaflet() %>%
     addPolygons(data = p1_get_lakes_huc10_sf %>% ms_simplify(),
                 group = "Great Basin HUC10",
                 color = 'purple', fillColor = "grey", opacity = 0.2, weight = 1, popup = ~Name) %>% 
-    # addPolygons(data = p2_huc10_watershed_boundary %>% ms_simplify(),
-    #             group = "Watershed Extent by huc10",
-    #             color = 'black', fillColor = "grey", opacity = 0.4, weight = 1) %>%
-    # addPolygons(data = p2_lake_watersheds_dissolved, group = "Watershed Extent",
-    #             color = 'black', fillColor = "#C3CB9F", opacity = 0.4, weight = 2) %>% 
-    # addPolygons(data = p2_lake_watersheds_dissolved_no_humbolt_huc6, group = "Watershed Extent v2",
-    #             color = 'black', fillColor = "#C3CB9F", opacity = 0.4, weight = 2) %>% 
+    addPolygons(data = p2_huc10_watershed_boundary %>% ms_simplify(),
+                group = "Watershed Extent by huc10",
+                color = 'black', fillColor = "grey", opacity = 0.4, weight = 1) %>%
+    addPolygons(data = p2_lake_watersheds_dissolved, group = "Watershed Extent",
+                color = 'red', fillColor = "#C3CB9F", opacity = 0.6, weight = 2) %>%
+    addPolygons(data = p2_lake_watersheds_dissolved_no_humbolt_huc6, group = "Watershed Extent v2",
+                color = 'black', fillColor = "#C3CB9F", opacity = 0.4, weight = 2) %>%
     addPolygons(data = p3_saline_lakes_sf, group = "Saline lakes",
                 color = '#3A6DB7', opacity = 0.6, weight = 1,
                 popup = ~label) %>% 
@@ -573,8 +575,8 @@ leaflet_map_huc <- leaflet() %>%
     #            position = "bottomright") %>%
   addLayersControl(baseGroups = c("Labels", "No Labels"),
                      overlayGroups = c("Saline lakes",
-                                       "Great Basin HUC6","Great Basin HUC8", "Great Basin HUC10","Streams (order 3)",
-                                       "Watershed Extent",
+                                       "Great Basin HUC6","Great Basin HUC8", "Great Basin HUC10",
+                                       "Streams (order 3)","Watershed Extent",
                                        "Watershed Extent by huc10", "Watershed Extent v2", "Lake labels"),
                      position = "topright",
                      options = layersControlOptions(collapsed = F)) %>% 
