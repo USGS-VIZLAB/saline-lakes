@@ -37,11 +37,16 @@ scope_lake_tributaries <- function(fline_network,
   
   # Buffer lakes if not null  
   ## Comid reaches in lake = buffering by 10000 because many lakes don't have flowlines inside lake
+  lakes_sf_noCS <- lakes_sf %>% filter(lake_w_state != "Carson Sink,NV")
+  lakes_sf_CS <- lakes_sf %>% filter(lake_w_state == "Carson Sink,NV")
+
   if(!is.null(buffer_dist)){
-    lakes_buffered_sf <- lakes_sf %>% st_buffer(dist= buffer_dist)
+    lakes_buffered_sf <- lakes_sf_noCS %>% st_buffer(dist= buffer_dist)
   } else{
-    lakes_buffered_sf <- lakes_sf
-    }
+    lakes_buffered_sf <- lakes_sf_noCS
+  }
+  
+  lakes_buffered_sf <- rbind(lakes_buffered_sf, lakes_sf_CS)
   
   # Intersect to grab only flowlines within lake buffer
   reach_in_lake <- st_join(fline_network, lakes_buffered_sf, left =FALSE)
