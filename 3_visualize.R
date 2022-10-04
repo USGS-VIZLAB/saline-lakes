@@ -87,13 +87,12 @@ p3_targets_list <- list(
   ## note this leaflet is adapted from previous leaflet output map and therefore still has the outdated gage sites outside boundary.
   tar_target(
     p3_markdown,
-    {output_file <- '3_visualize/src/watershed_extent_update.html'
-    rmarkdown::render(input = 'watershed_extent_update.Rmd',
+    {output_file <- '3_visualize/out/watershed_extent_update_0928.html'
+    rmarkdown::render(input = 'watershed_extent_update_0928.Rmd',
                                 output_format = 'html_document',
-                                output_file = output_file
-                      )
+                                output_file = output_file)
     return(output_file)
-    }, 
+    },
     format = 'file')
-  
+
 )

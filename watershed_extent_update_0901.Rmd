@@ -12,8 +12,7 @@ date: "9/01/2022"
 output: html_document
 ---
 
-```{r load_lbs, echo = FALSE,message = FALSE, warnings = FALSE} 
-
+```{r }
 library(targets)
 library(leaflet)
 library(scico)
