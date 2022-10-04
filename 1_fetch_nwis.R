@@ -61,7 +61,7 @@ p1_nw_targets_list <- list(
   ## xwalk branch to lake for sw meas
   tar_target(
     p1_br_lk_xwalk_meas_sw,
-    tibble(branch_name = names(p1_nwis_d_sw_data_lst),
+    tibble(branch_name = names(p1_nwis_dv_sw_data_lst),
            lake_names = p1_site_no_by_lake %>% arrange(tar_group) %>% pull(lake_w_state) %>% unique())
   ),
   
