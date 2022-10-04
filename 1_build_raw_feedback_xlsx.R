@@ -2,7 +2,7 @@ source('3_visualize/src/generate_spreadsheet.R')
 
 p1_feeback_xlsx_targets_list <- list(
   
-# Output Spreadsheet #
+# Raw Output Spreadsheet #
 tar_target(
   p1_feedback_spreadsheet_xlsx,
   build_feedback_spreadsheet(p1_get_lakes_huc_sf = p1_get_lakes_huc8_sf,
