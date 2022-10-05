@@ -1,0 +1,530 @@
+---
+title: "Saline Lakes Spatial Data Update"
+
+author: |
+  | Data Science Branch, IIDD, USGS WMA 
+  |
+  Contacts: Margaux Sleckman (msleckman@usgs.gov),
+   Anthony Martinez (ajmartinez@usgs.gov),
+   and Cee Nell (cnell@usgs.gov)
+  
+date: "9/01/2022"
+output: html_document
+---
+
+```{r }
+library(targets)
+library(leaflet)
+library(scico)
+library(scales)
+library(dplyr)
+#library(vctrs)
+library(rmapshaper)
+
+source('3_visualize/src/prep_viz_data.R')
+source('3_visualize/src/interactive_map.R')
+
+```
+
+```{r load_targets, echo = FALSE, message = FALSE, warnings = FALSE}
+
+## HUC
+tar_load(p1_get_lakes_huc6_sf)
+tar_load(p1_get_lakes_huc8_sf)
+tar_load(p1_get_lakes_huc10_sf)
+
+## Lakes
+tar_load(p2_saline_lakes_sf)
+tar_load(p3_saline_lakes_sf)
+
+## Watershed 
+tar_load(p2_huc10_watershed_boundary)
+tar_load(p2_huc10_watershed_boundary_no_humbolt_huc6)
+tar_load(p2_lake_watersheds_dissolved)
+tar_load(p2_lake_watersheds_dissolved_no_humbolt_huc6)
+
+## flowlines
+tar_load(p2_lake_tributaries)
+tar_load(p3_flowlines_sf)
+
+## Sites 
+targets::tar_load(p3_gage_sites_sf)
+targets::tar_load(p1_site_in_watersheds_sf)
+
+## nwis data 
+targets::tar_load(p1_nwis_dv_sw_data)
+targets::tar_load(p1_nwis_meas_sw_data)
+
+```
+
+### Objective
+
+The objective of this report is to update and display the latest version of our spatial data from which we are collecting water quality and availability data across the relevant watersheds of our selected saline lakes in the Great Basin Desert.
+
+Keep in mind that we intentionally casted a wide net as we gathered these geospatial and water quality datasets to include as many sites as possible. We expect further filtering (spatial and temporal) to fit the needs of the project, and seek subject matter expert (SME) feedback to accomplish this. 
+Therefore, we have listed out a series of comments and questions across this report that we hope you can respond to. The questions are listed under their specific sections.
+
+### Defining our geospatial features
+
+To start off, here are our initial definitions for our geospatial features. It is important that we establish an agree-upon understanding of these spatial features to guide the water budget data collection and processing work for our saline lakes. 
+
+  * **Water body and watershed extent definitions:**
+  
+    * **Saline Lakes**: The saline lake geospatial polygons stem from the [National Hydrography Dataset high-resolution](https://www.usgs.gov/national-hydrography/nhdplus-high-resolution) (NHDhr) database, USGS's primary database of the US-wide hydrological network. The boundary of the layer is the border of the water body feature, and excludes wetland areas that are found beyond this waterbody boundary.
+    
+     * **Watershed Extents**: This is the extent of the lake's watershed containing the lake and main tributaries. This geospatial file draws upon the defined hydrologic unit (HUC) boundaries from NHDhr (HUC6, HUC8, and HUC10) as well as SME feedback provided by members of the project team.
+     
+     * **USGS NWIS gage sites**: Point locations where water measurements have been collected, whether at regular intervals (continuous (15 min), or daily) by permanent USGS gages or field measurements by a USGS staff.
+     
+    * **Lake boundary including wetlands**: A broader outline of our focal saline lakes that include lake wetlands that harbor bird populations and other critical habitat. This layer is not yet created, but may be a useful addition to visualize alongside our lake water body polygons and watershed extents. 
+
+#### Definition questions: 
+
+* Please provide any edits, adjustments, or comments regarding the definitions provided above.
+
+* What other geospatial features require an established project definition as we move forward?
+
+
+### Watershed extents
+
+<br>
+
+##### Steps to creating watershed extent
+
+  1. Identified HUC6: basin of each lake. After discussion with SME and through literature research, the HUC6 boundary is chosen as the widest scope boundary of a given lakes' watershed. This is the default if no more narrow definition is provided. 
+
+  2. Collected all the HUC8 and HUC10 boundaries within those HUC6 
+
+  3. Created a spreadsheet that maps all the HUC6, HUC8,and HUC10 associated with each of our lakes (see HUC to Lake sharepoint excel [here](https://doimspp.sharepoint.com/:x:/s/IIDDStaff/EdhaQ9_tsPNIhW32hI9nydAB4ajOGW_y8qQHYSYYlhJKKA?e=WkXYCW)). We then narrowed the scope of the extent following the feedback received and consultation with experts. We identified the HUC units considered within a given lake's watershed scope (checking 'Yes' in the spreadsheet if included).  
+Therefore, in some cases, the watershed of a given lake is the entire HUC6 within which that lake belongs to (e.g. Pyramid Lake, CA), this is the default if no more precise information is provided. In other cases, the watershed of a given lake is defined by one or several huc10s (e.g. Eagle Lake, CA).
+
+<br>
+
+#### Defining watershed extents - Map
+<br>
+
+**Layer definitions for the map:**
+
+  *  Great Basin HUC6: HUC6 basin of each lake
+  *  Great Basin HUC8: HUC8 within the HUC6 basin 
+  *  Great Basin HUC10: HUC10 within the HUC6 basin
+  *  Saline lakes: Our selected saline lakes, pulled from NHDhr, as well as NHD medium-resolution if the waterbody is not readily available in high-res. Note that Carson Sink is the only manual drawn spatial polygon.   
+  *  Watershed Extent: Watershed extent given feedback provided
+  *  Watershed Extent by huc10: Defined lake watershed extent within huc10 polygons
+  *  Watershed Extent v2: Alternative version of watershed extent excluded HUC6:Humboldt which currently tied to Carson Sink via the northern edge.
+  
+<br>
+
+```{r huc_basins, message =FALSE, echo = FALSE, warnings = FALSE, out.width = '100%'}
+
+leaflet_map_huc <- leaflet() %>% 
+  addProviderTiles("Esri.WorldGrayCanvas", group = c("No labels", "Labels"))  %>%
+    #addProviderTiles("HERE.satelliteDay", group = c("No labels", "Labels"))  %>%
+    addProviderTiles("CartoDB.PositronOnlyLabels", group = "Labels") %>%
+    ## NOTE - compared to previos version of function - I've removed label param (no label column like below)
+      # Add data layers (overlayGroups)
+    addPolygons(data = p1_get_lakes_huc6_sf %>% ms_simplify(),
+                group = "Great Basin HUC6",
+                color = 'green', fillColor = "grey", opacity = 0.2, weight = 1) %>% 
+    addPolygons(data = p1_get_lakes_huc8_sf %>% ms_simplify(),
+                group = "Great Basin HUC8",
+                color = 'blue', fillColor = "grey", opacity = 0.2, weight = 1) %>% 
+    addPolygons(data = p1_get_lakes_huc10_sf %>% ms_simplify(),
+                group = "Great Basin HUC10",
+                color = 'purple', fillColor = "grey", opacity = 0.2, weight = 1) %>% 
+    addPolygons(data = p2_huc10_watershed_boundary %>% ms_simplify(),
+                group = "Watershed Extent by huc10",
+                color = 'black', fillColor = "grey", opacity = 0.4, weight = 1) %>%
+    addPolygons(data = p2_lake_watersheds_dissolved, group = "Watershed Extent",
+                color = 'black', fillColor = "#C3CB9F", opacity = 0.4, weight = 2) %>% 
+    addPolygons(data = p2_lake_watersheds_dissolved_no_humbolt_huc6, group = "Watershed Extent v2",
+                color = 'black', fillColor = "#C3CB9F", opacity = 0.4, weight = 2) %>% 
+    addPolygons(data = p3_saline_lakes_sf, group = "Saline lakes",
+                color = '#3A6DB7', opacity = 0.6, weight = 1,
+                popup = ~label) %>% 
+      addLabelOnlyMarkers(data = p3_saline_lakes_sf, lng = ~X, lat = ~Y, group = "Lake labels",
+                        label = ~lake_w_state,
+                        labelOptions = labelOptions(noHide = T, textOnly = T)) %>% 
+    # addLegend(data = , group = c("Watershed"),
+    #            title = "Within saline lake subbasin",
+    #            pal = pal_gage, values = ~in_HUC8,
+    #            position = "bottomright") %>%
+  addLayersControl(baseGroups = c("Labels", "No Labels"),
+                     overlayGroups = c("Saline lakes",
+                                       "Great Basin HUC6","Great Basin HUC8", "Great Basin HUC10",
+                                       "Watershed Extent",
+                                       "Watershed Extent by huc10", "Watershed Extent v2", "Lake labels"),
+                     position = "topright",
+                     options = layersControlOptions(collapsed = F)) %>% 
+  hideGroup(c("Great Basin HUC6", "Great Basin HUC8", "Great Basin HUC10",
+              "Watershed Extent","Watershed Extent v2","Watershed Extent by huc10"))
+
+```
+
+```{r Watershed, message =FALSE, echo = FALSE, warnings = FALSE, out.width = '100%'}
+
+leaflet_map_huc
+
+```
+
+<br>
+
+#### Watershed extents questions
+
+* Please take a look at the [HUC to Lake excel spreadsheet](https://doimspp.sharepoint.com/:x:/s/IIDDStaff/EdhaQ9_tsPNIhW32hI9nydAB4ajOGW_y8qQHYSYYlhJKKA?e=WkXYCW), which was used to define the watershed extents. Does the aggregation and selection of HUC6/HUC8/HUC10 within each lake watershed boundary make sense? Please provide feedback and edits where you see fit.
+
+* Are there any watershed extents displayed on the map that stand out and need adjustment? If so, please describe the changes that need to be made. 
+
+* Do you have any questions about the steps taken to create this lake watershed boundary? If so, please share these thoughts below.
+
+<br>
+
+
+#### Lake-specific watershed extents questions
+
+<br>
+
+**1. Carson Sink** 
+
+* Carson Sink, in the manner it has been manually drawn, overlaps with two HUC6. Since the default is to take the overlapping of each lake, _HUC6 - Humboldt_ and _HUC6 - Carson Desert_ are currently included as part of that lakes watershed extent. However, through quick review of literature, HUC6: Carson Desert seems to be the agreed-upon basin for Carson Sink.  
+  What is the best representation of the watershed? 
+<br>
+```{r message =FALSE, echo = FALSE, warnings = FALSE}
+
+
+selected_lake <- 'Carson Sink,NV'
+
+bbox <- p2_lake_watersheds_dissolved %>%
+  filter(lake_w_state == selected_lake) %>% 
+  sf::st_bbox() %>% as.vector()
+
+leaflet_map_crsn_sk <- leaflet() %>% 
+  addProviderTiles("Esri.WorldGrayCanvas", group = c("No labels", "Labels"))  %>%
+    #addProviderTiles("HERE.satelliteDay", group = c("No labels", "Labels"))  %>%
+    addProviderTiles("CartoDB.PositronOnlyLabels", group = "Labels") %>%
+  fitBounds(bbox[1], bbox[2], bbox[3], bbox[4]) %>% 
+    ## NOTE - compared to previos version of function - I've removed label param (no label column like below)
+      # Add data layers (overlayGroups)
+    addPolygons(data = p2_lake_watersheds_dissolved[p2_lake_watersheds_dissolved$lake_w_state == selected_lake,],
+                group = "Watershed Extent",
+                color = 'black',fillColor = "#C3CB9F", opacity = 0.4, weight = 2) %>% 
+    addPolygons(data = p2_lake_watersheds_dissolved_no_humbolt_huc6[p2_lake_watersheds_dissolved_no_humbolt_huc6$lake_w_state == selected_lake,], group = "Watershed Extent v2",
+                color = 'black', fillColor = "#C3CB9F", opacity = 0.4, weight = 2) %>% 
+    addPolygons(data = p3_saline_lakes_sf[p3_saline_lakes_sf$lake_w_state == selected_lake,],
+                group = "Saline lakes", color = '#3A6DB7', opacity = 0.6, weight = 1,
+                popup = ~label) %>% 
+      addPolygons(data = p1_get_lakes_huc6_sf[p1_get_lakes_huc6_sf$lake_w_state == selected_lake,] %>%
+                  ms_simplify(), group = "Great Basin HUC6",
+                color = 'green', fillColor = "grey", opacity = 0.2, weight = 1, popup = ~Name) %>% 
+    addPolygons(data = p1_get_lakes_huc8_sf[p1_get_lakes_huc8_sf$lake_w_state == selected_lake,] %>%
+                  ms_simplify(), group = "Great Basin HUC8",
+                color = 'red', fillColor = "grey", opacity = 0.2, weight = 1, popup = ~Name) %>%
+    addPolygons(data = p1_get_lakes_huc10_sf[p1_get_lakes_huc10_sf$lake_w_state == selected_lake,] %>%
+                  ms_simplify(), group = "Great Basin HUC10",
+                color = 'purple', fillColor = "grey", opacity = 0.2, weight = 1, popup = ~Name) %>%
+      addLabelOnlyMarkers(data = p3_saline_lakes_sf[p3_saline_lakes_sf$lake_w_state == selected_lake,],
+                          lng = ~X, lat = ~Y, group = "Lake labels",
+                        label = ~lake_w_state,
+                        labelOptions = labelOptions(noHide = T, textOnly = T)) %>% 
+  addLayersControl(baseGroups = c("Labels", "No Labels"),
+                     overlayGroups = c("Saline lakes", "Watershed Extent",
+                                       "Great Basin HUC6","Great Basin HUC8","Great Basin HUC10",
+                                       "Watershed Extent v2",
+                                       "Lake labels"),
+                     position = "topright",
+                     options = layersControlOptions(collapsed = F))%>% 
+  hideGroup(c("Great Basin HUC6","Great Basin HUC8","Great Basin HUC10","Watershed Extent v2"))
+
+leaflet_map_crsn_sk
+
+```
+
+<br>
+
+**2. Sevier Lake, UT**
+
+* From the feedback already provided, Sevier Lake watershed extent includes HUC8:Sevier Lake, and HUC8:Lower Sevier.  
+  Why do we exclude the HUC8:Middle Sevier and HUC8: Upper Sevier for our defined watershed, even through those sub-basins contains headwater tributaries of Sevier Lake?  
+  Do you agree on this watershed extent, or should it be expanded?
+
+
+```{r message =FALSE, echo = FALSE, warnings = FALSE}
+
+selected_lake <- 'Sevier Lake,UT'
+
+bbox <- p2_lake_watersheds_dissolved %>%
+  filter(lake_w_state == selected_lake) %>% 
+  sf::st_bbox() %>% as.vector()
+
+leaflet_map_sevier <- leaflet() %>% 
+  addProviderTiles("Esri.WorldGrayCanvas", group = c("No labels", "Labels"))  %>%
+    #addProviderTiles("HERE.satelliteDay", group = c("No labels", "Labels"))  %>%
+    addProviderTiles("CartoDB.PositronOnlyLabels", group = "Labels") %>%
+  fitBounds(bbox[1], bbox[2], bbox[3], bbox[4]) %>% 
+    ## NOTE - compared to previos version of function - I've removed label param (no label column like below)
+      # Add data layers (overlayGroups)
+    addPolygons(data = p2_lake_watersheds_dissolved[p2_lake_watersheds_dissolved$lake_w_state == selected_lake,],
+                group = "Watershed Extent",
+                color = 'black', fillColor = "#C3CB9F", opacity = 0.4, weight = 2) %>% 
+    addPolygons(data = p1_get_lakes_huc6_sf[p1_get_lakes_huc6_sf$lake_w_state == selected_lake,] %>%
+                  ms_simplify(), group = "Great Basin HUC6",
+                color = 'green', fillColor = "grey", opacity = 0.2, weight = 1, popup = ~Name) %>% 
+    addPolygons(data = p1_get_lakes_huc8_sf[p1_get_lakes_huc8_sf$lake_w_state == selected_lake,] %>%
+                  ms_simplify(), group = "Great Basin HUC8",
+                color = 'blue', fillColor = "grey", opacity = 0.2, weight = 1, popup = ~Name) %>% 
+    addPolygons(data = p3_saline_lakes_sf, group = "Saline lakes",
+                color = '#3A6DB7', opacity = 0.6, weight = 1,
+                popup = ~label) %>% 
+      addLabelOnlyMarkers(data = p3_saline_lakes_sf, lng = ~X, lat = ~Y, group = "Lake labels",
+                        label = ~lake_w_state,
+                        labelOptions = labelOptions(noHide = T, textOnly = T)) %>% 
+  addLayersControl(baseGroups = c("Labels", "No Labels"),
+                     overlayGroups = c("Saline lakes", "Watershed Extent",
+                                       "Great Basin HUC6","Great Basin HUC8",
+                                       "Lake labels"),
+                     position = "topright",
+                     options = layersControlOptions(collapsed = F))%>% 
+  hideGroup(c("Great Basin HUC6","Great Basin HUC8","Great Basin HUC10"))
+
+leaflet_map_sevier
+
+```
+
+<br>
+
+**3. Honey Lake, CA**
+
+* In the feedback provided about the Honey Lake, we find that two HUC10s are ruled out of the watershed extent. This explains why there we see a hole in the Honey Lake watershed basin.  
+  Do you agree with this watershed extent?
+
+
+```{r message =FALSE, echo = FALSE, warnings = FALSE}
+
+selected_lake <- 'Honey Lake,CA'
+
+bbox <- p2_lake_watersheds_dissolved %>%
+  filter(lake_w_state == selected_lake) %>% 
+  sf::st_bbox() %>% as.vector()
+
+leaflet_map_honey <- leaflet() %>% 
+  addProviderTiles("Esri.WorldGrayCanvas", group = c("No labels", "Labels"))  %>%
+    #addProviderTiles("HERE.satelliteDay", group = c("No labels", "Labels"))  %>%
+    addProviderTiles("CartoDB.PositronOnlyLabels", group = "Labels") %>%
+  fitBounds(bbox[1], bbox[2], bbox[3], bbox[4]) %>% 
+    ## NOTE - compared to previos version of function - I've removed label param (no label column like below)
+      # Add data layers (overlayGroups)
+    addPolygons(data = p2_lake_watersheds_dissolved[p2_lake_watersheds_dissolved$lake_w_state == selected_lake,],
+                group = "Watershed Extent",
+                color = 'black', fillColor = "#C3CB9F", opacity = 0.4, weight = 2) %>% 
+    addPolygons(data = p1_get_lakes_huc6_sf[p1_get_lakes_huc6_sf$lake_w_state == selected_lake,] %>%
+                  ms_simplify(), group = "Great Basin HUC6",
+                color = 'green', fillColor = "grey", opacity = 0.2, weight = 1, popup = ~Name) %>% 
+    addPolygons(data = p1_get_lakes_huc8_sf[p1_get_lakes_huc8_sf$lake_w_state == selected_lake,] %>%
+                  ms_simplify(), group = "Great Basin HUC8",
+                color = 'blue', fillColor = "grey", opacity = 0.2, weight = 1, popup = ~Name) %>%
+    addPolygons(data = p1_get_lakes_huc10_sf[p1_get_lakes_huc10_sf$lake_w_state == selected_lake,] %>%
+                  ms_simplify(), group = "Great Basin HUC10",
+                color = 'purple', fillColor = "grey", opacity = 0.2, weight = 1, popup = ~Name) %>%
+    addPolygons(data = p3_saline_lakes_sf[p3_saline_lakes_sf$lake_w_state == selected_lake,],
+                group = "Saline lakes",
+                color = '#3A6DB7', opacity = 0.6, weight = 1,
+                popup = ~label) %>% 
+      addLabelOnlyMarkers(data = p3_saline_lakes_sf[p3_saline_lakes_sf$lake_w_state == selected_lake,],
+                          lng = ~X, lat = ~Y, group = "Lake labels",
+                        label = ~lake_w_state,
+                        labelOptions = labelOptions(noHide = T, textOnly = T)) %>% 
+  addLayersControl(baseGroups = c("Labels", "No Labels"),
+                     overlayGroups = c("Saline lakes", "Watershed Extent",
+                                       "Great Basin HUC6","Great Basin HUC8","Great Basin HUC10",
+                                       "Lake labels"),
+                     position = "topright",
+                     options = layersControlOptions(collapsed = F)) %>% 
+  hideGroup(c("Great Basin HUC6","Great Basin HUC8","Great Basin HUC10"))
+
+leaflet_map_honey
+
+```
+
+<br> 
+
+**4. Lakes that share same watersheds**
+
+* From the SME feedback already provided, some lakes share either the same watershed or have overlapping watersheds. This is the case for Pyramid and Winnemucca Lakes, and Harney and Malheur Lakes.  
+  Do we agree with the current watershed extents of these lakes?  
+  How should we distinguish the data in the watersheds of these lake pairs?  
+
+```{r message =FALSE, echo = FALSE, warnings = FALSE}
+
+selected_lake <- c('Winnemucca Lake,NV','Pyramid Lake,NV','Harney Lake,OR','Malheur Lake,OR') 
+
+bbox <- p2_lake_watersheds_dissolved %>%
+  filter(lake_w_state %in% selected_lake) %>% 
+  sf::st_bbox() %>% as.vector()
+
+leaflet_map_pairs <- leaflet() %>% 
+  addProviderTiles("Esri.WorldGrayCanvas", group = c("No labels", "Labels"))  %>%
+    #addProviderTiles("HERE.satelliteDay", group = c("No labels", "Labels"))  %>%
+    addProviderTiles("CartoDB.PositronOnlyLabels", group = "Labels") %>%
+  fitBounds(bbox[1], bbox[2], bbox[3], bbox[4]) %>% 
+    ## NOTE - compared to previos version of function - I've removed label param (no label column like below)
+      # Add data layers (overlayGroups)
+    addPolygons(data = p2_lake_watersheds_dissolved[p2_lake_watersheds_dissolved$lake_w_state %in% selected_lake[1],],
+                group = "Watershed Extent - Winnemucca",
+                color = 'black', fillColor = "#C3CB9F", opacity = 0.4, weight = 2) %>% 
+      addPolygons(data = p2_lake_watersheds_dissolved[p2_lake_watersheds_dissolved$lake_w_state %in% selected_lake[2],],
+                group = "Watershed Extent - Pyramid",
+                color = 'black', fillColor = "#C3CB9F", opacity = 0.4, weight = 2) %>% 
+      addPolygons(data = p2_lake_watersheds_dissolved[p2_lake_watersheds_dissolved$lake_w_state %in% selected_lake[3],],
+                group = "Watershed Extent - Harney",
+                color = 'black', fillColor = "#C3CB9F", opacity = 0.4, weight = 2) %>% 
+      addPolygons(data = p2_lake_watersheds_dissolved[p2_lake_watersheds_dissolved$lake_w_state %in% selected_lake[4],],
+                group = "Watershed Extent - Malheur",
+                color = 'black', fillColor = "#C3CB9F", opacity = 0.4, weight = 2) %>% 
+    addPolygons(data = p1_get_lakes_huc6_sf[p1_get_lakes_huc6_sf$lake_w_state %in% selected_lake,] %>%
+                  ms_simplify(), group = "Great Basin HUC6",
+                color = 'green', fillColor = "grey", opacity = 0.2, weight = 1, popup = ~Name) %>% 
+    addPolygons(data = p1_get_lakes_huc8_sf[p1_get_lakes_huc8_sf$lake_w_state %in% selected_lake,] %>%
+                  ms_simplify(),
+                group = "Great Basin HUC8",
+                color = 'blue', fillColor = "grey", opacity = 0.2, weight = 1, popup = ~Name) %>% 
+    addPolygons(data = p3_saline_lakes_sf[p3_saline_lakes_sf$lake_w_state %in% selected_lake,],
+                group = "Saline lakes",
+                color = '#3A6DB7', opacity = 0.6, weight = 1,
+                popup = ~label) %>% 
+    addPolygons(data = p1_get_lakes_huc10_sf[p1_get_lakes_huc10_sf$lake_w_state %in% selected_lake,] %>%
+                  ms_simplify(), group = "Great Basin HUC10",
+                color = 'purple', fillColor = "grey", opacity = 0.2, weight = 1, popup = ~Name) %>%
+      addLabelOnlyMarkers(data = p3_saline_lakes_sf[p3_saline_lakes_sf$lake_w_state %in% selected_lake,],
+                          lng = ~X, lat = ~Y, group = "Lake labels",
+                        label = ~lake_w_state,
+                        labelOptions = labelOptions(noHide = T, textOnly = T)) %>% 
+  addLayersControl(baseGroups = c("Labels", "No Labels"),
+                     overlayGroups = c("Saline lakes", "Watershed Extent - Winnemucca",
+                                       "Watershed Extent - Pyramid","Watershed Extent - Harney",
+                                       "Watershed Extent - Malheur",
+                                       "Great Basin HUC6","Great Basin HUC8","Great Basin HUC10",
+                                       "Lake labels"),
+                     position = "topright",
+                     options = layersControlOptions(collapsed = F)) %>%
+  hideGroup(c("Great Basin HUC6","Great Basin HUC8","Great Basin HUC10"))
+
+leaflet_map_pairs
+
+```
+
+<br> 
+<br>
+
+#### NWIS Sites and flowlines map
+
+<br>
+
+We have already taken a preliminary look at the water site data, surface water (sw) and groundwater (gw) data from the National Water Information System (NWIS). For each lake, all sw and gw sites within the watershed extents, as they are currently defined, were found. Daily (dv) and instantaneous data (iv), as well as field measurements were queried for each site from 2000 - 2020.  
+
+Mapped below are these active sites across the basin where we find daily values and field measurement values for selected surface water metrics (discharge, gage height). Please note that instantaneous data values are collected on the same sites as daily values.  
+
+<br>
+
+```{r lake_watershed_nwis_sites, message =FALSE, echo = FALSE, warnings = FALSE, out.width = '100%'}
+
+dv_sites_in_watershed <- p1_site_in_watersheds_sf %>%
+  filter(site_no %in% unique( p1_nwis_dv_sw_data$site_no)) %>% 
+  mutate(service = 'dv',
+         label = paste(site_no,': ', station_nm))
+
+field_meas_sites_in_watershed <- p1_site_in_watersheds_sf %>%
+  filter(site_no %in% unique( p1_nwis_meas_sw_data$site_no)) %>% 
+  mutate(service = 'measurements',
+         label = paste(site_no,': ', station_nm))
+
+  # Build map
+  leaflet_map_sites <- leaflet() %>% 
+    #Add Basemap (baseGroups)
+    addProviderTiles("Esri.WorldGrayCanvas", group = c("No labels", "Labels"))  %>%
+    #addProviderTiles("HERE.satelliteDay", group = c("No labels", "Labels"))  %>%
+    addProviderTiles("CartoDB.PositronOnlyLabels", group = "Labels") %>%
+    # Add data layers (overlayGroups)
+    addPolygons(data = p2_lake_watersheds_dissolved,
+                group = "Watershed Extent", color = 'black',
+                fillColor = "#C3CB9F",
+                opacity = 0.4, weight = 1,) %>% 
+    addPolygons(data = p3_saline_lakes_sf, group = "Saline lakes",
+                color = '#3A6DB7', opacity = 0.8, weight = 2,
+                popup = ~label) %>%
+        addCircleMarkers(data = dv_sites_in_watershed,
+                         group = c("Gage sites (dv, iv)"),
+                         radius = 3, weight = 1,
+                         color = 'grey',
+                         fillColor = 'firebrick', popup = ~label) %>%
+        addCircleMarkers(data = field_meas_sites_in_watershed,
+                         group = c("Gage sites (field measurements)"),
+                         radius = 3, weight = 1,
+                          color = 'grey',
+                         fillColor = 'green', popup = ~label) %>%
+    addLabelOnlyMarkers(data = p3_saline_lakes_sf,
+                        lng = ~X, lat = ~Y,
+                        group = "Lake labels", label = ~lake_w_state,
+                        labelOptions = labelOptions(noHide = T, textOnly = T)
+                        ) %>% 
+    addPolylines(data = p3_flowlines_sf, group = "Streams (order 3)",
+                 color = scico(9, palette = 'davos')[5], opacity = 0.8,
+                 weight = ~rescale(streamorde, to = c(1, 4)),
+                 popup = ~label) %>% 
+    addLayersControl(baseGroups = c("Labels", "No Labels"),
+                     overlayGroups = c("Saline lakes", "Lake labels",
+                                       "Watershed Extent",
+                                       "Gage sites (dv, iv)",
+                                       "Gage sites (field measurements)",
+                                       'Streams (order 3)'
+                                       ),
+                     position = "topright",
+                     options = layersControlOptions(collapsed = F)) %>% 
+    hideGroup(c("Gage sites (dv, iv)","Gage sites (field measurements)","Streams (order 3)"))
+  
+  
+```
+
+```{r message =FALSE, echo = FALSE, warnings = FALSE}
+
+leaflet_map_sites
+
+```
+
+<br>
+
+
+#### NWIS sites map questions  
+
+
+* The number of NWIS gage sites from where we collect data depend on the watershed extents. With a visual of the sites within all watersheds, do you have further feedback on the currently determined extents for our saline lakes?
+
+* What is the relevant time period to determine a site as "active"?
+
+* What is the minimum number of observations required for the sites?
+
+<br> 
+
+### Next steps 
+
+Here are the next steps for the IIDD - data science team team moving forward: 
+
+* Review project team feedback (after September 9) and incorporate any changes to our data processing pipeline
+
+* include additional gw parameters measuring water level
+
+* query Water Quality Portal
+
+* data harmonization  
+
+<br> 
+<br>
+
+### Data source table 
+
+| Feature  |Source/Database | Notes |
+| ---------|----------|-----------| 
+|Water bodies |[National Hydrological Dataset - high res](https://www.usgs.gov/national-hydrography/nhdplus-high-resolution) - water body attributes | The nhdplusTools R package was used to collect this data. Carson sink was manually drawn and appended to the lakes geospatial file 
+| HUC boundaries | [National Hydrological Dataset - high res](https://www.usgs.gov/national-hydrography/nhdplus-high-resolution) - HUC6,8,10,12 | The nhdplusTools R package was used to collect this data
+|Flowlines | [National Hydrological Dataset - medium res](https://www.usgs.gov/national-hydrography/national-hydrography-dataset) - NHDFLowlines | The nhdplusTools R package was used to collect this data
+| Gage sites | [NWIS](https://waterdata.usgs.gov/nwis?) | The NWIS [dataRetrieval](https://cran.r-project.org/web/packages/dataRetrieval/index.html) R package was used to collect these site
+| water measurements | [NWIS](https://waterdata.usgs.gov/nwis?) | The NWIS [dataRetrieval](https://cran.r-project.org/web/packages/dataRetrieval/index.html) R package was used to collect these data metrics
