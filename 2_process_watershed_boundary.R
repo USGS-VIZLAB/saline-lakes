@@ -2,27 +2,15 @@ source('3_visualize/src/generate_spreadsheet.R')
 
 p2_watershed_boundary_targets_list <- list(
   
-  # Lake Huc structure table #
-  
-  ## Creating simplified df that structures the huc10 within the HUC 8 of our selected lakes -exporting the xlsx for manual review in view of feedback
-  tar_target(
-    p2_huc_boundary_xwalk_df, 
-    create_huc_verification_table(huc10_sf = p1_get_lakes_huc10_sf,
-                                  huc10_name_col = 'Name',
-                                  huc8_sf = p1_get_lakes_huc8_sf,
-                                  huc8_name_col = 'Name',
-                                  huc6_sf = p1_get_lakes_huc6_sf,
-                                  huc6_name_col = 'Name',
-                                  lake_column = 'lake_w_state')
-  ),
-  
+
   # Watershed boundary creation #
+
+  ## We created a verification target (p2_huc_manual_verification_df) which serves to zone-in on HUCs
+  ## that ultimately define our lake watershed boundary   
+  ## Note: we MANUALLY edited HUCs in/out scope and then moved it `lakes_huc6_huc8_huc10_structure_table.xlsx` to the 1_fetch/in/
+  ## Note: If the lake excel is edited (e.g. you change a yes/no), you must force build of this target to see change. Target does not notice changes made to the spreadsheet since it is done off-pipeline 
   
-  ## Target to clean p1_get_lakes_huc10_sf and remove / add huc 10s that we need for our watershed boundary   
-  ## Note: MANUALLY moved lakes_huc6_huc8_huc10_structure_table to the 1_fetch/in/ to be able to read in the manually edited excel
-  ## Note: If the lake excel is edited (change to yes/no), you must force build of this target to see change. Target does not notice changes made to the spreadsheet since it is done off-pipeline 
-  
-  ## watershed extent data table - this is the edited version of the raw huc6huc8huc10 table
+  ## watershed extent data table - this is the edited version of the raw p1_lake_HUC10_spreadsheet_xlsx
   tar_target(p2_path_lake_huc6_huc8_huc10_structure_table,
              '1_fetch/in/lake_huc6_huc8_huc10_structure_table.xlsx'
   ),
@@ -38,43 +26,30 @@ p2_watershed_boundary_targets_list <- list(
   # creating vector of common cols to avoid duplicating cols in left join below 
   tar_target(
     p2_common_cols,
-    intersect(names(p2_huc_manual_verification_df), names(p1_get_lakes_huc10_sf))
+    intersect(names(p2_huc_manual_verification_df), 
+              names(p1_get_lakes_huc10_sf))
   ),
   
-  ## Watershed boundary ungrouped df
+  ## Watershed boundary targets by Huc10 - (not dissolved)
   tar_target(
     p2_huc10_watershed_boundary,
     p2_huc_manual_verification_df %>% 
-      # Joining two df avoiding creating duplicate cols
+      # Joining two df while avoiding the creation of duplicate cols
       left_join(p1_get_lakes_huc10_sf %>%
                   select(!all_of(p2_common_cols), 'HUC10'),
                 by = 'HUC10') %>%
       sf::st_as_sf() %>% 
+      # eliminate duplicate huc10s per lake (p1_get_lakes_huc10_sf) - some instances nhdplusTools dfs have multiple rows
       distinct(HUC10, lake_w_state,
                .keep_all = TRUE)
   ),
   
-  ## Watershed boundary ungrouped df - version that removes extra Carson Sink HUC6-Humboldt in northern NV 
-  tar_target(
-    p2_huc10_watershed_boundary_no_humbolt_huc6,
-    p2_huc10_watershed_boundary %>% filter(HUC6_Name != 'Humboldt')
-  ),
   
-  
-  ## Dissolved watershed boundary
+  ## Lake watershed boundaries - Dissolved
   ### Note dissolve is done by the lake_w_state attr - no other attributes stay. Output sf object is a multi-polygon obj with continuous polygon per lake
   tar_target(
     p2_lake_watersheds_dissolved,
     p2_huc10_watershed_boundary %>% 
-      group_by(lake_w_state) %>%
-      summarize(geometry = sf::st_union(geom)) %>%
-      ungroup()
-  ),
-  
-  ## Creating a dissolved version of the watershed boundary without huc6:humboldt
-  tar_target(
-    p2_lake_watersheds_dissolved_no_humbolt_huc6,
-    p2_huc10_watershed_boundary_no_humbolt_huc6 %>% 
       group_by(lake_w_state) %>%
       summarize(geometry = sf::st_union(geom)) %>%
       ungroup()
