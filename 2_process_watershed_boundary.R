@@ -46,7 +46,7 @@ p2_watershed_boundary_targets_list <- list(
   
   
   ## Lake watershed boundaries - Dissolved
-  ### Note dissolve is done by the lake_w_state attr - no other attributes stay. Output sf object is a multi-polygon obj with continuous polygon per lake
+  ### Note dissolve is done by the lake_w_state attr - no other attributes stay. Output sf object is a multi-polygon obj where each lake belongs to  1 polygon
   tar_target(
     p2_lake_watersheds_dissolved,
     p2_huc10_watershed_boundary %>% 

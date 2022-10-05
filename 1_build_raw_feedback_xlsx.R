@@ -16,7 +16,6 @@ p1_feeback_xlsx_targets_list <- list(
                                   lake_column = 'lake_w_state')
   ),
   
-  
   # Raw Output Spreadsheet #
   ## This target outputs huc6_huc8_huc10 structure spreadsheet from the xwalk table build in 2_process.R 
   ## This is spreadsheet is designed to manually edited so that project members can manually choose what hus are in and out of scope
@@ -27,7 +26,7 @@ p1_feeback_xlsx_targets_list <- list(
     create_worksheet(df_to_export_as_wb = p2_huc_boundary_xwalk_df,
                      worksheet_name = 'Lake_huc6_huc8_huc10',
                      manual_cols_to_add = 'Part of Watershed (Yes/No)',
-                     out_file = '3_visualize/out/lake_huc6_huc8_huc10_structure_table.xlsx'),
+                     out_file = '1_fetch/out/lake_huc6_huc8_huc10_structure_table.xlsx'),
     format = 'file'
   )
 )

@@ -6,19 +6,7 @@ p1_sp_targets_list <- list(
   
   # Lake locations (lat/lon) Fetch #
   
-  ## Lake sf dataset from sharepoint - project team provided
-  ## This target is the same as p2_saline_lakes_sf but includes the manually drawn polygon Carson Sink.
-  ## This target is created to 1/ have a second multipolygon dataset for lakes 2/ append Carson Sink to p2_saline_lakes_sf
-  ## This should be manually downloaded to local 1_fetch/in/ folder 
-  tar_target(
-    p1_saline_lakes_bnds_sf,
-    st_read('1_fetch/in/SalineLakeBnds.shp') %>% 
-      st_transform(crs=st_crs(p1_lakes_sf)) %>% 
-      ## Formatting for easier rbind with p2_saline_lakes_sf
-      rename(GNIS_Name = Name) %>% 
-      mutate(lake_w_state = paste0(GNIS_Name,',',State)) %>% 
-      select(lake_w_state, GNIS_Name, geometry)
-  ),
+
   
   ## Reading and cleaning list of saline lakes
   tar_target(
@@ -36,6 +24,22 @@ p1_sp_targets_list <- list(
                lake_w_state = paste(lake, state_abbr, sep = ','),
                lake_name_shrt = trimws(str_replace(lake, pattern = 'Lake', replacement = "")))
     }
+  ),
+  
+  ## Lake sf dataset from sharepoint - project team provided
+  ## This target is the same as p2_saline_lakes_sf but includes the manually drawn polygon Carson Sink.
+  ## This target has been created to: 
+  ## 1/ have a second multipolygon dataset for lakes
+  ## 2/ append Carson Sink to p2_saline_lakes_sf
+  ## This should be manually downloaded to local 1_fetch/in/sharepoint folder 
+  tar_target(
+    p1_saline_lakes_bnds_sf,
+    st_read('1_fetch/in/SalineLakeBnds.shp') %>% 
+      st_transform(crs=st_crs(p1_lakes_sf)) %>% 
+      ## Formatting for easier rbind with p2_saline_lakes_sf
+      rename(GNIS_Name = Name) %>% 
+      mutate(lake_w_state = paste0(GNIS_Name,',',State)) %>% 
+      select(lake_w_state, GNIS_Name, geometry)
   ),
   
   # States Shp Fetch - used for Lakes Querying #

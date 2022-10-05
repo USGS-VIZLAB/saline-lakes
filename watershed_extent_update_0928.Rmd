@@ -35,31 +35,26 @@ source('3_visualize/src/interactive_map.R')
 ```{r load_targets, echo = FALSE, message = FALSE, warnings = FALSE}
 
 ## HUC
-tar_load(p1_get_lakes_huc6_sf)
-tar_load(p1_get_lakes_huc8_sf)
-tar_load(p1_get_lakes_huc10_sf)
+tar_load(p3_lake_huc6_sf)
+tar_load(p3_lake_huc8_sf)
+tar_load(p3_lake_huc10_sf)
 
 ## Lakes
-tar_load(p2_saline_lakes_sf)
 tar_load(p3_saline_lakes_sf)
 
 ## Watershed 
 tar_load(p2_huc10_watershed_boundary)
-tar_load(p2_huc10_watershed_boundary_no_humbolt_huc6)
 tar_load(p2_lake_watersheds_dissolved)
-tar_load(p2_lake_watersheds_dissolved_no_humbolt_huc6)
 
 ## flowlines
-tar_load(p2_lake_tributaries)
-tar_load(p3_flowlines_sf)
+tar_load(p3_lake_tributaries)
 
 ## Sites 
-targets::tar_load(p3_gage_sites_sf)
 targets::tar_load(p1_site_in_watersheds_sf)
 
 ## nwis data 
-targets::tar_load(p1_nwis_dv_sw_data)
-targets::tar_load(p1_nwis_meas_sw_data)
+targets::tar_load(p3_dv_sites_in_watershed)
+targets::tar_load(p3_fieldmeas_sites_in_watershed)
 
 ```
 
@@ -85,36 +80,20 @@ National Hydrography Dataset (NHD) Plus High Resolution (NHDhr). These watershed
 
 ```{r wrangling, echo = FALSE, message = FALSE, warnings = FALSE}
 
-
-p1_get_lakes_huc6_sf <- p1_get_lakes_huc6_sf %>% mutate(ID_Name = paste0(HUC6,':',Name))
-p1_get_lakes_huc8_sf <- p1_get_lakes_huc8_sf %>% mutate(ID_Name = paste0(HUC8,':',Name))
-p1_get_lakes_huc10_sf <- p1_get_lakes_huc10_sf %>% mutate(ID_Name = paste0(HUC10,':',Name))
-
-p3_flowlines_sf <- p3_flowlines_sf %>%
+## Add flowlines that are within the watershed extents (Some tribs are a little outside) 
+p3_lake_tributaries_in_watershed <- p3_lake_tributaries %>%
   st_intersection(., p2_lake_watersheds_dissolved)
-
-dv_sites_in_watershed <- p1_site_in_watersheds_sf %>%
-  filter(site_no %in% unique( p1_nwis_dv_sw_data$site_no)) %>% 
-  mutate(service = 'dv',
-         label = paste(site_no,': ', station_nm))
-
-field_meas_sites_in_watershed <- p1_site_in_watersheds_sf %>%
-  filter(site_no %in% unique( p1_nwis_meas_sw_data$site_no)) %>% 
-  mutate(service = 'measurements',
-         label = paste(site_no,': ', station_nm))
 
 ```
 
-```{r map extents display, echo = FALSE, message = FALSE, warnings = FALSE,  out.width = '100%'}
+```{r map creation, echo = FALSE, message = FALSE, warnings = FALSE}
 
 ## map to explore the lake extents
-
 leaflet_map_huc <- leaflet() %>% 
   addProviderTiles("Esri.WorldGrayCanvas", group = c("No labels", "Labels"))  %>%
-  #addProviderTiles("HERE.satelliteDay", group = c("No labels", "Labels"))  %>%
+  #addProviderTiles("HERE.satelliteDay", group = c("No labels", "Labels"))  %>% # added for satellite date
   addProviderTiles("CartoDB.PositronOnlyLabels", group = "Labels") %>%
-  ## NOTE - compared to previos version of function - I've removed label param (no label column like below)
-  # Add data layers (overlayGroups)
+  # Add data layers
   addPolygons(data = p1_get_lakes_huc6_sf %>% ms_simplify(),
               group = "Great Basin HUC6",
               color = 'green', fillColor = "grey", opacity = 0.2,
@@ -142,12 +121,12 @@ leaflet_map_huc <- leaflet() %>%
                color = scico(9, palette = 'davos')[5], opacity = 0.8,
                weight = ~rescale(streamorde, to = c(1, 4)),
                popup = ~label) %>% 
-          addCircleMarkers(data = dv_sites_in_watershed,
+          addCircleMarkers(data = p3_dv_sites_in_watershed,
                          group = c("Gage sites (dv, iv)"),
                          radius = 3, weight = 1,
                          color = 'grey',
                          fillColor = 'firebrick', popup = ~label) %>%
-        addCircleMarkers(data = field_meas_sites_in_watershed,
+        addCircleMarkers(data = p3_fieldmeas_sites_in_watershed,
                          group = c("Gage sites (field measurements)"),
                          radius = 3, weight = 1,
                           color = 'grey',
@@ -167,6 +146,10 @@ leaflet_map_huc <- leaflet() %>%
   hideGroup(c("Great Basin HUC6", "Great Basin HUC8", "Great Basin HUC10",
               "Watershed Extent by huc10","Streams (order 3)",
               "Gage sites (dv, iv)","Gage sites (field measurements)"))
+
+```
+
+```{r display leaflet, echo = FALSE, message = FALSE, warnings = FALSE,  out.width = '100%'}
 
 leaflet_map_huc
 

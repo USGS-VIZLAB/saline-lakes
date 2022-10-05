@@ -4,13 +4,19 @@ options(tidyverse.quiet = TRUE, timeout = 300)
 tar_option_set(packages = c("tidyverse","sbtools","sf",'dataRetrieval',"nhdplusTools",'dplyr','readxl','readr','stringr','mapview',
                             'leaflet', 'httr', 'scico', 'openxlsx', 'rmapshaper', 'scales', 'retry','tryCatchLog'))
 
+## Sourcing files
 source('0_config.R')
+
 source("1_fetch_spatial.R")
 source('1_build_raw_feedback_xlsx.R')
 source("1_fetch_nwis.R")
+
 source("2_process_lakes_tribs.R")
 source("2_process_watershed_boundary.R")
-source("3_vis_outputs.R")
+
+source("3_viz_prep.R")
+source("3_visualize.R")
+source('3_reports.R')
 
 ## create dirs in `in` folder
 dir.create('1_fetch/in/nhdhr', showWarnings = FALSE)

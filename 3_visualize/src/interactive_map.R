@@ -10,7 +10,6 @@ build_map_leaflet <- function(p3_huc8_sf, p3_saline_lakes_sf, p3_flowlines_sf, p
     #Add Basemap (baseGroups)
     addProviderTiles("Esri.WorldGrayCanvas", group = c("No labels", "Labels"))  %>%
     addProviderTiles("CartoDB.PositronOnlyLabels", group = "Labels") %>%
-    
     # Add data layers (overlayGroups)
     addPolygons(data = p3_huc8_sf, group = "Subbasin (HUC 8)",
                 color = "#C3CB9F", opacity = 0.4, weight = 3,
