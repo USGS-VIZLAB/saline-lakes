@@ -3,8 +3,9 @@ source('1_fetch/src/get_NWIS_site_no.R')
 
 p1_nw_targets_list <- list(
   
-  # Pulling site data retrieval using whatNWISsites(). This target is a sf object can be joined to nwis datasets below via site_no 
-  ## subsetting huc8 multipolygon to simplify join in get_NWIS_site_no()
+  ## Pulling site data retrieval using whatNWISsites(). 
+  ## This target is a sf object can be joined to nwis datasets below via site_no 
+  ## Subsetting huc8 multipolygon to simplify join in get_NWIS_site_no()
   tar_target(
     p1_site_in_watersheds_sf,
     get_NWIS_site_no(basin_huc08 = p1_huc08_full_basin_sf$huc8,
@@ -12,7 +13,7 @@ p1_nw_targets_list <- list(
                      crs = p0_selected_crs)
     ),
   
-  ##########################################
+  ##############################################################################
   # NWIS Data Queries
   
   ## Target to allow branching across lakes

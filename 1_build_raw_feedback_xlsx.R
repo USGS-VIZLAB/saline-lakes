@@ -1,4 +1,4 @@
-source('3_visualize/src/generate_spreadsheet.R')
+source('1_build_raw_feedback_xlsx/src/generate_spreadsheet.R')
 
 p1_feeback_xlsx_targets_list <- list(
   
@@ -20,13 +20,16 @@ p1_feeback_xlsx_targets_list <- list(
   ## This target outputs huc6_huc8_huc10 structure spreadsheet from the xwalk table build in 2_process.R 
   ## This is spreadsheet is designed to manually edited so that project members can manually choose what hus are in and out of scope
   ## The edited version of this spreadsheet is already in the repo - under 1_fetch/in
-
+  
+  tar_target(
+    p1_lake_HUC10_spreadsheet_xlsx_outpath, '1_build_raw_feedback_xlsx/out/lake_huc6_huc8_huc10_structure_table.xlsx'),
+  
   tar_target(
     p1_lake_HUC10_spreadsheet_xlsx,
     create_worksheet(df_to_export_as_wb = p2_huc_boundary_xwalk_df,
                      worksheet_name = 'Lake_huc6_huc8_huc10',
                      manual_cols_to_add = 'Part of Watershed (Yes/No)',
-                     out_file = '1_fetch/out/lake_huc6_huc8_huc10_structure_table.xlsx'),
+                     out_file = p1_lake_HUC10_spreadsheet_xlsx_outpath),
     format = 'file'
   )
 )

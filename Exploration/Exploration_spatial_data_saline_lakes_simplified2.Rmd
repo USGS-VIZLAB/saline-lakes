@@ -86,11 +86,11 @@ Lakes excel found in USGS project sharepoint folder under [Exploration/Data/Lake
 selected_crs = 4326
 
 ## List of lakes
-lakes_csv <- read_csv('../1_fetch/in/saline_lakes.csv', col_types = 'ccnn')
+lakes_excel <- readxl::read_xlsx('1_fetch/in/saline_lakes.csv', col_types = 'text')
 
 
 ## Turning lakes into SF obj
-lakes <- lakes_csv %>% 
+lakes <- lakes_excel %>% 
   ## Note - lon comes first in st_as_sf()
   st_as_sf(coords = c('Lon','Lat'), crs = 4326) %>% 
   rename(Point_geometry = geometry, lake = `Lake Ecosystem`) %>% 
@@ -134,7 +134,7 @@ lakes %>%
 
 # Note - added my local path because i had everything downloaded already
 ## in Download_nhd.R, nhdhr_dir is created and would overwrite mine if that script is sourced
-nhdhr_dir <- '../1_fetch/in/nhdhr_backup'
+nhdhr_dir <- '../1_fetch/in/nhdhr'
 
 ## nhdplustools download data if you have not done so.
 # source('Data/Download_nhd.R')
