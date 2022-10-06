@@ -48,7 +48,7 @@ p1_sp_targets_list <- list(
   tar_target(
     p1_download_states_shp,
     download_states_shp(url = pO_states_dwnld_url, 
-                        out_path = '1_fetch/in/states_shp'),
+                        out_path = '1_fetch/out/states_shp'),
     format = 'file'
   ),
   
@@ -81,7 +81,7 @@ p1_sp_targets_list <- list(
   ## Download high res nhd data to get lake water bodies 
   tar_target(
     p1_download_nhdhr_lakes_path,
-    download_nhdhr_data(nhdhr_gdb_path = '1_fetch/in/nhdhr',
+    download_nhdhr_data(nhdhr_gdb_path = '1_fetch/out/nhdhr',
                         huc04_list = p1_huc04_for_download),
     format = 'file'
   ),
@@ -89,7 +89,7 @@ p1_sp_targets_list <- list(
   ## Fetch waterbodies, huc6, huc8, huc10 from hr and place in local gpkg
   tar_target(p1_nhd_gpkg, 
              get_downloaded_nhd_data(gdb_path = p1_download_nhdhr_lakes_path,
-                                     out_gpkg_path = '1_fetch/in/nhd_WB_HUC6_HU8_HU10.gpkg',
+                                     out_gpkg_path = '1_fetch/out/nhd_WB_HUC6_HU8_HU10.gpkg',
                                      layer = c('NHDWaterbody','WBDHU6', 'WBDHU8', 'WBDHU10')),
              format = 'file'
   ),
