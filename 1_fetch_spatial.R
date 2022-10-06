@@ -6,8 +6,6 @@ p1_sp_targets_list <- list(
   
   # Lake locations (lat/lon) Fetch #
   
-
-  
   ## Reading and cleaning list of saline lakes
   tar_target(
     p1_lakes_sf,
@@ -150,7 +148,6 @@ p1_sp_targets_list <- list(
       st_join(x = ., y = p1_lakes_huc6_sf[,c('HUC6','lake_w_state')],
               join = st_within, left = FALSE) %>%
       filter(!is.na(HUC6)) %>% 
-      bind_rows(p1_basin_huc8_sf %>% filter(HUC8 %in% p0_additional_GSL_huc8)) %>% 
       distinct()
   ),
   

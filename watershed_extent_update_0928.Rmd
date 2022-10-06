@@ -45,10 +45,7 @@ tar_load(p2_lake_watersheds_dissolved)
 ## flowlines
 tar_load(p3_lake_tributaries)
 
-## Sites 
-targets::tar_load(p1_site_in_watersheds_sf)
-
-## nwis data 
+## nwis sites 
 targets::tar_load(p3_dv_sites_in_watershed)
 targets::tar_load(p3_fieldmeas_sites_in_watershed)
 
