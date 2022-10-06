@@ -4,17 +4,17 @@ p3_prep_viz_targets_list <- list(
   
   ## Add label col to HUC spatial file + simplify() for easier visualization
   tar_target(
-    p3_lake_huc6_sf,
+    p3_lakes_huc6_sf,
     prep_huc_viz_sf(huc_sf = p1_lakes_huc6_sf,
                     selected_huc_col = 'HUC6')
   ),
   tar_target(
-    p3_lake_huc8_sf,
+    p3_lakes_huc8_sf,
     prep_huc_viz_sf(huc_sf = p1_lakes_huc8_sf,
                     selected_huc_col = 'HUC8')
   ),
   tar_target(
-    p3_lake_huc10_sf,
+    p3_lakes_huc10_sf,
     prep_huc_viz_sf(huc_sf = p1_lakes_huc10_sf,
                     selected_huc_col = 'HUC10')
   ),
