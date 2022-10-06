@@ -30,7 +30,7 @@ library(rmapshaper)
 
 ```{r load_targets, echo = FALSE, message = FALSE, warnings = FALSE}
 
-## HUC 
+## HUC
 tar_load(p3_lake_huc6_sf)
 tar_load(p3_lake_huc8_sf)
 tar_load(p3_lake_huc10_sf)
@@ -90,15 +90,15 @@ leaflet_map_huc <- leaflet() %>%
   #addProviderTiles("HERE.satelliteDay", group = c("No labels", "Labels"))  %>% # added for satellite date
   addProviderTiles("CartoDB.PositronOnlyLabels", group = "Labels") %>%
   # Add data layers
-  addPolygons(data = p3_lake_huc6_sf,
+  addPolygons(data = p1_get_lakes_huc6_sf %>% ms_simplify(),
               group = "Great Basin HUC6",
               color = 'green', fillColor = "grey", opacity = 0.2,
               weight = 1,  popup = ~ID_Name) %>% 
-  addPolygons(data = p3_lake_huc8_sf,
+  addPolygons(data = p1_get_lakes_huc8_sf %>% ms_simplify(),
               group = "Great Basin HUC8",
               color = 'blue', fillColor = "grey", opacity = 0.2,
               weight = 1,  popup = ~ID_Name) %>% 
-  addPolygons(data = p3_lake_huc10_sf,
+  addPolygons(data = p1_get_lakes_huc10_sf %>% ms_simplify(),
               group = "Great Basin HUC10",
               color = 'purple', fillColor = "grey", opacity = 0.2,
               weight = 1, popup = ~ID_Name) %>% 
@@ -113,7 +113,7 @@ leaflet_map_huc <- leaflet() %>%
   addLabelOnlyMarkers(data = p3_saline_lakes_sf, lng = ~X, lat = ~Y, group = "Lake labels",
                       label = ~lake_w_state,
                       labelOptions = labelOptions(noHide = T, textOnly = T)) %>% 
-  addPolylines(data = p3_lake_tributaries, group = "Streams (order 3)",
+  addPolylines(data = p3_flowlines_sf, group = "Streams (order 3)",
                color = scico(9, palette = 'davos')[5], opacity = 0.8,
                weight = ~rescale(streamorde, to = c(1, 4)),
                popup = ~label) %>% 

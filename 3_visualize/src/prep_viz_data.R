@@ -27,6 +27,7 @@ prep_lakes_viz_sf <- function(lakes_sf, crs_plot){
     
 }
 
+## Commenting out as we are not using this:
 # # Prep HUC data for leaflet map
 # prep_huc_viz_sf <- function(huc_sf, assc_lakes_df, crs_plot, huc_column = 'HUC8'){
 #   huc_sf %>%

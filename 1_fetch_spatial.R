@@ -133,7 +133,7 @@ p1_sp_targets_list <- list(
   ## Fetch watershed boundary areas filtered to our lakes - huc8 - HR
   ### note possible duplicate polygons since some individual saline lakes have same huc08 
   tar_target(
-    p1_get_lakes_huc6_sf,
+    p1_lakes_huc6_sf,
     p1_basin_huc6_sf %>% 
       ## filter HUC6 to only the Huc6 surrounding saline lakes
       st_join(p2_saline_lakes_sf, left = FALSE) %>%
@@ -144,10 +144,10 @@ p1_sp_targets_list <- list(
   ## Fetch watershed boundary areas filtered to our lakes - huc8 - HR
   ### note possible duplicate polygons since some individual saline lakes have same huc08 
   tar_target(
-    p1_get_lakes_huc8_sf,
+    p1_lakes_huc8_sf,
     p1_basin_huc8_sf %>% 
       ## filter HUC8 to only the HUC8 with within selected HUC6
-      st_join(x = ., y = p1_get_lakes_huc6_sf[,c('HUC6','lake_w_state')],
+      st_join(x = ., y = p1_lakes_huc6_sf[,c('HUC6','lake_w_state')],
               join = st_within, left = FALSE) %>%
       filter(!is.na(HUC6)) %>% 
       bind_rows(p1_basin_huc8_sf %>% filter(HUC8 %in% p0_additional_GSL_huc8)) %>% 
@@ -158,11 +158,11 @@ p1_sp_targets_list <- list(
   ### note possible duplicate polygons since some individual saline lakes have same huc10 
   ### This target is very slow to build! 
   tar_target(
-    p1_get_lakes_huc10_sf,
+    p1_lakes_huc10_sf,
     p1_basin_huc10_sf %>%
       ## Filtering HUC10 to within selected HUC8s
       st_join(x = .,
-              y = p1_get_lakes_huc8_sf[,c('HUC6', 'HUC8', 'lake_w_state')],
+              y = p1_lakes_huc8_sf[,c('HUC6', 'HUC8', 'lake_w_state')],
               join = st_within, left = FALSE) %>%
       filter(!is.na(HUC8)) %>% 
       distinct()
@@ -173,13 +173,13 @@ p1_sp_targets_list <- list(
   ## Grab vector of our huc08s in order to run branching for nhd flowlines fetch  
   tar_target(
     p1_huc8_vec, 
-    {unique(p1_get_lakes_huc8_sf$HUC8)}
+    {unique(p1_lakes_huc8_sf$HUC8)}
   ),
   
   # Fetch nhdplus flowlines for each selected huc8 region separately through dynamic branching - note difference between branches 
   tar_target(
     p1_lake_flowlines_huc8_sf,
-    {get_nhdplus(AOI = {p1_get_lakes_huc8_sf %>% filter(HUC8 %in% p1_huc8_vec)},
+    {get_nhdplus(AOI = {p1_lakes_huc8_sf %>% filter(HUC8 %in% p1_huc8_vec)},
                  realization = 'flowline') %>%
         ## fixing col that are automatically transforming to char
         mutate(across(c(surfarea, lakefract, rareahload), ~as.numeric(.x)),
