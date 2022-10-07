@@ -8,6 +8,14 @@ assc_lakes_xwalk_df <- function(huc_sf, huc_column = 'HUC8'){
     summarise(assc_lakes = paste(lake_w_state, collapse =  "; "))
 }
 
+prep_huc_viz_sf <- function(huc_sf, selected_huc_col){
+    new_huc_sf <- huc_sf %>% 
+      mutate(ID_Name = paste0(.data[[selected_huc_col]],': ',Name)) %>%
+      ms_simplify()
+  
+    return(new_huc_sf)
+}
+
 # Prep saline lake data for leaflet map
 prep_lakes_viz_sf <- function(lakes_sf, crs_plot){
 
@@ -19,17 +27,18 @@ prep_lakes_viz_sf <- function(lakes_sf, crs_plot){
     
 }
 
-# Prep HUC data for leaflet map
-prep_huc_viz_sf <- function(huc_sf, assc_lakes_df, crs_plot, huc_column = 'HUC8'){
-  huc_sf %>%
-    distinct({{huc_column}}, lake_w_state, .keep_all = T) %>%
-    left_join(assc_lakes_df, by = huc_column) %>%
-    mutate(label = paste0("HUC",gsub(huc_column,'HUC',''),": ",
-                          Name, "(", {{huc_column}}, ")",
-                          "<br>", "Associated lake: ", assc_lakes)) %>%
-    st_as_sf() %>%
-    st_transform(crs = crs_plot)
-}
+## Commenting out as we are not using this:
+# # Prep HUC data for leaflet map
+# prep_huc_viz_sf <- function(huc_sf, assc_lakes_df, crs_plot, huc_column = 'HUC8'){
+#   huc_sf %>%
+#     distinct({{huc_column}}, lake_w_state, .keep_all = T) %>%
+#     left_join(assc_lakes_df, by = huc_column) %>%
+#     mutate(label = paste0("HUC",gsub(huc_column,'HUC',''),": ",
+#                           Name, "(", {{huc_column}}, ")",
+#                           "<br>", "Associated lake: ", assc_lakes)) %>%
+#     st_as_sf() %>%
+#     st_transform(crs = crs_plot)
+# }
 
 # Prep stream data for leaflet map
 prep_flowlines_viz_sf <- function(flowlines_sf, crs_plot){
@@ -44,22 +53,12 @@ prep_flowlines_viz_sf <- function(flowlines_sf, crs_plot){
     st_transform(crs = crs_plot)
 }
 
-# Prep gage site data for leaflet map - for HUC8 
-prep_gage_viz_sf <- function(nwis_sites, huc8_sf, crs_plot){
+# Prep gage site data within watersheds for output map 
+
+prep_gage_viz_sf <- function(watershed_sf, nwis_sites_df, selected_service){
+  watershed_sf %>%
+    filter(site_no %in% unique( nwis_sites_df$site_no)) %>% 
+    mutate(service = selected_service,
+           label = paste(site_no,': ', station_nm))
   
-  nwis_sites %>%
-    left_join(nwis_sites %>%
-                st_within(huc8_sf) %>%
-                as.data.frame()  %>%
-                mutate(site_no = nwis_sites$site_no[row.id],
-                       HUC8_within = huc8_sf$HUC8[col.id])  %>%
-                select(c(site_no, HUC8_within)) %>%
-                distinct(.keep_all = T), 
-              by = "site_no") %>%
-    mutate(same = HUC8 == HUC8_within,
-           in_HUC8 = as.character(!is.na(HUC8_within)),
-           label = paste0("Station: ", str_to_title(station_nm), "<br>(", site_no, ")")) %>%
-    mutate(in_HUC8 = recode(in_HUC8, "FALSE" = "No", "TRUE" = "Yes")) %>%
-    st_as_sf() %>%
-    st_transform(crs = crs_plot)
 }
