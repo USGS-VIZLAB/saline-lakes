@@ -3,7 +3,6 @@ source('1_fetch/src/get_NWIS_site_no.R')
 
 p1_nw_targets_list <- list(
 
-
 # NWIS Sites --------------------------------------------------------------
 
   ## Pulling site data retrieval using whatNWISsites(). 
@@ -21,7 +20,7 @@ p1_nw_targets_list <- list(
   #                '1_fetch/out/nwis_sites_by_lake.shp')
   # ),
 
-# NWIS Data Queries -------------------------------------------------------
+# NWIS Data Queries - Lake Branching -------------------------------------------------------
 
   ## Target to allow branching across lakes
   tar_target(
@@ -36,8 +35,8 @@ p1_nw_targets_list <- list(
     iteration = 'group'
   ),
   
-  ## SW ###
-  
+# NWIS Data Queries - SW -------------------------------------------------------
+
   # SW - field measurements - - branched by lake with grouped target p1_site_no_by_lake
   ## output target is a list of dfs split by lake name. second target is list binded
   
@@ -147,8 +146,8 @@ p1_nw_targets_list <- list(
   ),
     
 
-  # GW #
-  
+# NWIS Data Queries - GW -------------------------------------------------------
+
   # GW - field measurements - - branched by lake with grouped target p1_site_no_by_lake
   ## Use `bind_rows()` to bind list into single df and group_by() lake name (lake_w_state) to summarize results by lake.
   
@@ -235,61 +234,12 @@ p1_nw_targets_list <- list(
          lake_names = p1_site_no_by_lake_gw_iv %>%
            arrange(tar_group) %>%
            pull(lake_w_state) %>% unique())
-  ),
+  )
+
+# NWIS Data Queries - WQ -------------------------------------------------------
 
 
-# write csv -------------------------------------------------------------------
 
-  tar_target(
-    p1_nwis_dv_sw_data_csv,
-    readr::write_csv(p1_nwis_dv_sw_data,
-                     '1_fetch/out/p1_nwis_dv_sw_data.csv')
-  ),
-  
-  tar_target(
-    p1_nwis_dv_gw_data_csv,
-    readr::write_csv(p1_nwis_dv_gw_data,
-                     '1_fetch/out/p1_nwis_dv_gw_data.csv')
-  ),
-# 
-  tar_target(
-    p1_nwis_meas_sw_data_csv,
-    readr::write_csv(p1_nwis_meas_sw_data,
-                     '1_fetch/out/p1_nwis_meas_sw_data.csv')
-  ),
-
-  tar_target(
-  p1_nwis_meas_gw_data_csv,
-  readr::write_csv(p1_nwis_meas_gw_data,
-                   '1_fetch/out/p1_nwis_meas_gw_data.csv')
-  ),
-
-  tar_target(
-    p1_nwis_iv_gw_data_csv,
-    {
-      dir.create('1_fetch/out/iv_gw_data', showWarnings = F)
-      for(i in names(p1_nwis_iv_gw_data_lst)){
-        if(nrow(p1_nwis_iv_gw_data_lst[[i]]) > 1){
-          filename <- paste0(snakecase::to_snake_case(p1_nwis_iv_gw_data_lst[[i]]$lake_w_state[1]) %>% 
-                             substr(., 1, nchar(.) - 2), "iv_gw_data.csv")
-          write.csv(p1_nwis_iv_gw_data_lst[[i]],
-                    paste0('1_fetch/out/iv_gw_data/',filename)
-          )
-          }}}
-  ), 
-
-  tar_target(
-    p1_nwis_iv_sw_data_csv,
-    {dir.create('1_fetch/out/iv_sw_data', showWarnings = F)
-      for(i in names(p1_nwis_iv_sw_data_lst)){
-        if(nrow(p1_nwis_iv_sw_data_lst[[i]]) > 1){
-          filename <- paste0(snakecase::to_snake_case(p1_nwis_iv_sw_data_lst[[i]]$lake_w_state[1]) %>% 
-                               substr(., 1, nchar(.) - 2), "iv_sw_data.csv")
-          write.csv(p1_nwis_iv_sw_data_lst[[i]],
-                    paste0('1_fetch/out/iv_sw_data/',filename)
-          )
-          }}}
-)
 
 )
 
