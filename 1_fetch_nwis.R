@@ -16,6 +16,10 @@ p1_nw_targets_list <- list(
                      crs = p0_selected_crs)
     ),
   
+  # tar_target(
+  #   sf::write_sf(p1_site_in_watersheds_sf,
+  #                '1_fetch/out/nwis_sites_by_lake.shp')
+  # ),
 
 # NWIS Data Queries -------------------------------------------------------
 
@@ -269,7 +273,7 @@ p1_nw_targets_list <- list(
           filename <- paste0(snakecase::to_snake_case(p1_nwis_iv_gw_data_lst[[i]]$lake_w_state[1]) %>% 
                              substr(., 1, nchar(.) - 2), "iv_gw_data.csv")
           write.csv(p1_nwis_iv_gw_data_lst[[i]],
-                    paste0('1_fetch/out/iv_sw_data/',filename)
+                    paste0('1_fetch/out/iv_gw_data/',filename)
           )
           }}}
   ), 
