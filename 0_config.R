@@ -27,9 +27,9 @@ p0_targets_list <- list(
   ## GW - 4 plus others 
   ## water depth: 72019 (depth to water level), 
   ## water altitude: 62610 - GW Level above NGD 1929, 72150 - GW level above local mn sea level
-  ## tritium: 07000 - 
+  ## tritium: 07000 - Tritium, water, unfiltered, picocuries per liter
   ## C-13 / C-14,
-  tar_target(p0_gw_params, c('72019', '62610','72150','07000' ))
+  tar_target(p0_gw_params, c('72019', '62610','72150','07000'))
   ## WQ: 
   #   tar_target(p0_wq_params, c('000000'))
 )
