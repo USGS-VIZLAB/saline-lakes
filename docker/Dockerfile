@@ -20,6 +20,7 @@ ENV CURL_CA_BUNDLE /etc/ssl/certs/ca-certificates.crt
 #ARG CRAN_REPO=https://packagemanager.rstudio.com/cran/__linux__/focal/$CRAN_DATE
 #RUN echo "options(repos = c(CRAN = '${CRAN_REPO}'))" >> "${R_HOME}/etc/Rprofile.site"
 RUN install2.r --error --skipinstalled \
+  clustermq \
   dataRetrieval \
   nhdplusTools \
   openxlsx \
