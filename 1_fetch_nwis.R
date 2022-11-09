@@ -135,22 +135,6 @@ p1_nw_targets_list <- list(
     iteration = 'list'
   ),
   
-  ## Fetch iv data
-  tar_target(
-    p1_nwis_iv_sw_data_lst_shrt,
-    fetch_by_site_and_service(sites_df = p1_site_no_by_lake_sw_iv,
-                              sites_col = 'site_no',
-                              lake_col = 'lake_w_state',
-                              pcodes = p0_sw_params,
-                              service = 'iv',
-                              start_date = '2015-01-01',
-                              end_date = '2016-01-01',
-                              incrementally = TRUE,
-                              split_num = 10),
-    pattern = map(p1_site_no_by_lake_sw_iv),
-    iteration = 'list'
-  ),
-  
  ## Document target names for iv_sw data for each lake
   tar_target(
     p1_br_lk_xwalk_iv_sw,
@@ -190,7 +174,7 @@ p1_nw_targets_list <- list(
   ## Use `bind_rows()` to bind list into df and group_by() lake name (lake_w_state) to summarize results by lake.
 
   tar_target(
-    p1_nwis_dv_gw_data,
+    p1_nwis_dv_gw_data_lst,
     fetch_by_site_and_service(sites_df = p1_site_no_by_lake,
                               sites_col = 'site_no',
                               lake_col = 'lake_w_state',
@@ -200,6 +184,13 @@ p1_nw_targets_list <- list(
                               end_date = p0_end),
   pattern = map(p1_site_no_by_lake),
   iteration = 'list'
+  ),
+
+  ## creating single df
+  tar_target(
+    p1_nwis_dv_gw_data,
+    p1_nwis_dv_gw_data_lst %>% 
+      bind_rows()
   ),
   
    
@@ -240,9 +231,60 @@ p1_nw_targets_list <- list(
          lake_names = p1_site_no_by_lake_gw_iv %>%
            arrange(tar_group) %>%
            pull(lake_w_state) %>% unique())
+  ),
+
+
+# write csv -------------------------------------------------------------------
+
+  tar_target(
+    p1_nwis_dv_sw_data_csv,
+    readr::write_csv(p1_nwis_dv_sw_data,
+                     '1_fetch/out/p1_nwis_dv_sw_data.csv')
+  ),
+  
+  tar_target(
+    p1_nwis_dv_gw_data_csv,
+    readr::write_csv(p1_nwis_dv_gw_data,
+                     '1_fetch/out/p1_nwis_dv_gw_data.csv')
+  ),
+# 
+  tar_target(
+    p1_nwis_meas_sw_data_csv,
+    readr::write_csv(p1_nwis_meas_sw_data,
+                     '1_fetch/out/p1_nwis_meas_sw_data.csv')
+  ),
+
+  tar_target(
+  p1_nwis_meas_gw_data_csv,
+  readr::write_csv(p1_nwis_meas_gw_data,
+                   '1_fetch/out/p1_nwis_meas_gw_data.csv')
+  ),
+
+  tar_target(
+    p1_nwis_iv_gw_data_csv,
+    {
+      dir.create('1_fetch/out/iv_gw_data', showWarnings = F)
+      for(i in names(p1_nwis_iv_gw_data_lst)){
+        if(nrow(p1_nwis_iv_gw_data_lst[[i]]) > 1){
+          filename <- paste0(snakecase::to_snake_case(p1_nwis_iv_gw_data_lst[[i]]$lake_w_state[1]) %>% 
+                             substr(., 1, nchar(.) - 3),"iv_gw_data.csv")
+          write.csv(p1_nwis_iv_gw_data_lst[[i]],
+                    paste0('1_fetch/out/',filename)
+                )
+    }}}
+  ), 
+
+tar_target(
+  p1_nwis_iv_sw_data_csv,
+  {dir.create('1_fetch/out/iv_sw_data', showWarnings = F)
+    for(i in names(p1_nwis_iv_sw_data_lst)){
+      if(nrow(p1_nwis_iv_sw_data_lst[[i]]) > 1){
+        filename <- paste0(snakecase::to_snake_case(p1_nwis_iv_sw_data_lst[[i]]$lake_w_state[1]) %>% 
+                         substr(., 1, nchar(.) - 3),"iv_sw_data.csv")
+        write.csv(p1_nwis_iv_sw_data_lst[[i]],
+                  paste0('1_fetch/out/iv_sw_data',filename))
+  }}}
 )
-
-
 
 )
 
