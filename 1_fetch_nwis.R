@@ -267,23 +267,24 @@ p1_nw_targets_list <- list(
       for(i in names(p1_nwis_iv_gw_data_lst)){
         if(nrow(p1_nwis_iv_gw_data_lst[[i]]) > 1){
           filename <- paste0(snakecase::to_snake_case(p1_nwis_iv_gw_data_lst[[i]]$lake_w_state[1]) %>% 
-                             substr(., 1, nchar(.) - 3),"iv_gw_data.csv")
+                             substr(., 1, nchar(.) - 2), "iv_gw_data.csv")
           write.csv(p1_nwis_iv_gw_data_lst[[i]],
-                    paste0('1_fetch/out/',filename)
-                )
-    }}}
+                    paste0('1_fetch/out/iv_sw_data/',filename)
+          )
+          }}}
   ), 
 
-tar_target(
-  p1_nwis_iv_sw_data_csv,
-  {dir.create('1_fetch/out/iv_sw_data', showWarnings = F)
-    for(i in names(p1_nwis_iv_sw_data_lst)){
-      if(nrow(p1_nwis_iv_sw_data_lst[[i]]) > 1){
-        filename <- paste0(snakecase::to_snake_case(p1_nwis_iv_sw_data_lst[[i]]$lake_w_state[1]) %>% 
-                         substr(., 1, nchar(.) - 3),"iv_sw_data.csv")
-        write.csv(p1_nwis_iv_sw_data_lst[[i]],
-                  paste0('1_fetch/out/iv_sw_data',filename))
-  }}}
+  tar_target(
+    p1_nwis_iv_sw_data_csv,
+    {dir.create('1_fetch/out/iv_sw_data', showWarnings = F)
+      for(i in names(p1_nwis_iv_sw_data_lst)){
+        if(nrow(p1_nwis_iv_sw_data_lst[[i]]) > 1){
+          filename <- paste0(snakecase::to_snake_case(p1_nwis_iv_sw_data_lst[[i]]$lake_w_state[1]) %>% 
+                               substr(., 1, nchar(.) - 2), "iv_sw_data.csv")
+          write.csv(p1_nwis_iv_sw_data_lst[[i]],
+                    paste0('1_fetch/out/iv_sw_data/',filename)
+          )
+          }}}
 )
 
 )
