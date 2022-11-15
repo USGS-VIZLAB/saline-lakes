@@ -13,20 +13,22 @@ line_plot_iv <- function(data,
       print(lake)
       
       ## Plot
-      data %>% 
+      if(nrow(data)>1){
+        data %>% 
         ggplot2::ggplot(.,
                         aes(x= .data[[date_col]],
                             y = .data[[selected_measurement_col]]), color = 'firebrick')+
         geom_line()+
         theme_bw()
       ## saving to appropriate location + editing name
-      ggsave(filename = snakecase::to_snake_case(paste0(lake,
+      ggsave(filename = paste0(snakecase::to_snake_case(lake),
                                                         '_',
                                                         output_suffix,
                                                         '.',
-                                                        img_file_type)),
+                                                        img_file_type),
              device = 'png',
              path = output_vis_path)
+      } else{print(paste(data$lake_w_state[1],'has no iv data'))}
       
 
       }
@@ -54,16 +56,16 @@ line_plot_dv <- function(data,
         geom_line()+
         theme_bw()
       
+      ggsave(filename = paste0(snakecase::to_snake_case(lake),
+                               '_',
+                               output_suffix,
+                               '.',
+                               img_file_type),
+             device = 'png',
+             path = output_vis_path)
+      
     }else{print(paste(lake,'has no dv data'))}
     ## saving to appropriate location + editing name
-    ggsave(filename = snakecase::to_snake_case(paste0(lake,
-                                                      '_',
-                                                      output_suffix,
-                                                      '.',
-                                                      img_file_type)),
-           device = 'png',
-           path = output_vis_path)
-    
   }
 }
 
