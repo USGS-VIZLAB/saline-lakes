@@ -28,6 +28,7 @@ RUN install2.r --error --skipinstalled \
   retry \
   sbtools \
   scico \
+  snakecase \
   targets \
   tryCatchLog \
   && rm -rf /tmp/downloaded_packages /tmp/*.rds /tmp/Rtmp*
