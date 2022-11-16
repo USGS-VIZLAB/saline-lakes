@@ -16,7 +16,7 @@ docker-compose build
 
 # to download the docker image from docker hub
 docker login
-docker pull jrossusgs/saline-lakes:20221109
+docker pull jrossusgs/saline-lakes:20221115
 ```
 
 Now you can launch an RStudio session in the container.
@@ -25,7 +25,7 @@ Now you can launch an RStudio session in the container.
 cd saline-lakes
 # set the password to whatever you like below, or remove the entire
 # "-e PASSWORD=foo" section to use an automatically generated one
-docker run --rm -it -e PASSWORD=foo -p 8787:8787 -v $PWD:/saline-lakes saline-lakes
+docker run --rm -it -e PASSWORD=foo -p 8787:8787 -v $PWD:/saline-lakes jrossusgs/saline-lakes:20221115
 ```
 
 Now open up a web browser at [http://localhost:8787](http://localhost:8787), and log in with the username "rstudio" and the password set above (e.g. "foo"). You should be in the directory with the code, and can run `targets::tar_make()`.
@@ -35,7 +35,7 @@ If you have RStudio preferences you like, and want the dockerized RStudio to ref
 
 ```bash
 cd saline-lakes
-docker run --rm -it -e PASSWORD=foo -p 8787:8787 -v $PWD:/saline-lakes -v /path/to/your/rstudio-prefs.json:/home/rstudio/.config/rstudio/rstudio-prefs.json saline-lakes
+docker run --rm -it -e PASSWORD=foo -p 8787:8787 -v $PWD:/saline-lakes -v /path/to/your/rstudio-prefs.json:/home/rstudio/.config/rstudio/rstudio-prefs.json jrossusgs/saline-lakes:20221115
 ```
 
 ## Disclaimer
