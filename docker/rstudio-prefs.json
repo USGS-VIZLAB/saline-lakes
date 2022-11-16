@@ -1,0 +1,10 @@
+{
+    "save_workspace": "never",
+    "always_save_history": false,
+    "reuse_sessions_for_project_links": true,
+    "editor_theme": "Pastel On Dark",
+    "jobs_tab_visibility": "shown",
+    "initial_working_directory": "/saline-lakes",
+    "code_completion": "manual",
+    "posix_terminal_shell": "bash"
+}
