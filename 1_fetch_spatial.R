@@ -32,7 +32,7 @@ p1_sp_targets_list <- list(
   ## This should be manually downloaded to local 1_fetch/in/sharepoint folder 
   tar_target(
     p1_saline_lakes_bnds_sf,
-    st_read('1_fetch/in/SalineLakeBnds.shp') %>% 
+    st_read('1_fetch/in/SalineLakeBnds/SalineLakeBnds.shp') %>% 
       st_transform(crs=st_crs(p1_lakes_sf)) %>% 
       ## Formatting for easier rbind with p2_saline_lakes_sf
       rename(GNIS_Name = Name) %>% 
@@ -61,7 +61,7 @@ p1_sp_targets_list <- list(
   
   # nhdhr download and fetch #
   
-  ## 1st fetch of huc08  to get all relevant high res nhd data (water bodies, huc6, huc8, huc10 areas) for focal lakes
+  ## 1st fetch of huc08 of lakes to be ableo all relevant high res nhd data (water bodies, huc6, huc8, huc10 areas) for focal lakes 
   tar_target(
     p1_huc08_full_basin_sf,
     get_huc8(AOI = p1_lakes_sf$point_geometry)

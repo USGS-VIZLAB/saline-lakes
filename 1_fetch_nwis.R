@@ -8,7 +8,7 @@ p1_nw_targets_list <- list(
   ## Subsetting huc8 multipolygon to simplify join in get_NWIS_site_no()
   tar_target(
     p1_site_in_watersheds_sf,
-    get_NWIS_site_no(basin_huc08 = p1_huc08_full_basin_sf$huc8,
+    get_NWIS_site_no(basin_huc08 = p1_basin_huc8_sf$HUC8,
                      lake_watershed_sf = p2_huc10_watershed_boundary,
                      crs = p0_selected_crs)
     ),
