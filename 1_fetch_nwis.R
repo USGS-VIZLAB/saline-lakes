@@ -226,7 +226,8 @@ p1_nw_targets_list <- list(
   tibble(branch_name = names(p1_nwis_iv_gw_data_lst),
          lake_names = p1_site_no_by_lake_gw_iv %>%
            arrange(tar_group) %>%
-           pull(lake_w_state) %>% unique())
+           pull(lake_w_state) %>%
+           unique())
   )
 
 # NWIS Data Queries - WQ -------------------------------------------------------
