@@ -37,12 +37,15 @@ tar_target(
         write.csv(p1_nwis_iv_gw_data_lst[[i]],
                   paste0('1_fetch/out/iv_gw_data/',filename)
         )
-      }}}
+      }
+    }
+  }
 ), 
 
 tar_target(
   p3_nwis_iv_sw_data_csv,
-  {dir.create('1_fetch/out/iv_sw_data', showWarnings = F)
+  {
+    dir.create('1_fetch/out/iv_sw_data', showWarnings = F)
     for(i in names(p1_nwis_iv_sw_data_lst)){
       if(nrow(p1_nwis_iv_sw_data_lst[[i]]) > 1){
         filename <- paste0(snakecase::to_snake_case(p1_nwis_iv_sw_data_lst[[i]]$lake_w_state[1]) %>% 
@@ -50,7 +53,10 @@ tar_target(
         write.csv(p1_nwis_iv_sw_data_lst[[i]],
                   paste0('1_fetch/out/iv_sw_data/',filename)
         )
-      }}})
+      }
+    }
+  }
+  )
 
 
 
