@@ -3,31 +3,31 @@ p4_export_csv_targets_list <- list(
 # write dataframes to csv -------------------------------------------------------------------
 
 tar_target(
-  p3_nwis_dv_sw_data_csv,
+  p4_nwis_dv_sw_data_csv,
   readr::write_csv(p1_nwis_dv_sw_data,
                    '1_fetch/out/p1_nwis_dv_sw_data.csv')
 ),
 
 tar_target(
-  p3_nwis_dv_gw_data_csv,
+  p4_nwis_dv_gw_data_csv,
   readr::write_csv(p1_nwis_dv_gw_data,
                    '1_fetch/out/p1_nwis_dv_gw_data.csv')
 ),
 # 
 tar_target(
-  p3_nwis_meas_sw_data_csv,
+  p4_nwis_meas_sw_data_csv,
   readr::write_csv(p1_nwis_meas_sw_data,
                    '1_fetch/out/p1_nwis_meas_sw_data.csv')
 ),
 
 tar_target(
-  p3_nwis_meas_gw_data_csv,
+  p4_nwis_meas_gw_data_csv,
   readr::write_csv(p1_nwis_meas_gw_data,
                    '1_fetch/out/p1_nwis_meas_gw_data.csv')
 ),
 
 tar_target(
-  p3_nwis_iv_gw_data_csv,
+  p4_nwis_iv_gw_data_csv,
   {
     dir.create('1_fetch/out/iv_gw_data', showWarnings = F)
     for(i in names(p1_nwis_iv_gw_data_lst)){
@@ -43,7 +43,7 @@ tar_target(
 ), 
 
 tar_target(
-  p3_nwis_iv_sw_data_csv,
+  p4_nwis_iv_sw_data_csv,
   {
     dir.create('1_fetch/out/iv_sw_data', showWarnings = F)
     for(i in names(p1_nwis_iv_sw_data_lst)){
@@ -57,7 +57,5 @@ tar_target(
     }
   }
   )
-
-
 
 )
