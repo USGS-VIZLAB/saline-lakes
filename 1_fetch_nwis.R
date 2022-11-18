@@ -20,13 +20,12 @@ p1_nw_targets_list <- list(
   ## Target to allow branching across lakes
   tar_target(
     p1_site_no_by_lake,
-    {p1_site_in_watersheds_sf %>%
+    p1_site_in_watersheds_sf %>%
         st_drop_geometry() %>% 
         select(lake_w_state, site_no) %>%
         distinct() %>%
         group_by(lake_w_state) %>% 
-        tar_group()
-    },
+        tar_group(),
     iteration = 'group'
   ),
   
@@ -199,13 +198,12 @@ p1_nw_targets_list <- list(
   # first - building smaller mapping target for gw iv data fetch 
   tar_target(
     p1_site_no_by_lake_gw_iv,
-    {p1_nwis_dv_gw_data %>%
+    p1_nwis_dv_gw_data %>%
         bind_rows() %>%
         select(lake_w_state, site_no) %>%
         distinct() %>%
         group_by(lake_w_state) %>%
-        tar_group()
-    },
+        tar_group(),
     iteration = 'group'
   ),
   
