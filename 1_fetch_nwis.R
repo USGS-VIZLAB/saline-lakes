@@ -180,8 +180,8 @@ p1_nw_targets_list <- list(
                               service = 'dv',
                               start_date = p0_start,
                               end_date = p0_end),
-  pattern = map(p1_site_no_by_lake),
-  iteration = 'list'
+    pattern = map(p1_site_no_by_lake),
+    iteration = 'list'
   ),
 
   ## creating single df
@@ -218,8 +218,8 @@ p1_nw_targets_list <- list(
                               service = 'iv',
                               start_date = p0_start,
                               end_date = p0_end),
-  pattern = map(p1_site_no_by_lake_gw_iv),
-  iteration = 'list'
+    pattern = map(p1_site_no_by_lake_gw_iv),
+    iteration = 'list'
   ), 
 
   ## Document target names for iv_gw data for each lake
