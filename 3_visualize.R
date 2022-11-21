@@ -43,7 +43,7 @@ p3_viz_targets_list <- list(
     line_plot_dv(data = p1_nwis_dv_sw_data,
                  selected_measurement_col = 'X_00060_00003',
                  date_col = 'dateTime',
-                 output_suffix = 'dv_dw_dis_data',
+                 output_suffix = 'dv_sw_dis_data',
                  img_file_type = 'png',
                  output_folder_path = '3_visualize/out')
              ),
@@ -53,7 +53,7 @@ p3_viz_targets_list <- list(
     line_plot_dv(data = p1_nwis_dv_sw_data,
                  selected_measurement_col = 'X_00065_00003',
                  date_col = 'dateTime',
-                 output_suffix = 'dv_dw_gage_data',
+                 output_suffix = 'dv_sw_gage_data',
                  img_file_type = 'png',
                  output_folder_path = '3_visualize/out')
   ),
