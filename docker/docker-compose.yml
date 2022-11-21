@@ -1,0 +1,7 @@
+version: "3.8"
+services:
+  lake-trophic-status-pipeline:
+    image: jrossusgs/saline-lakes:20221115
+    build:
+      context: .
+      dockerfile: Dockerfile

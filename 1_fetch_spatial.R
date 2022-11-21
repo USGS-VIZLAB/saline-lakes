@@ -61,7 +61,7 @@ p1_sp_targets_list <- list(
   
   # nhdhr download and fetch #
   
-  ## 1st fetch of huc08  to get all relevant high res nhd data (water bodies, huc6, huc8, huc10 areas) for focal lakes
+  ## 1st fetch of huc08 of lakes to be ableo all relevant high res nhd data (water bodies, huc6, huc8, huc10 areas) for focal lakes 
   tar_target(
     p1_huc08_full_basin_sf,
     get_huc8(AOI = p1_lakes_sf$point_geometry)
