@@ -31,7 +31,7 @@ line_plot_iv <- function(data,
       } else{print(paste(data$lake_w_state[1],'has no iv data'))}
       
 
-      }
+}
 
 
 
@@ -40,18 +40,16 @@ line_plot_dv <- function(data,
                          date_col = 'dateTime',
                          output_suffix = 'dv_sw_dis_data',
                          img_file_type = 'png', output_folder_path = '3_visualize/out'){
-  
+
   ## Creating folder for vis and defining path
   output_vis_path <- file.path(output_folder_path,output_suffix)
   dir.create(output_vis_path, showWarnings = FALSE)
   ## Plot
   for(lake in unique(data$lake_w_state)){
-    print(lake)
+    print(lake)}
     filtered_data <- data %>% filter(lake_w_state == lake) 
     if(nrow(filtered_data) > 1){
-      ggplot2::ggplot(filtered_data,
-                      aes(x= .data[[date_col]],
-                          y = .data[[selected_measurement_col]]),
+      ggplot2::ggplot(filtered_data, aes(x= .data[[date_col]], y = .data[[selected_measurement_col]]),
                       color = 'firebrick')+
         geom_line()+
         theme_bw()
