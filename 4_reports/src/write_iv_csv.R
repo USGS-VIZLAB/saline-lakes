@@ -22,7 +22,4 @@ write_iv_csvs <- function(iv_df_lst, output_folder_path, data_folder_name){
   return(dir)
 }
 
-write_iv_csvs(iv_df_lst = p1_nwis_iv_sw_data_lst,
-              output_folder_path = '4_reports/out',
-              data_folder_name = 'iv_sw_data')
 
