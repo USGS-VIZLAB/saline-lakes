@@ -94,6 +94,7 @@ p1_sp_targets_list <- list(
   
   # # OPTIONAL - if you already have the gpkg, and do not want to build,
   # # place it in the correct folder and comment out target above : 
+  # # In sharepoint, gpkg is located here: https://doimspp.sharepoint.com/sites/IIDDStaff/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FIIDDStaff%2FShared%20Documents%2FFunction%20%2D%20Data%20Pipelines%2FData%5FScience%5FPractitioners%5FMtgs%2Ftasks%2Fsaline%5Flakes%2FData&viewid=acf8af64%2Daaf3%2D4f23%2D8b74%2D2859a89813c5
   # tar_target(p1_nhd_gpkg, 
   #            '1_fetch/out/nhd_WB_HUC6_HU8_HU10.gpkg'),
   
