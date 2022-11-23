@@ -1,7 +1,6 @@
 
 p2_watershed_boundary_targets_list <- list(
   
-
   # Watershed boundary creation #
 
   ## We created a verification target (p2_huc_manual_verification_df) which serves to zone-in on HUCs
