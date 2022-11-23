@@ -1,61 +1,51 @@
+source('4_reports/src/write_iv_csv.R')
+
 p4_export_csv_targets_list <- list(
 
 # write dataframes to csv -------------------------------------------------------------------
 
+## writing daily sw values to a single csv 
 tar_target(
   p4_nwis_dv_sw_data_csv,
   readr::write_csv(p1_nwis_dv_sw_data,
-                   '1_fetch/out/p1_nwis_dv_sw_data.csv')
+                   '4_reports/out/p1_nwis_dv_sw_data.csv')
 ),
 
+## writing daily gw values to a single csv
 tar_target(
   p4_nwis_dv_gw_data_csv,
   readr::write_csv(p1_nwis_dv_gw_data,
-                   '1_fetch/out/p1_nwis_dv_gw_data.csv')
+                   '4_reports/out/p1_nwis_dv_gw_data.csv')
 ),
-# 
+
+## writing field measurement sw values to a single csv 
 tar_target(
   p4_nwis_meas_sw_data_csv,
   readr::write_csv(p1_nwis_meas_sw_data,
-                   '1_fetch/out/p1_nwis_meas_sw_data.csv')
+                   '4_reports/out/p1_nwis_meas_sw_data.csv')
 ),
 
+## writing field measurement gw values to a single csv 
 tar_target(
   p4_nwis_meas_gw_data_csv,
   readr::write_csv(p1_nwis_meas_gw_data,
-                   '1_fetch/out/p1_nwis_meas_gw_data.csv')
+                   '4_reports/out/p1_nwis_meas_gw_data.csv')
 ),
 
+## writing iv data to lake specific csvs
 tar_target(
   p4_nwis_iv_gw_data_csv,
-  {
-    dir.create('1_fetch/out/iv_gw_data', showWarnings = F)
-    for(i in names(p1_nwis_iv_gw_data_lst)){
-      if(nrow(p1_nwis_iv_gw_data_lst[[i]]) > 1){
-        filename <- paste0(snakecase::to_snake_case(p1_nwis_iv_gw_data_lst[[i]]$lake_w_state[1]) %>% 
-                             substr(., 1, nchar(.) - 2), "iv_gw_data.csv")
-        write.csv(p1_nwis_iv_gw_data_lst[[i]],
-                  paste0('1_fetch/out/iv_gw_data/',filename)
-        )
-      }
-    }
-  }
-), 
+
+  write_iv_csvs(iv_df_lst = p1_nwis_iv_sw_data_lst,
+                output_folder_path = '4_reports/out',
+                data_folder_name = 'iv_gw_data'),
+  format = 'file'),
 
 tar_target(
   p4_nwis_iv_sw_data_csv,
-  {
-    dir.create('1_fetch/out/iv_sw_data', showWarnings = F)
-    for(i in names(p1_nwis_iv_sw_data_lst)){
-      if(nrow(p1_nwis_iv_sw_data_lst[[i]]) > 1){
-        filename <- paste0(snakecase::to_snake_case(p1_nwis_iv_sw_data_lst[[i]]$lake_w_state[1]) %>% 
-                             substr(., 1, nchar(.) - 2), "iv_sw_data.csv")
-        write.csv(p1_nwis_iv_sw_data_lst[[i]],
-                  paste0('1_fetch/out/iv_sw_data/',filename)
-        )
-      }
-    }
-  }
-  )
+  write_iv_csvs(iv_df_lst = p1_nwis_iv_sw_data_lst,
+                output_folder_path = '4_reports/out',
+                data_folder_name = 'iv_sw_data'),
+  format = 'file')
 
 )

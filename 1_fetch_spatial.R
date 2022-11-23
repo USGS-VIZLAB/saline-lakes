@@ -61,7 +61,7 @@ p1_sp_targets_list <- list(
   
   # nhdhr download and fetch #
   
-  ## 1st fetch of huc08  to get all relevant high res nhd data (water bodies, huc6, huc8, huc10 areas) for focal lakes
+  ## 1st fetch of huc08 of lakes to be ableo all relevant high res nhd data (water bodies, huc6, huc8, huc10 areas) for focal lakes 
   tar_target(
     p1_huc08_full_basin_sf,
     get_huc8(AOI = p1_lakes_sf$point_geometry)
@@ -91,6 +91,13 @@ p1_sp_targets_list <- list(
                                      layer = c('NHDWaterbody','WBDHU6', 'WBDHU8', 'WBDHU10')),
              format = 'file'
   ),
+  
+  # # OPTIONAL - if you already have the gpkg, and do not want to build,
+  # # place it in the correct folder and comment out target above : 
+  # # In sharepoint, gpkg is located here: https://doimspp.sharepoint.com/sites/IIDDStaff/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FIIDDStaff%2FShared%20Documents%2FFunction%20%2D%20Data%20Pipelines%2FData%5FScience%5FPractitioners%5FMtgs%2Ftasks%2Fsaline%5Flakes%2FData&viewid=acf8af64%2Daaf3%2D4f23%2D8b74%2D2859a89813c5
+  # tar_target(p1_nhd_gpkg, 
+  #            '1_fetch/out/nhd_WB_HUC6_HU8_HU10.gpkg'),
+  
   
   # Lakes Fetch #
   
