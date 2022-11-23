@@ -46,7 +46,7 @@ line_plot_dv <- function(data,
   dir.create(output_vis_path, showWarnings = FALSE)
   ## Plot
   for(lake in unique(data$lake_w_state)){
-    print(lake)}
+    print(lake)
     filtered_data <- data %>% filter(lake_w_state == lake) 
     if(nrow(filtered_data) > 1){
       ggplot2::ggplot(filtered_data, aes(x= .data[[date_col]], y = .data[[selected_measurement_col]]),
