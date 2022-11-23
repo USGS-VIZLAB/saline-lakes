@@ -92,6 +92,12 @@ p1_sp_targets_list <- list(
              format = 'file'
   ),
   
+  # # OPTIONAL - if you already have the gpkg, and do not want to build,
+  # # place it in the correct folder and comment out target above : 
+  # tar_target(p1_nhd_gpkg, 
+  #            '1_fetch/out/nhd_WB_HUC6_HU8_HU10.gpkg'),
+  
+  
   # Lakes Fetch #
   
   ## Read in all nhd hr waterbodies in our entire basin
