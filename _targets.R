@@ -1,5 +1,6 @@
 library(targets)
 
+options(clustermq.scheduler = "multicore")
 options(tidyverse.quiet = TRUE, timeout = 500)
 tar_option_set(packages = c("tidyverse","sbtools","sf",'dataRetrieval',"nhdplusTools",
                             'dplyr','readxl','readr','stringr','mapview',
