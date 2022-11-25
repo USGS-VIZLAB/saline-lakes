@@ -30,21 +30,21 @@ tar_target(
   p4_nwis_meas_gw_data_csv,
   readr::write_csv(p1_nwis_meas_gw_data,
                    '4_reports/out/p1_nwis_meas_gw_data.csv')
-),
+)
 
 ## writing iv data to lake specific csvs
-tar_target(
-  p4_nwis_iv_gw_data_csv,
-  write_iv_csvs(iv_df_lst = p1_nwis_iv_sw_data_lst,
-                output_folder_path = '4_reports/out',
-                data_folder_name = 'iv_gw_data'),
-  format = 'file'),
+# tar_target(
+#   p4_nwis_iv_gw_data_csv,
+#   write_iv_csvs(iv_df_lst = p1_nwis_iv_sw_data_lst,
+#                 output_folder_path = '4_reports/out',
+#                 data_folder_name = 'iv_gw_data'),
+#   format = 'file'),
 
-tar_target(
-  p4_nwis_iv_sw_data_csv,
-  write_iv_csvs(iv_df_lst = p1_nwis_iv_sw_data_lst,
-                output_folder_path = '4_reports/out',
-                data_folder_name = 'iv_sw_data'),
-  format = 'file')
+# tar_target(
+#   p4_nwis_iv_sw_data_csv,
+#   write_iv_csvs(iv_df_lst = p1_nwis_iv_sw_data_lst,
+#                 output_folder_path = '4_reports/out',
+#                 data_folder_name = 'iv_sw_data'),
+#   format = 'file')
 
 )
