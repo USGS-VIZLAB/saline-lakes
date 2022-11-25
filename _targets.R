@@ -1,11 +1,8 @@
 library(targets)
 
 options(tidyverse.quiet = TRUE, timeout = 500)
-tar_option_set(packages = c("tidyverse","sbtools","sf",'dataRetrieval',"nhdplusTools",
-                            'dplyr','readxl','readr','stringr','mapview',
-                            'leaflet', 'httr', 'scico', 'openxlsx',
-                            'rmapshaper', 'scales', 'retry',
-                            'tryCatchLog', 'ggplot2', 'snakecase'))
+tar_option_set(packages = c("tidyverse","sbtools","sf",'dataRetrieval',"nhdplusTools",'dplyr','readxl','readr','stringr','mapview',
+                            'leaflet', 'httr', 'scico', 'openxlsx','rmapshaper', 'scales', 'retry','tryCatchLog', 'ggplot2', 'snakecase'))
 
 ## Sourcing files
 source('0_config.R')

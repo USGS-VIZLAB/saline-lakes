@@ -180,42 +180,50 @@ p1_sp_targets_list <- list(
     {unique(p1_lakes_huc8_sf$HUC8)}
   ),
   
+             
   # Fetch nhdplus flowlines for each selected huc8 region separately through dynamic branching - note difference between branches 
   tar_target(
-    p1_lake_flowlines_huc8_sf,
+    p1_lake_flowlines_huc8_sf_lst,
     {get_nhdplus(AOI = {p1_lakes_huc8_sf %>% filter(HUC8 %in% p1_huc8_vec)},
                  realization = 'flowline') %>%
         ## fixing col that are automatically transforming to char
         mutate(across(c(surfarea, lakefract, rareahload), ~as.numeric(.x)),
                HUC8 = p1_huc8_vec) 
     }, 
-    pattern = map(p1_huc8_vec)
+    pattern = map(p1_huc8_vec),
+    iteration = 'list'
   ),
   
-  # NWIS site fetch from nhdplus 
-  # Fetch NWIS sites along tributaries and in our huc08 regions. 
-  # for comparison purposes
-  ## Will require further filtering (e.g. ftype == ST, along flowlines only)
   tar_target(
-    p1_nwis_sites_from_nhdplus,
-    {tryCatch(expr = get_huc8(id = p1_huc8_vec) %>% get_nwis(AOI = .) %>%
-                ## making as dataframe to load with tar_load()
-                as.data.frame() %>% 
-                mutate(HUC8 = p1_huc8_vec),
-              error = function(e){
-                return(warning(e$message))
-              },
-              warning = function(w){
-                return(message(paste(w$message, 'huc8:', p1_huc8_vec)))
-              }
-    )},
-    pattern = map(p1_huc8_vec)
-  ),
-  
-  ## Pulling site no from gauge sites to then query nwis and WQP with data retrieval
-  tar_target(
-    p1_site_ids_from_nhdplus,
-    {p1_nwis_sites_from_nhdplus %>% pull(site_no) %>% unique()}
+    p1_lake_flowlines_huc8_sf,
+    bind_rows(p1_lake_flowlines_huc8_sf_lst)
   )
   
+  # # NWIS site fetch from nhdplus 
+  # # Fetch NWIS sites along tributaries and in our huc08 regions. 
+  # # for comparison purposes
+  # ## Will require further filtering (e.g. ftype == ST, along flowlines only)
+  # tar_target(
+  #   p1_nwis_sites_from_nhdplus,
+  #   {tryCatch(expr = get_huc8(id = p1_huc8_vec) %>% get_nwis(AOI = .) %>%
+  #               ## making as dataframe to load with tar_load()
+  #               as.data.frame() %>% 
+  #               mutate(HUC8 = p1_huc8_vec),
+  #             error = function(e){
+  #               return(warning(e$message))
+  #             },
+  #             warning = function(w){
+  #               return(message(paste(w$message, 'huc8:', p1_huc8_vec)))
+  #             }
+  #   )},
+  #   pattern = map(p1_huc8_vec),
+  #   iteration = 'list'
+  # ),
+  # 
+  # ## Pulling site no from gauge sites to then query nwis and WQP with data retrieval
+  # tar_target(
+  #   p1_site_ids_from_nhdplus,
+  #   {p1_nwis_sites_from_nhdplus %>% pull(site_no) %>% unique()}
+  # )
+  # 
 )
