@@ -42,7 +42,7 @@ p2_sw_gw_site_targets_list <- list(
                left_join(p2_site_in_watersheds_sf, by = 'site_no') %>%
                filter(site_tp_cd %in% c('LK','WE') | grepl('ST',site_tp_cd)) %>% 
                mutate(stream_order_category = case_when(
-                 site_tp_cd == 'ST' & site_no %in% p2_sw_streamorder3_sites ~ 'along SO 3+',
+                 grepl(site_tp_cd,'^ST') & site_no %in% p2_sw_streamorder3_sites ~ 'along SO 3+',
                  site_tp_cd == 'LK' | site_no %in% p2_sw_in_lake_sites ~ 'along lake',
                  TRUE ~ 'not along SO 3+'
                  )) %>% 
