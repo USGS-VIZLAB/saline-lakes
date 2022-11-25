@@ -20,7 +20,7 @@ p1_nw_targets_list <- list(
   #                '1_fetch/out/nwis_sites_by_lake.shp')
   # ),
 
-# NWIS Data Queries - Lake Branching -------------------------------------------------------
+# NWIS Data Queries - Lake Branching ----------------------------------------
 
   ## Target to allow branching across lakes
   tar_target(

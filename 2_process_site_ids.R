@@ -12,7 +12,8 @@ p2_sw_gw_site_targets_list <- list(
              p1_nwis_dv_gw_data %>%
                left_join(p2_site_in_watersheds_sf, by = 'site_no') %>%
                filter(grepl('GW',site_tp_cd)) %>% 
-               st_as_sf()
+               st_as_sf() %>% 
+               mutate(lon = st_coordinates(.)[,1], lat = st_coordinates(.)[,2])
              ),
   
   ## get just sw sites with outputed data for 2000-2020 (timeframe to change)
@@ -20,8 +21,10 @@ p2_sw_gw_site_targets_list <- list(
              p1_nwis_dv_sw_data %>%
                left_join(p2_site_in_watersheds_sf, by = 'site_no') %>%
                filter(site_tp_cd %in% c('LK','WE') | grepl('ST',site_tp_cd)) %>% 
-               st_as_sf()
-  )
+               st_as_sf() %>% 
+               mutate(lon = st_coordinates(.)[,1], lat = st_coordinates(.)[,2])
+  ),
+  
 
 )
 
