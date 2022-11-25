@@ -8,6 +8,8 @@ p2_sw_gw_site_targets_list <- list(
                select(agency_cd, site_tp_cd, site_no, Name, geometry)
              ),
   
+  
+  
   ## get just gw sites with outputed data for 2000-2020 (timeframe to change)
   tar_target(p2_nwis_dv_gw_data_sf, 
              p1_nwis_dv_gw_data %>%
@@ -17,41 +19,36 @@ p2_sw_gw_site_targets_list <- list(
                mutate(lon = st_coordinates(.)[,1], lat = st_coordinates(.)[,2])
              ),
   
-  ## get just sw sites with outputed data for 2000-2020 (timeframe to change)
+  ## getting all sites along lake 
+  tar_target(p2_sw_streamorder3_sites,
+             sites_along_waterbody(p2_site_in_watersheds_sf,
+                                   p2_lake_tributaries,
+                                   lake_waterbody = FALSE,
+                                   buffer_m = 1000)
+  ),
+  
+  ## this takes a 5+ minutes due to time for buffer of tributaries to generate
+  tar_target(p2_sw_in_lake_sites,
+             sites_along_waterbody(p2_site_in_watersheds_sf,
+                                   p2_saline_lakes_sf,
+                                   lake_waterbody = TRUE,
+                                   buffer_m = 1000)
+             
+  ),
+  
+  ## get just sw sites with outputed data for 2000-2020 (timeframe to change) with stream order category column
   tar_target(p2_nwis_dv_sw_data_sf, 
              p1_nwis_dv_sw_data %>%
                left_join(p2_site_in_watersheds_sf, by = 'site_no') %>%
                filter(site_tp_cd %in% c('LK','WE') | grepl('ST',site_tp_cd)) %>% 
+               mutate(stream_order_category = case_when(
+                 site_tp_cd == 'ST' & site_no %in% p2_sw_streamorder3_sites ~ 'along SO 3+',
+                 site_tp_cd == 'LK' | site_no %in% p2_sw_in_lake_sites ~ 'along lake',
+                 TRUE ~ 'not along SO 3+'
+                 )) %>% 
                st_as_sf() %>% 
                mutate(lon = st_coordinates(.)[,1], lat = st_coordinates(.)[,2])
-  ),
-  
-  tar_target(p2_sw_streamorder3_sites,
-             sites_along_waterbody(p2_nwis_dv_sw_data_sf,
-                                   p2_lake_tributaries,
-                                   buffer_m = 1000)
-  ),
-  
-  tar_target(p2_sw_in_lake_sites,
-             sites_along_waterbody(p2_nwis_dv_sw_data_sf,
-                                   p2_saline_lakes_sf, 
-                                   buffer_m = 1000)
-             
   )
-  
-  
-  
-  # 
-  # ## get list of sites stream order 3 only
-  # tar_target(p2_nwis_dv_sw_sites_SO3,
-  #            {
-  #              
-  #              
-  #              
-  #            }
-  #            
-  #   
-  # )
   
 
 )
