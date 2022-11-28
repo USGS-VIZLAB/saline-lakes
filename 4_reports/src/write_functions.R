@@ -22,6 +22,11 @@ write_iv_csvs <- function(iv_df_lst, output_folder_path, data_folder_name){
   return(dir)
 }
 
+
+#' @description write_shp 
+#' @param data 
+#' @param out_file
+
 write_shp <- function(data, out_file, quiet = TRUE){
   
   sf::st_write(obj = data, out_file, quiet = quiet, append = FALSE)
@@ -31,6 +36,10 @@ write_shp <- function(data, out_file, quiet = TRUE){
   return(out_file)
   
 }
+
+#' @description write_rds
+#' @param data 
+#' @param out_file
 
 write_rds <- function(data, out_file){
   saveRDS(data, out_file)
