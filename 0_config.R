@@ -8,7 +8,7 @@ p0_targets_list <- list(
   
   # Date Range
   tar_target(p0_start, "2000-01-01"),
-  tar_target(p0_end, "2020-01-01"),
+  tar_target(p0_end, "2022-11-27"),
   
   # HUC Codes
   tar_target(

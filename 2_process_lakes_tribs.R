@@ -41,6 +41,18 @@ p2_lakes_tribs_targets_list <- list(
   
   ## Get only tributaries of the Lakes using get_UT function 
   ### No downstream use atm
+  # tar_target(
+  #   p2_lake_tributaries_cat, 
+  #   scope_lake_tributaries(fline_network = p1_lake_flowlines_huc8_sf,
+  #                          lakes_sf = p2_saline_lakes_sf,
+  #                          buffer_dist = 10000,
+  #                          realization = 'catchment',
+  #                          stream_order = 3)
+  # 
+  # ),
+  
+  ## Get only tributaries of the Lakes using get_UT function 
+  ### No downstream use atm
   tar_target(
     p2_lake_tributaries_cat, 
     scope_lake_tributaries(fline_network = p1_lake_flowlines_huc8_sf,
@@ -48,7 +60,7 @@ p2_lakes_tribs_targets_list <- list(
                            buffer_dist = 10000,
                            realization = 'catchment',
                            stream_order = 3)
-
-  )
+    )
+    
  
 )

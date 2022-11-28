@@ -20,7 +20,7 @@ p1_nw_targets_list <- list(
   #                '1_fetch/out/nwis_sites_by_lake.shp')
   # ),
 
-# NWIS Data Queries - Lake Branching -------------------------------------------------------
+# NWIS Data Queries - Lake Branching ----------------------------------------
 
   ## Target to allow branching across lakes
   tar_target(
@@ -122,28 +122,28 @@ p1_nw_targets_list <- list(
     iteration = 'group'
   ),
   
-  ## Fetch iv data
-  tar_target(
-    p1_nwis_iv_sw_data_lst,
-    fetch_by_site_and_service(sites_df = p1_site_no_by_lake_sw_iv,
-                              sites_col = 'site_no',
-                              lake_col = 'lake_w_state',
-                              pcodes = p0_sw_params,
-                              service = 'iv',
-                              start_date = p0_start,
-                              end_date = p0_end,
-                              incrementally = TRUE,
-                              split_num = 10),
-    pattern = map(p1_site_no_by_lake_sw_iv),
-    iteration = 'list'
-  ),
-  
- ## Document target names for iv_sw data for each lake
-  tar_target(
-    p1_br_lk_xwalk_iv_sw,
-    tibble(branch_name = names(p1_nwis_iv_sw_data_lst),
-           lake_names = p1_site_no_by_lake_sw_iv %>% arrange(tar_group) %>% pull(lake_w_state) %>% unique())
-  ),
+  # ## Fetch iv data
+  # tar_target(
+  #   p1_nwis_iv_sw_data_lst,
+  #   fetch_by_site_and_service(sites_df = p1_site_no_by_lake_sw_iv,
+  #                             sites_col = 'site_no',
+  #                             lake_col = 'lake_w_state',
+  #                             pcodes = p0_sw_params,
+  #                             service = 'iv',
+  #                             start_date = p0_start,
+  #                             end_date = p0_end,
+  #                             incrementally = TRUE,
+  #                             split_num = 10),
+  #   pattern = map(p1_site_no_by_lake_sw_iv),
+  #   iteration = 'list'
+  # ),
+  # 
+ # ## Document target names for iv_sw data for each lake
+ #  tar_target(
+ #    p1_br_lk_xwalk_iv_sw,
+ #    tibble(branch_name = names(p1_nwis_iv_sw_data_lst),
+ #           lake_names = p1_site_no_by_lake_sw_iv %>% arrange(tar_group) %>% pull(lake_w_state) %>% unique())
+ #  ),
     
 
 # NWIS Data Queries - GW -------------------------------------------------------
@@ -212,29 +212,29 @@ p1_nw_targets_list <- list(
         tar_group()
     },
     iteration = 'group'
-  ),
+  )
   
-   tar_target(
-    p1_nwis_iv_gw_data_lst,
-    fetch_by_site_and_service(sites_df = p1_site_no_by_lake_gw_iv,
-                              sites_col = 'site_no',
-                              lake_col = 'lake_w_state',
-                              pcodes = p0_gw_params,
-                              service = 'iv',
-                              start_date = p0_start,
-                              end_date = p0_end),
-  pattern = map(p1_site_no_by_lake_gw_iv),
-  iteration = 'list'
-  ), 
+  #  tar_target(
+  #   p1_nwis_iv_gw_data_lst,
+  #   fetch_by_site_and_service(sites_df = p1_site_no_by_lake_gw_iv,
+  #                             sites_col = 'site_no',
+  #                             lake_col = 'lake_w_state',
+  #                             pcodes = p0_gw_params,
+  #                             service = 'iv',
+  #                             start_date = p0_start,
+  #                             end_date = p0_end),
+  # pattern = map(p1_site_no_by_lake_gw_iv),
+  # iteration = 'list'
+  # ), 
 
   ## Document target names for iv_gw data for each lake
-  tar_target(
-  p1_br_lk_xwalk_iv_gw,
-  tibble(branch_name = names(p1_nwis_iv_gw_data_lst),
-         lake_names = p1_site_no_by_lake_gw_iv %>%
-           arrange(tar_group) %>%
-           pull(lake_w_state) %>% unique())
-  )
+  # tar_target(
+  # p1_br_lk_xwalk_iv_gw,
+  # tibble(branch_name = names(p1_nwis_iv_gw_data_lst),
+  #        lake_names = p1_site_no_by_lake_gw_iv %>%
+  #          arrange(tar_group) %>%
+  #          pull(lake_w_state) %>% unique())
+  # )
 
 # NWIS Data Queries - WQ -------------------------------------------------------
 
