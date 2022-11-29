@@ -1,11 +1,13 @@
 #' @param sw_sites_sf sf object of sf sites and measurements
-#' @param waterbody_sf sf object of water bosy that will be buffered 
+#' @param waterbody_sf sf object of water body that will be buffered 
+#' @param lake_waterbody whether water body is lake or not
 
 sites_along_waterbody <- function(sw_sites_sf, waterbody_sf, lake_waterbody = FALSE){
-  
+
+    
   sw_sites <- sw_sites_sf %>% 
-    group_by(site_no, geometry) %>%
-    sf::st_as_sf() 
+    select(site_no, geometry) %>%
+    sf::st_as_sf()
   
   ## running st_union for the tributary shp because it smooths the buffer and polygons are overlap less. 
   ## Not feasible for lakes due to specific selection of columns
