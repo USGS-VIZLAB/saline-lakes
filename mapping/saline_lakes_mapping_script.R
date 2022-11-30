@@ -72,7 +72,7 @@ general_map <- function(watershed_sf, lake_sf, labels_df, basemap, map_bbox, tit
            axis.title.x = element_blank(),
            axis.title.y = element_blank()
     )+
-    guides(fill = guide_colorsteps(direction = 'horizontal'))
+    guides(fill = guide_colorsteps(direction = 'horizontal', title.position = 'bottom'))
   
   return(map)
   
@@ -96,7 +96,8 @@ map_sites_sw_wq <- function(watershed_sf, lake_sf, sites_sf, basemap, map_bbox, 
           legend.text = element_text (size = 7),
           legend.title = element_text (size = 9),
           axis.title.x = element_blank(),
-          axis.title.y = element_blank()
+          axis.title.y = element_blank(),
+          legend.position = 'bottom'
     )
   
   return(map)
@@ -120,9 +121,10 @@ map_dv_sites_gw <- function(watershed_sf, lake_sf, sites_sf, basemap, map_bbox, 
           legend.text = element_text (size = 7),
           legend.title = element_text (size = 9),
           axis.title.x = element_blank(),
-          axis.title.y = element_blank())+
-    guides(fill = guide_colorsteps(direction = 'horizontal'))
-  
+          axis.title.y = element_blank(),
+          legend.position = 'bottom')+
+    guides(color = guide_colorsteps(direction = 'horizontal', title.position = 'top'),
+           shape = guide_legend(direction = 'horizontal', title.position = 'top'))
   return(map)
   
 }
@@ -167,10 +169,14 @@ sw_sites_sf_00060 <- nwis_dv_sw_data %>%
   
 sw_data_map <- map_sites_sw_wq(watershed_sf = lake_watersheds, lake_sf = saline_lakes,
                 sites_sf = sw_sites_sf_00060, basemap = us_sf, 
-                map_bbox = map_bbox, title = 'Active USGS-NWIS SW gages measuring daily stream flow data',
+                map_bbox = map_bbox, title = 'Active USGS-NWIS surface water sites (2000-2022)',
                 shape_col = 'stream_order_category',color_col = 'nmbr_observations')+
-  labs(color = 'Number of observations at gage site', shape = 'Waterbody type')
+  labs(color = 'Number of observations at gage site', shape = 'Waterbody type')+
+  guides(color = guide_colorsteps(direction = 'horizontal', title.position = 'top'),
+         shape = guide_legend(direction = 'horizontal', title.position = 'top'))
   
+  
+sw_data_map
 
 ggsave(filename = 'sw_data_map.png',
        device= 'png',
@@ -203,7 +209,7 @@ gw_data_map <- map_dv_sites_gw(watershed_sf = lake_watersheds,lake_sf = saline_l
                 sites_sf = gw_sites_sf_72019,
                 basemap = us_sf, 
                 map_bbox = map_bbox,
-                title = 'Active USGS-NWIS GW gages measuring daily depth to sea level',
+                title = 'Active USGS-NWIS groudwater sites (2000-2022)',
                 color_col = 'nmbr_observations')+
   labs(color = 'Number of observations at gage site')
 
@@ -233,11 +239,13 @@ wq_sites_sf <- wq_sites %>%
 
 wq_sites_map <- map_sites_sw_wq(watershed_sf = lake_watersheds, lake_sf = saline_lakes, sites_sf = wq_sites_sf,
                                 basemap = us_sf,map_bbox = map_bbox,
-                                title = 'Active Water Quality Sites by Provider and Waterbody Type',
+                                title = 'Active water quality sites (2000-2022) by Provider',
                                 shape_col = 'ProviderName',
                                 color_col = 'ResolvedMonitoringLocationTypeName')+
   labs(color = 'Waterbody type', shape = 'Provider name')+
-  scale_color_brewer(palette="Accent") ## subbing diff color to supplement
+  scale_color_brewer(palette="Accent")+
+  guides(color = guide_legend(direction = 'horizontal', title.position = 'top'),
+         shape = guide_legend(direction = 'horizontal', title.position = 'top')) ## subbing diff color to supplement
 
 wq_sites_map
 
@@ -284,7 +292,7 @@ summarized_wqp_data <- wq_data %>%
                                          ifelse(nbr_observations > 100 & nbr_observations <= 1000,'100-1,000','>1,000')))) %>%
   mutate(nbr_obs_classes = factor(nbr_obs_classes, c('<10','10-100','100-1,000','>1,000'))) %>% 
   ungroup()
-  
+
 ## Join to spatial file
 summarized_wqp_data_sf <- summarized_wqp_data %>% 
   left_join(wq_sites_sf[,c('MonitoringLocationIdentifier','geometry')] %>%
@@ -301,11 +309,20 @@ map_wq_data_availability <- ggplot()+
           aes(geometry = geometry, color = nbr_obs_classes), size =0.4)+
   lims(x = c(bbox[1],bbox[3]),y = c(bbox[2],bbox[4]))+
   theme_classic()+
-  guides(fill = guide_colorsteps(direction = 'horizontal'))+
-  labs(title = 'WQP measurement sites scaled by number of observations',
+  theme(plot.title = element_text(size = 10, face= 'bold'),
+        legend.text = element_text (size = 7),
+        legend.title = element_text (size = 9),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        legend.position = 'bottom'
+  )+
+  labs(title = 'Active water quality sites (2000-2022) by number of observations',
        color = 'Number of observations - grouped')+
-  scale_colour_brewer(palette = 'PRGn')
+  scale_colour_brewer(palette = 'PRGn')+
+  guides(color = guide_legend(direction = 'horizontal', title.position = 'top'),
+         shape = guide_legend(direction = 'horizontal', title.position = 'top'))
 
+map_wq_data_availability
 
 ggsave(filename = 'wq_data.png',
        device= 'png',
@@ -322,13 +339,15 @@ Lakes_wo_meas_data <- is.na(p1_nwis_meas_sw_data$measurement_dt)
 sw_meas_data <- p1_nwis_meas_sw_data %>% filter(!Lakes_wo_meas_data)
 
 
-meas_sites_along_streams <- sites_along_waterbody(sw_fm %>% st_as_sf() %>% select(site_no),
-                      p2_lake_tributaries,
-                      lake_waterbody = FALSE)
+### Commenting out to avoid rerun
 
-meas_sites_along_lake <- sites_along_waterbody(sw_fm %>% st_as_sf() %>% select(site_no),
-                                                  p2_saline_lakes_sf,
-                                                  lake_waterbody = TRUE)
+# meas_sites_along_streams <- sites_along_waterbody(sw_fm %>% st_as_sf() %>% select(site_no),
+#                       p2_lake_tributaries,
+#                       lake_waterbody = FALSE)
+# 
+# meas_sites_along_lake <- sites_along_waterbody(sw_fm %>% st_as_sf() %>% select(site_no),
+#                                                   p2_saline_lakes_sf,
+#                                                   lake_waterbody = TRUE)
 
 
 sw_meas_data$measurement_dt %>% max()
@@ -362,12 +381,14 @@ sw_meas_map <- ggplot()+
   lims(x = c(map_bbox[1],map_bbox[3]),y = c(map_bbox[2],map_bbox[4]))+
   theme_classic()+
   scale_color_steps()+
-  labs(title = 'USGS-NWIS SW field measurements at gage sites', 
+  labs(title = 'USGS-NWIS surface water field measurements conducted between 2000-2022', 
        color = 'Number of observations at gage site')+
   theme(plot.title = element_text(size = 10, face= 'bold'),
         legend.text = element_text (size = 7),
-        legend.title = element_text (size = 9))
-
+        legend.title = element_text (size = 9),
+        legend.position = 'bottom')+
+  guides(color = guide_colorsteps(direction = 'horizontal', title.position = 'top'),
+         shape = guide_legend(direction = 'horizontal', title.position = 'top'))
 
 ggsave(filename = 'sw_meas_map.png',
        device= 'png',
@@ -376,7 +397,7 @@ ggsave(filename = 'sw_meas_map.png',
 
 
 
-## gw field meas
+#### gw field meas ####
 gw_meas_per_year <- p1_nwis_meas_gw_data %>%
   select(site_no,lake_w_state,lev_va, lev_dt) %>% 
   filter(!is.na(lev_va)) %>% 
@@ -403,11 +424,14 @@ gw_meas_map <- ggplot()+
   lims(x = c(map_bbox[1],map_bbox[3]),y = c(map_bbox[2],map_bbox[4]))+
   theme_classic()+
   scale_color_steps()+
-  labs(title = 'USGS-NWIS GW field Measurements at gage sites',
+  labs(title = 'USGS-NWIS ground water field measurements conducted between 2000-2022',
        color = 'Number of observations at gage site')+
   theme(plot.title = element_text(size = 10, face= 'bold'),
         legend.text = element_text (size = 7),
-        legend.title = element_text (size = 9))
+        legend.title = element_text (size = 9),
+        legend.position = 'bottom')+
+  guides(color = guide_colorsteps(direction = 'horizontal', title.position = 'top'),
+         shape = guide_legend(direction = 'horizontal', title.position = 'top'))
 
 ggsave(filename = 'gw_meas_map.png',
        device= 'png',
