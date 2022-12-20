@@ -4,7 +4,7 @@ p4_export_csv_targets_list <- list(
 
 # exports dfs -------------------------------------------------------------------
 
-## writing daily sw values to a single csv 
+## writing daily sw values to a single rds 
 tar_target(
   p4_nwis_dv_sw_data_rds,
   write_rds(p2_nwis_dv_sw_data,
@@ -12,7 +12,7 @@ tar_target(
   format = "file"
   ),
 
-## writing daily gw values to a single csv
+## writing daily gw values to a single rds
 tar_target(
   p4_nwis_dv_gw_data_rds, 
   write_rds(p2_nwis_dv_gw_data,
@@ -20,18 +20,18 @@ tar_target(
   format = "file"
   ),
 
-## writing field measurement sw values to a single csv 
+## writing field measurement sw values to a single rds 
 tar_target(
   p4_nwis_meas_sw_data_rds,
   readr::write_csv(p1_nwis_meas_sw_data,
-                   '4_reports/out/p1_nwis_meas_sw_data.csv')
+                   '4_reports/out/p1_nwis_meas_sw_data.rds')
 ),
 
-## writing field measurement gw values to a single csv 
+## writing field measurement gw values to a single rds
 tar_target(
   p4_nwis_meas_gw_data_rds,
   readr::write_csv(p1_nwis_meas_gw_data,
-                   '4_reports/out/p1_nwis_meas_gw_data.csv')
+                   '4_reports/out/p1_nwis_meas_gw_data.rds')
 ),
 
 ## writing iv data to lake specific csvs
@@ -53,11 +53,14 @@ tar_target(
 
 # export shapefiles -------------------------------------------------------
 
+# exporting saline lakes shp 
 tar_target(p4_saline_lakes_shp,
            write_shp(p2_saline_lakes_sf,
                     'out_shp/saline_lakes.shp'),
            format = 'file'
            ),
+
+## exporting flines shp 
 ## Commenting out because taking too long 
 # tar_target(p4_lake_tributaries_shp,
 #            write_shp(p2_lake_tributaries,
@@ -65,6 +68,7 @@ tar_target(p4_saline_lakes_shp,
 #            format = 'file'
 #            ),
 
+# exporting saline lakes shp 
 tar_target(p4_lake_watersheds_shp,
            write_shp(p2_lake_watersheds_dissolved,
                     'out_shp/p2_lake_watersheds.shp'),

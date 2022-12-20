@@ -53,11 +53,28 @@ p2_sw_gw_site_targets_list <- list(
                mutate(lon = st_coordinates(.)[,1], lat = st_coordinates(.)[,2]) %>% 
                ## remove geometry col
                st_drop_geometry() %>% 
-               ## quickly re-organizing cols
+               ## quickly re-organizing cols so that measurements cols come after non-measurement cols
                select(!starts_with('X_'),starts_with('X_'))
              
   ),
   
+  ## this is almost the same process as above - will creat function
+  tar_target(p2_nwis_meas_sw_data, 
+             p1_nwis_meas_sw_data %>%
+               left_join(p2_site_in_watersheds_sf, by = 'site_no') %>%
+               mutate(stream_order_category = case_when(
+                 site_no %in% p2_sw_streamorder3_sites ~ 'along SO 3+',
+                 site_no %in% p2_sw_in_lake_sites ~ 'along lake',
+                 TRUE ~ 'not along SO 3+'
+               )) %>% 
+               ## used geometry from sites_in_watersheds_sf to get spatial info
+               st_as_sf() %>% 
+               ## grab coords 
+               mutate(lon = st_coordinates(.)[,1], lat = st_coordinates(.)[,2]) %>% 
+               ## remove geometry col
+               st_drop_geometry()
+               
+               
 
              
   )
