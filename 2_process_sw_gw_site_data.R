@@ -39,38 +39,29 @@ p2_sw_gw_site_targets_list <- list(
   tar_target(p2_nwis_dv_sw_data, 
              p1_nwis_dv_sw_data %>%
                left_join(p2_site_in_watersheds_sf, by = 'site_no') %>%
+               ## filtering sites that are surface level stream (all ST), lake (LK), or wetland (WE) sites
                filter(site_tp_cd %in% c('LK','WE') | grepl('ST',site_tp_cd)) %>% 
+               ## create stream_order_category col depending on site type & match with sites stream order/lake vector targets 
                mutate(stream_order_category = case_when(
                  grepl(site_tp_cd,'^ST') & site_no %in% p2_sw_streamorder3_sites ~ 'along SO 3+',
                  site_tp_cd == 'LK' | site_no %in% p2_sw_in_lake_sites ~ 'along lake',
                  TRUE ~ 'not along SO 3+'
                  )) %>% 
+               ## used geometry from sites_in_watersheds_sf to get spatial info
                st_as_sf() %>% 
+               ## grab coords 
                mutate(lon = st_coordinates(.)[,1], lat = st_coordinates(.)[,2]) %>% 
+               ## remove geometry col
                st_drop_geometry() %>% 
                ## quickly re-organizing cols
                select(!starts_with('X_'),starts_with('X_'))
              
   ),
   
-  ## getting all sites along lake 
-  tar_target(p2_sw_meas_streamorder3_sites,
-             sites_along_waterbody(p2_site_in_watersheds_sf,
-                                   p1_nwis_meas_sw_data,
-                                   lake_waterbody = FALSE)
-  ),
-  
-  ## this takes a 5+ minutes due to time for buffer of tributaries to generate
-  tar_target(p2_sw_meas_in_lake_sites,
-             sites_along_waterbody(p2_site_in_watersheds_sf,
-                                   p2_saline_lakes_sf,
-                                   lake_waterbody = TRUE)
-             
-  ),
-  
-  
-  
 
+             
+  )
+  
 )
 
   # # SW data -----------------------------------------------------------------
