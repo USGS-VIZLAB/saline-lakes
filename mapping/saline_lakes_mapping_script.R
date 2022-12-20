@@ -18,16 +18,25 @@ targets::tar_load(p2_saline_lakes_sf)
 targets::tar_load(p2_lake_tributaries)
 targets::tar_load(p1_nwis_meas_sw_data)
 targets::tar_load(p1_nwis_meas_gw_data)
+targets::tar_load(p2_site_in_watersheds_sf)
+
+p4_nwis_dv_gw_data_rds
 ## --
+saline_lakes <- p3_saline_lakes_sf
+lake_watersheds <- p2_lake_watersheds_dissolved
+saline_lakes <- st_read('mapping/saline_lakes.shp')
+lake_watersheds <- st_read('mapping/watersheds.shp')
 
-saline_lakes <- st_read('saline_lakes.shp')
-lake_watersheds <- st_read('watersheds.shp')
+nwis_dv_gw_data <- readRDS(p4_nwis_dv_gw_data_rds)
+nwis_dv_sw_data <- readRDS(p4_nwis_dv_sw_data_rds)
 
-nwis_dv_gw_data <- readRDS("p1_nwis_dv_gw_data.rds")
-nwis_dv_sw_data <- readRDS("p1_nwis_dv_sw_data.rds")
+# nwis_dv_gw_data <- readRDS("mapping/p1_nwis_dv_gw_data.rds")
+# nwis_dv_sw_data <- readRDS("mapping/p1_nwis_dv_sw_data.rds")
 
-wq_data <- readRDS('harmonized_wqp_data_added_cols.rds')
-wq_sites <- readRDS('harmonized_wqp_sites.rds') 
+wq_data <- readRDS('mapping/harmonized_wqp_data_added_cols.rds')
+wq_sites <- readRDS('mapping/harmonized_wqp_sites.rds') 
+
+wq_sites
 
 wq_data$MonitoringLocationIdentifier %>% unique() %>% length()
 wq_sites$MonitoringLocationIdentifier %>% unique() %>% length()
@@ -134,11 +143,11 @@ map_dv_sites_gw <- function(watershed_sf, lake_sf, sites_sf, basemap, map_bbox, 
 # General map with labels ------------------------------------------------------------
 
 gen_map <- general_map(watershed_sf = lake_watersheds,
-            lake_sf = saline_lakes,
-            labels_df = labels_df,
-            basemap = us_sf,
-            map_bbox = map_bbox,
-            title = 'Focal Saline Lakes and Watersheds in the Great Basin')
+                       lake_sf = saline_lakes,
+                       labels_df = labels_df,
+                       basemap = us_sf,
+                       map_bbox = map_bbox,
+                       title = 'Focal Saline Lakes and Watersheds in the Great Basin')
 
 
 ggsave(filename = 'gen_map.png',
@@ -151,31 +160,45 @@ ggsave(filename = 'gen_map.png',
 
 #### mapping sw sites #### 
 
+nwis_dv_sw_data %>% select(-contains(c('00065','..2..'))) %>% 
+  ## removing where both valid measurements of 00060 are na
+  filter(!(is.na(X_00060_00003))) %>% nrow()
+
+## 1,553,692
+
 sw_sites_sf_00060 <- nwis_dv_sw_data %>%
   select(-contains(c('00065','..2..'))) %>% 
   ## removing where both valid measurements of 00060 are na
-  filter(!(is.na(X_00060_00003) & is.na(X_00060_00011))) %>%
+  filter(!(is.na(X_00060_00003))) %>% 
+  drop_na(site_no) %>% 
   ## NOTE - filtering out stream order < 3 and recoded for graph purposes
-  filter(stream_order_category != "not along SO 3+") %>%
-  mutate(stream_order_category = recode(stream_order_category,
-                                        "along SO 3+" = 'Along stream',
-                                        "along lake" = 'Along lake')) %>% 
+  # filter(stream_order_category != "not along SO 3+") %>%
+  # mutate(stream_order_category = recode(stream_order_category,
+  #                                       "along SO 3+" = 'Along stream',
+  #                                       "along lake" = 'Along lake')) %>% 
   mutate(dateTime = as.Date(dateTime)) %>% 
   group_by(site_no, lake_w_state,lon,lat, stream_order_category) %>% 
   summarize(nmbr_observations = n(),
             min_date = min(dateTime),
             max_date = max(dateTime)) %>% 
   st_as_sf(coords = c('lon','lat'), crs = st_crs(saline_lakes)) %>% arrange(desc(nmbr_observations)) 
-  
-sw_data_map <- map_sites_sw_wq(watershed_sf = lake_watersheds, lake_sf = saline_lakes,
-                sites_sf = sw_sites_sf_00060, basemap = us_sf, 
-                map_bbox = map_bbox, title = 'Active USGS-NWIS surface water sites (2000-2022)',
-                shape_col = 'stream_order_category',color_col = 'nmbr_observations')+
-  labs(color = 'Number of observations at gage site', shape = 'Waterbody type')+
+
+sw_sites_sf_00060  
+
+sw_data_map <- map_sites_sw_wq(watershed_sf = lake_watersheds,
+                               lake_sf = saline_lakes,
+                               sites_sf = sw_sites_sf_00060,
+                               basemap = us_sf,
+                               map_bbox = map_bbox,
+                               title = 'Active USGS-NWIS surface water sites (2000-2022)',
+                               shape_col = 'stream_order_category',
+                               color_col = 'nmbr_observations')+
+  labs(color = 'Number of observations at gage site',
+       shape = 'Waterbody type')+
   guides(color = guide_colorsteps(direction = 'horizontal', title.position = 'top'),
          shape = guide_legend(direction = 'horizontal', title.position = 'top'))
   
-  
+
 sw_data_map
 
 ggsave(filename = 'sw_data_map.png',
@@ -188,7 +211,7 @@ ggsave(filename = 'sw_data_map.png',
 gw_sites_sf_72019 <- nwis_dv_gw_data %>%
   select(-contains(c('..2..'))) %>% 
   ## removing where both valid measurements of 00060 are na
-  filter(!(is.na(X_72019_00003) & is.na(X_72019_00002) & is.na(X_72019_00003) & is.na(X_72019_00008) & is.na(X_72019_31200))) %>% 
+  filter(!(is.na(X_72019_00003) & is.na(X_72019_00002) & is.na(X_72019_00003) & is.na(X_72019_00008))) %>% 
   #  filter(stream_order_category != "not along SO 3+") %>% 
   mutate(dateTime = as.Date(dateTime)) %>% 
   group_by(site_no, lake_w_state, lon, lat) %>% 
@@ -232,17 +255,25 @@ ruby_franklin_wq_sites <- c('21NEV1_WQX-NV10-007-T-005','21NEV1_WQX-NV10-007-T-0
                             'USGS-400751115313001','USGS-400450115303401',
                             'USGS-400302115294201')
 
+wq_sites %>% dim()
+
 wq_sites_sf <- wq_sites %>%
-  st_as_sf(coords = c('lon','lat'), crs = st_crs(saline_lakes))%>%
-#  mutate(stream_order_category = ifelse(MonitoringLocationIdentifier %in% ruby_franklin_sites,'Save',stream_order_category)) %>%
+  st_as_sf(coords = c('lon','lat'), crs = st_crs(saline_lakes)) %>%
+  mutate(stream_order_category = ifelse(MonitoringLocationIdentifier %in% ruby_franklin_sites,'Save',stream_order_category)) %>%
   filter(stream_order_category != "Not along SO 3+ or saline lake")
 
-wq_sites_map <- map_sites_sw_wq(watershed_sf = lake_watersheds, lake_sf = saline_lakes, sites_sf = wq_sites_sf,
+wq_sites_map <- map_sites_sw_wq(watershed_sf = lake_watersheds,
+                                lake_sf = saline_lakes,
+                                sites_sf = wq_sites_sf,
                                 basemap = us_sf,map_bbox = map_bbox,
-                                title = 'Active water quality sites (2000-2022) by Provider',
+                                title = 'Active water quality sites (2000-2022) by provider',
                                 shape_col = 'ProviderName',
                                 color_col = 'ResolvedMonitoringLocationTypeName')+
   labs(color = 'Waterbody type', shape = 'Provider name')+
+  ## renaming legend items
+  scale_shape_discrete(labels = c("USGS-NWIS", "EPA-STORET"))+
+  scale_color_discrete(labels = c("Lake", "Stream"))+
+  ## changing color since discrete
   scale_color_brewer(palette="Accent")+
   guides(color = guide_legend(direction = 'horizontal', title.position = 'top'),
          shape = guide_legend(direction = 'horizontal', title.position = 'top')) ## subbing diff color to supplement
@@ -257,34 +288,35 @@ ggsave(filename = 'wq_sites.png',
 
 
 #### mapping qw data ####
-sites_above_data_coverage_threshold <- wq_data %>% 
-  select(MonitoringLocationIdentifier, ActivityStartDate,
-         CharacteristicName, ResultMeasureValue) %>%
-  ## Create new Year col and month col to then gather different year and month coverage 
+## Clean table first
+cleaned_wq_data <- wq_data %>% 
+  filter(flag_missing_result == FALSE) %>%
+  select(MonitoringLocationIdentifier, ActivityStartDate, CharacteristicName, stream_order_category) %>% 
   mutate(ActivityStartDate = as.Date(ActivityStartDate),
-         Year = year(ActivityStartDate)) %>% 
+         Year = year(ActivityStartDate),
+         Month = month(ActivityStartDate))
+
+sites_above_data_coverage_threshold <- cleaned_wq_data %>% 
+  ## Create new Year col and month col to then gather different year and month coverage 
   group_by(MonitoringLocationIdentifier, CharacteristicName, Year) %>% 
   ## Summarizations related to date range, obr of obs,  
   summarize(nbr_observations = n()) %>% 
-  filter(nbr_observations > 3) %>% arrange(nbr_observations) %>% pull(MonitoringLocationIdentifier) %>% unique()
+  filter(nbr_observations >= 3) %>% arrange(nbr_observations) %>%
+  pull(MonitoringLocationIdentifier) %>% unique()
 
-summarized_wqp_data <- wq_data %>%
-  filter(MonitoringLocationIdentifier %in% sites_above_data_coverage_threshold) %>% ## this only removed about 20,000 observations
+summarized_wqp_data <- cleaned_wq_data %>%
+ # filter(MonitoringLocationIdentifier %in% sites_above_data_coverage_threshold) %>% ## this only removed about 20,000 observations
   filter(!grepl('Not',stream_order_category)) %>% 
-  select(MonitoringLocationIdentifier, ActivityStartDate, CharacteristicName, ResultMeasureValue) %>% 
   ## Create year col and month col to then gather different year and month coverage 
-  mutate(ActivityStartDate = as.Date(ActivityStartDate),
-         Year = year(ActivityStartDate),
-         Month = month(ActivityStartDate)) %>% 
-  group_by(MonitoringLocationIdentifier, CharacteristicName) %>% 
+  group_by(MonitoringLocationIdentifier) %>% 
   ## Summarizations related to date range, obr of obs,  
   summarize(min_date = min(ActivityStartDate),
             # mean_date = median(ActivityStartDate),
             max_date = max(ActivityStartDate),
             nbr_observations = n(),
-            years_converage = paste0(unique(Year), collapse = ', '), 
-            months_coverage = paste0(unique(Month), collapse = ', '),
-            mean_value = mean(ResultMeasureValue)) %>% 
+            wq_data_coverage = paste0(unique(CharacteristicName), collapse = ', '),
+            years_coverage = paste0(unique(Year), collapse = ', '), 
+            months_coverage = paste0(unique(Month), collapse = ', ')) %>% 
   arrange(desc(nbr_observations)) %>% 
   ## Create new col with categories of observations 
   mutate(nbr_obs_classes = ifelse(nbr_observations <= 10,'<10',
@@ -299,6 +331,10 @@ summarized_wqp_data_sf <- summarized_wqp_data %>%
               distinct(),
             by = 'MonitoringLocationIdentifier') %>%
   st_as_sf() 
+
+temp <- st_join(summarized_wqp_data_sf,lake_watersheds)
+summarized_wqp_data_sf %>% group_by()
+summarized_wqp_data_sf$MonitoringLocationIdentifier %>% length
 
 ## Generate Map 
 map_wq_data_availability <- ggplot()+
@@ -320,7 +356,8 @@ map_wq_data_availability <- ggplot()+
        color = 'Number of observations - grouped')+
   scale_colour_brewer(palette = 'PRGn')+
   guides(color = guide_legend(direction = 'horizontal', title.position = 'top'),
-         shape = guide_legend(direction = 'horizontal', title.position = 'top'))
+         shape = guide_legend(direction = 'horizontal', title.position = 'top')
+         )
 
 map_wq_data_availability
 
@@ -365,6 +402,7 @@ sw_meas_per_year <- sw_meas_data %>%
   group_by(site_no, lake_w_state, stream_order, year) %>% 
   summarise(nmbr_observations_yr = n()) %>%
   filter(nmbr_observations_yr > 3) %>% 
+  mutate(year_gp = ifelse(year > 2010, 'After 2010','2010 or before')) %>% 
   ungroup()
 
 sw_fm <- sw_meas_per_year %>% 
@@ -377,7 +415,9 @@ sw_meas_map <- ggplot()+
   geom_sf(data = us_sf, fill = 'white')+
   geom_sf(data = watershed_sf, fill = 'transparent', color = 'firebrick', size = 0.01, linetype = 'dotted')+
   geom_sf(data = saline_lakes, fill = ' light blue', color = 'grey', alpha = 0.5)+ 
-  geom_sf(data = sw_fm %>% filter(!grepl('Not',stream_order_col)),aes(geometry = geometry, color = nmbr_observations), size = 1)+
+  geom_sf(data = sw_fm %>%
+            filter(!grepl('Not',stream_order_col)),
+          aes(geometry = geometry, color = nmbr_observations), size = 1)+
   lims(x = c(map_bbox[1],map_bbox[3]),y = c(map_bbox[2],map_bbox[4]))+
   theme_classic()+
   scale_color_steps()+
@@ -408,17 +448,17 @@ gw_meas_per_year <- p1_nwis_meas_gw_data %>%
   summarise(nmbr_observations_yr = n()) %>% 
   arrange(desc(nmbr_observations_yr)) %>% ungroup()
 
-gw_fm <- meas_per_year %>%
+gw_fm <- gw_meas_per_year %>%
   filter(nmbr_observations_yr > 3) %>% 
   ungroup() %>% 
   group_by(site_no, lake_w_state) %>% 
   summarise(nmbr_observations = sum(nmbr_observations_yr)) %>%
   arrange(desc(nmbr_observations)) %>%  
-  left_join(., p2_site_in_watersheds_sf, by = 'site_no')
+  left_join(.,p2_site_in_watersheds_sf , by = 'site_no')
 
 gw_meas_map <- ggplot()+
   geom_sf(data = us_sf, fill = 'white')+
-  geom_sf(data = watershed_sf, fill = 'transparent', color = 'firebrick', size = 0.01, linetype = 'dotted')+
+  geom_sf(data = lake_watersheds, fill = 'transparent', color = 'firebrick', size = 0.01, linetype = 'dotted')+
   geom_sf(data = saline_lakes, fill = ' light blue', color = 'grey', alpha = 0.5)+ 
   geom_sf(data = gw_fm,aes(geometry = geometry, color = nmbr_observations), size = 0.5)+
   lims(x = c(map_bbox[1],map_bbox[3]),y = c(map_bbox[2],map_bbox[4]))+
@@ -439,3 +479,7 @@ ggsave(filename = 'gw_meas_map.png',
        path = 'mapping/')
 
 
+
+
+
+wq_data %>% nrow()

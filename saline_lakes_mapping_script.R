@@ -98,7 +98,6 @@ map_dv_sites_gw <- function(watershed_sf, lake_sf, sites_sf, basemap, map_bbox, 
 }
 
 
-
 # Maps outputs ------------------------------------------------------------
 
 

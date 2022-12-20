@@ -35,7 +35,7 @@ p2_sw_gw_site_targets_list <- list(
              
   ),
   
-  ## get just sw sites with outputed data for 2000-2020 (timeframe to change) with stream order category column
+  ## get just sw sites with outputed data for 2000-2022 with stream order category column
   tar_target(p2_nwis_dv_sw_data, 
              p1_nwis_dv_sw_data %>%
                left_join(p2_site_in_watersheds_sf, by = 'site_no') %>%
@@ -51,7 +51,24 @@ p2_sw_gw_site_targets_list <- list(
                ## quickly re-organizing cols
                select(!starts_with('X_'),starts_with('X_'))
              
-  )
+  ),
+  
+  ## getting all sites along lake 
+  tar_target(p2_sw_meas_streamorder3_sites,
+             sites_along_waterbody(p2_site_in_watersheds_sf,
+                                   p1_nwis_meas_sw_data,
+                                   lake_waterbody = FALSE)
+  ),
+  
+  ## this takes a 5+ minutes due to time for buffer of tributaries to generate
+  tar_target(p2_sw_meas_in_lake_sites,
+             sites_along_waterbody(p2_site_in_watersheds_sf,
+                                   p2_saline_lakes_sf,
+                                   lake_waterbody = TRUE)
+             
+  ),
+  
+  
   
 
 )
