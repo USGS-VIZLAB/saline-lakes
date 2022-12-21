@@ -1,4 +1,4 @@
-source('4_reports/src/write_functions.R')
+source('4_outputs/src/write_functions.R')
 
 p4_export_csv_targets_list <- list(
 
@@ -8,7 +8,7 @@ p4_export_csv_targets_list <- list(
 tar_target(
   p4_nwis_dv_sw_data_rds,
   write_rds(p2_nwis_dv_sw_data,
-            "4_reports/out/p1_nwis_dv_sw_data.rds"),
+            "4_outputs/out/p4_nwis_dv_sw_data.rds"),
   format = "file"
   ),
 
@@ -16,36 +16,36 @@ tar_target(
 tar_target(
   p4_nwis_dv_gw_data_rds, 
   write_rds(p2_nwis_dv_gw_data,
-            "4_reports/out/p1_nwis_dv_gw_data.rds"),
+            "4_outputs/out/p4_nwis_dv_gw_data.rds"),
   format = "file"
   ),
 
 ## writing field measurement sw values to a single rds 
 tar_target(
   p4_nwis_meas_sw_data_rds,
-  readr::write_csv(p1_nwis_meas_sw_data,
-                   '4_reports/out/p1_nwis_meas_sw_data.rds')
+  write_rds(p2_nwis_meas_sw_data,
+            '4_outputs/out/p4_nwis_meas_sw_data.rds')
 ),
 
 ## writing field measurement gw values to a single rds
 tar_target(
   p4_nwis_meas_gw_data_rds,
-  readr::write_csv(p1_nwis_meas_gw_data,
-                   '4_reports/out/p1_nwis_meas_gw_data.rds')
+  write_rds(p1_nwis_meas_gw_data,
+            '4_outputs/out/p4_nwis_meas_gw_data.rds')
 ),
 
 ## writing iv data to lake specific csvs
 # tar_target(
 #   p4_nwis_iv_gw_data_csv,
 #   write_iv_csvs(iv_df_lst = p1_nwis_iv_sw_data_lst,
-#                 output_folder_path = '4_reports/out',
+#                 output_folder_path = '4_outputs/out',
 #                 data_folder_name = 'iv_gw_data'),
 #   format = 'file'),
 
 # tar_target(
 #   p4_nwis_iv_sw_data_csv,
 #   write_iv_csvs(iv_df_lst = p1_nwis_iv_sw_data_lst,
-#                 output_folder_path = '4_reports/out',
+#                 output_folder_path = '4_outputs/out',
 #                 data_folder_name = 'iv_sw_data'),
 #   format = 'file')
 

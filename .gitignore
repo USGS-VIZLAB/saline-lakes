@@ -6,6 +6,7 @@
 .Renviron
 .Renvironment
 1_fetch/in/*
+4_outputs/out/*
 !1_fetch/in/SalineLakeBnds/SalineLakeBnds.shp
 !1_fetch/in/SalineLakeBnds/
 !1_fetch/in/saline_lakes.csv
@@ -15,5 +16,7 @@
 *.csv
 *.xlsx
 *.shp
+*.rds
+
 _targets/
 .DS_Store
