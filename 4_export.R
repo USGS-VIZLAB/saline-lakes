@@ -23,7 +23,7 @@ tar_target(
 ## writing field measurement sw values to a single csv 
 tar_target(
   p4_nwis_meas_sw_data_rds,
-  readr::write_csv(p1_nwis_meas_sw_data,
+  readr::write_csv(p2_nwis_meas_sw_data,
                    '4_reports/out/p1_nwis_meas_sw_data.csv')
 ),
 
