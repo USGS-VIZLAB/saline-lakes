@@ -37,22 +37,11 @@ p2_sw_gw_site_targets_list <- list(
   
   ## get just sw sites with outputed data for 2000-2022 with stream order category column
   tar_target(p2_nwis_dv_sw_data, 
-             p1_nwis_dv_sw_data %>%
-               left_join(p2_site_in_watersheds_sf, by = 'site_no') %>%
-               ## filtering sites that are surface level stream (all ST), lake (LK), or wetland (WE) sites
-               filter(site_tp_cd %in% c('LK','WE') | grepl('ST',site_tp_cd)) %>% 
-               ## create stream_order_category col depending on site type & match with sites stream order/lake vector targets 
-               mutate(stream_order_category = case_when(
-                 grepl(site_tp_cd,'^ST') & site_no %in% p2_sw_streamorder3_sites ~ 'along SO 3+',
-                 site_tp_cd == 'LK' | site_no %in% p2_sw_in_lake_sites ~ 'along lake',
-                 TRUE ~ 'not along SO 3+'
-                 )) %>% 
-               ## used geometry from sites_in_watersheds_sf to get spatial info
-               st_as_sf() %>% 
-               ## grab coords 
-               mutate(lon = st_coordinates(.)[,1], lat = st_coordinates(.)[,2]) %>% 
-               ## remove geometry col
-               st_drop_geometry() %>% 
+             add_stream_order(sw_data = p1_nwis_dv_sw_data,
+                              sites_sf = p2_site_in_watersheds_sf,
+                              join_site_col = 'site_no',
+                              sites_along_streamorder3 = p2_sw_streamorder3_sites,
+                              sites_along_lake = p2_sw_in_lake_sites) %>% 
                ## quickly re-organizing cols so that measurements cols come after non-measurement cols
                select(!starts_with('X_'),starts_with('X_'))
              
@@ -60,24 +49,12 @@ p2_sw_gw_site_targets_list <- list(
   
   ## this is almost the same process as above - will creat function
   tar_target(p2_nwis_meas_sw_data, 
-             p1_nwis_meas_sw_data %>%
-               left_join(p2_site_in_watersheds_sf, by = 'site_no') %>%
-               mutate(stream_order_category = case_when(
-                 site_no %in% p2_sw_streamorder3_sites ~ 'along SO 3+',
-                 site_no %in% p2_sw_in_lake_sites ~ 'along lake',
-                 TRUE ~ 'not along SO 3+'
-               )) %>% 
-               ## used geometry from sites_in_watersheds_sf to get spatial info
-               st_as_sf() %>% 
-               ## grab coords 
-               mutate(lon = st_coordinates(.)[,1], lat = st_coordinates(.)[,2]) %>% 
-               ## remove geometry col
-               st_drop_geometry()
-               
-               
-
-             
-  )
+             add_stream_order(sw_data = p1_nwis_meas_sw_data,
+                              sites_sf = p2_site_in_watersheds_sf,
+                              join_site_col = 'site_no',
+                              sites_along_streamorder3 = p2_sw_streamorder3_sites,
+                              sites_along_lake = p2_sw_in_lake_sites)
+             )
   
 )
 
