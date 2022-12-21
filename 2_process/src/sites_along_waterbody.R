@@ -6,8 +6,7 @@ sites_along_waterbody <- function(sites_sf, waterbody_sf, lake_waterbody = FALSE
 
     
   sites_sf <- sites_sf %>% 
-    select(site_no, geometry) %>%
-    sf::st_as_sf()
+    select(site_no)
   
   ## running st_union for the tributary shp because it smooths the buffer and polygons are overlap less. 
   ## Not feasible for lakes due to specific selection of columns

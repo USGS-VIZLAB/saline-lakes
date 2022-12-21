@@ -37,7 +37,7 @@ p2_sw_gw_site_targets_list <- list(
   
   ## get just sw sites with outputed data for 2000-2022 with stream order category column
   tar_target(p2_nwis_dv_sw_data, 
-             add_stream_order(sw_data = p1_nwis_dv_sw_data,
+             add_stream_order(nwis_sw_data = p1_nwis_dv_sw_data,
                               sites_sf = p2_site_in_watersheds_sf,
                               join_site_col = 'site_no',
                               sites_along_streamorder3 = p2_sw_streamorder3_sites,
@@ -49,7 +49,7 @@ p2_sw_gw_site_targets_list <- list(
   
   ## this is almost the same process as above - will creat function
   tar_target(p2_nwis_meas_sw_data, 
-             add_stream_order(sw_data = p1_nwis_meas_sw_data,
+             add_stream_order(nwis_sw_data = p1_nwis_meas_sw_data,
                               sites_sf = p2_site_in_watersheds_sf,
                               join_site_col = 'site_no',
                               sites_along_streamorder3 = p2_sw_streamorder3_sites,
