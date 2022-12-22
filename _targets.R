@@ -18,8 +18,7 @@ source('2_process_sw_gw_site_data.R')
 source("3_viz_prep.R")
 source("3_visualize.R")
 
-source('4_export.R')
-source('4_reports.R')
+source('4_outputs.R')
 
 ## create dirs in `in` folder
 dir.create('1_fetch/in/nhdhr', showWarnings = FALSE)

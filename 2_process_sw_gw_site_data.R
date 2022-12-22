@@ -1,4 +1,4 @@
-source('2_process/src/sites_along_waterbody.R')
+source('2_process/src/process_nwis_data.R')
 
 p2_sw_gw_site_targets_list <- list(
   
