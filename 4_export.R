@@ -30,7 +30,7 @@ tar_target(
 ## writing field measurement gw values to a single rds
 tar_target(
   p4_nwis_meas_gw_data_rds,
-  write_rds(p1_nwis_meas_gw_data,
+  write_rds(p2_nwis_meas_gw_data,
             '4_outputs/out/p4_nwis_meas_gw_data.rds')
 ),
 

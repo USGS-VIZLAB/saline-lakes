@@ -35,34 +35,40 @@ p2_sw_gw_site_targets_list <- list(
              
   ),
   
-  ## get just sw sites with outputed data for 2000-2022 with stream order category column
-  tar_target(p2_nwis_dv_sw_data, 
-             join_site_spatial_info(nwis_data = p1_nwis_dv_sw_data,
-                                    sites_sf = p2_site_in_watersheds_sf,
-                                    join_site_col = 'site_no') %>% 
-               add_stream_order_2(nwis_sw_data = ., 
-                                  sites_along_streamorder3 = p2_sw_streamorder3_sites,
-                                  sites_along_lake = p2_sw_in_lake_sites) %>% 
-               ## quickly re-organizing cols so that measurements cols come after non-measurement cols
-               select(!starts_with('X_'), starts_with('X_'))
+  ## get just cont dv sw sites with outputed data for 2000-2022 with stream order category column
+  tar_target(
+    p2_nwis_dv_sw_data, 
+    join_site_spatial_info(nwis_data = p1_nwis_dv_sw_data,
+                           sites_sf = p2_site_in_watersheds_sf,
+                           join_site_col = 'site_no') %>% 
+      add_stream_order(nwis_sw_data = ., 
+                       sites_along_streamorder3 = p2_sw_streamorder3_sites,
+                       sites_along_lake = p2_sw_in_lake_sites) %>% 
+      ## re-organizing cols so that measurements cols come after non-measurement cols
+      select(!starts_with('X_'), starts_with('X_'))
   ),
   
+  ## get just discrete sw sites with outputed data for 2000-2022 with stream order category column
+  tar_target(
+    p2_nwis_meas_sw_data, 
+    join_site_spatial_info(nwis_data = p1_nwis_meas_sw_data,
+                           sites_sf = p2_site_in_watersheds_sf,
+                           join_site_col = 'site_no') %>% 
+      add_stream_order(nwis_sw_data = ., 
+                       sites_along_streamorder3 = p2_sw_streamorder3_sites,
+                       sites_along_lake = p2_sw_in_lake_sites)
+    ) %>% 
+    ##  re-organizing cols so that measurements cols come after non-measurement cols
+    select(!c('lat','lon'), c('lat','lon')
+  ),
   
-  tar_target(p2_nwis_meas_sw_data, 
-             join_site_spatial_info(nwis_data = p1_nwis_meas_sw_data,
-                                    sites_sf = p2_site_in_watersheds_sf,
-                                    join_site_col = 'site_no') %>% 
-               add_stream_order_2(nwis_sw_data = ., 
-                                  sites_along_streamorder3 = p2_sw_streamorder3_sites,
-                                  sites_along_lake = p2_sw_in_lake_sites)
-             ),
-  
-  
-  tar_target(p2_nwis_meas_gw_data,
-             join_site_spatial_info(nwis_data = p1_nwis_meas_gw_data,
-                                    sites_sf = p2_site_in_watersheds_sf,
-                                    join_site_col = 'site_no')
-             )
+  ## get just discrete gw sites with outputed data for 2000-2022 (no stream order category column)
+  tar_target(
+    p2_nwis_meas_gw_data,
+    join_site_spatial_info(nwis_data = p1_nwis_meas_gw_data,
+                           sites_sf = p2_site_in_watersheds_sf,
+                           join_site_col = 'site_no')
+  )
 )
 
   # # SW data -----------------------------------------------------------------
