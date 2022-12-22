@@ -56,10 +56,9 @@ p2_sw_gw_site_targets_list <- list(
                            join_site_col = 'site_no') %>% 
       add_stream_order(nwis_sw_data = ., 
                        sites_along_streamorder3 = p2_sw_streamorder3_sites,
-                       sites_along_lake = p2_sw_in_lake_sites)
-    ) %>% 
+                       sites_along_lake = p2_sw_in_lake_sites) %>% 
     ##  re-organizing cols so that measurements cols come after non-measurement cols
-    select(!c('lat','lon'), c('lat','lon')
+    select(!c('lat','lon'), c('lat','lon'))
   ),
   
   ## get just discrete gw sites with outputed data for 2000-2022 (no stream order category column)
@@ -67,7 +66,11 @@ p2_sw_gw_site_targets_list <- list(
     p2_nwis_meas_gw_data,
     join_site_spatial_info(nwis_data = p1_nwis_meas_gw_data,
                            sites_sf = p2_site_in_watersheds_sf,
-                           join_site_col = 'site_no')
+                           join_site_col = 'site_no') %>% 
+      ## both dfs have a site_tp_cd col so when joining, two versions are created. Resetti
+      mutate(site_tp_cd = site_tp_cd.y) %>% 
+      select(!contains(c('.x','.y'))) %>% 
+      select(!c('lat','lon'), c('lat','lon'))
   )
 )
 
