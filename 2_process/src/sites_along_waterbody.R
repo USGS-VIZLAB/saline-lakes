@@ -54,3 +54,30 @@ add_stream_order <- function(nwis_sw_data, sites_sf, join_site_col = 'site_no', 
     st_drop_geometry()  
   
 }
+
+
+join_site_spatial_info <- function(nwis_data, sites_sf, join_site_col = 'site_no'){
+
+  nwis_data %>%
+    left_join(sites_sf, by = join_site_col) %>%
+    ## used geometry from sites_in_watersheds_sf to get spatial info
+    st_as_sf() %>% 
+    ## grab coords 
+    mutate(lon = st_coordinates(.)[,1], lat = st_coordinates(.)[,2]) %>% 
+    ## remove geometry col
+    st_drop_geometry()  
+    
+}
+
+
+add_stream_order_2 <- function(nwis_sw_data, sites_along_streamorder3, sites_along_lake){
+  
+  nwis_sw_data %>% 
+    filter(site_tp_cd %in% c('LK','WE') | grepl('ST',site_tp_cd)) %>% 
+    ## create stream_order_category col depending on site type & match with sites stream order/lake vector targets 
+    mutate(
+      stream_order_category = case_when(
+        grepl('^ST',site_tp_cd) & site_no %in% sites_along_streamorder3 ~ 'along SO 3+',
+        site_tp_cd == 'LK' | site_no %in% sites_along_lake ~ 'along lake',
+        TRUE ~ 'not along SO 3+'))
+}
