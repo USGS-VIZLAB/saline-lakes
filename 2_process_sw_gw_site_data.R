@@ -45,7 +45,8 @@ p2_sw_gw_site_targets_list <- list(
                        sites_along_streamorder3 = p2_sw_streamorder3_sites,
                        sites_along_lake = p2_sw_in_lake_sites) %>% 
       ## re-organizing cols so that measurements cols come after non-measurement cols
-      select(!starts_with('X_'), starts_with('X_'))
+      select(!starts_with('X_'),
+             starts_with('X_'))
   ),
   
   ## get just discrete sw sites with outputed data for 2000-2022 with stream order category column
