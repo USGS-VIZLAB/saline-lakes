@@ -62,6 +62,7 @@ p2_sw_gw_site_targets_list <- list(
   ),
   
   ## get just discrete gw sites with outputed data for 2000-2022 (no stream order category column)
+  ## Note there are several sites for gw that we are keeping. GW, GW-HZ (Hyporheic-zone well), GW-MW (mult. wells), GW-CR (collector/ranney well), GW-TH (Test hole not completed as a well)
   tar_target(
     p2_nwis_meas_gw_data,
     join_site_spatial_info(nwis_data = p1_nwis_meas_gw_data,
