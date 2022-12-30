@@ -47,7 +47,7 @@ p2_sw_gw_site_targets_list <- list(
              
   ),
   
-  ## this is almost the same process as above - will creat function
+  ##  add stream order to sw sites
   tar_target(p2_nwis_meas_sw_data, 
              add_stream_order(nwis_sw_data = p1_nwis_meas_sw_data,
                               sites_sf = p2_site_in_watersheds_sf,
