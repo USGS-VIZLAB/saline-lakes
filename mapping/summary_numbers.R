@@ -178,16 +178,6 @@ total_gw_fm_per_lake <- gw_meas_per_year %>%
 
 total_gw_fm_per_lake
 
-
-
-
-
-
-
-
-
-
-
 # summarize wq data -------------------------------------------------------
 
 wq_data %>% filter(!is.na(MonitoringLocationIdentifier)) %>% View()
