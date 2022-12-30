@@ -63,7 +63,7 @@ tar_target(p4_saline_lakes_shp,
 ## exporting flines shp 
 ## Commenting out because taking too long 
 # tar_target(p4_lake_tributaries_shp,
-#            write_shp(p2_lake_tributaries,
+#            write_shp(p2_lake_tributaries_so3,
 #                     'out_shp/p2_lake_tributaries.shp'),
 #            format = 'file'
 #            ),

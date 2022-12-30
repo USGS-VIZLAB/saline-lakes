@@ -5,7 +5,7 @@ source('2_process/src/scope_lake_tributaries.R')
 ## 1. p2_saline_lakes_sf : final sf object representing our focal saline lakes. Fun process_saline_lakes_sf() is
 ## not generalized, and you will find input-specific commands and processing steps ther
 ##
-## 2. p2_lake_tributaries : polylines object representing all upstream tributaries of the lakes - creating using nhdplusTools Get_UT() function (UT:upstream)
+## 2. p2_lake_tributaries_so3 : polylines object representing all upstream tributaries of the lakes - creating using nhdplusTools Get_UT() function (UT:upstream). Filtered to so3
 ## 3. p2_lake_tributaries_cat: polygon object representing all upstream nhd catchments. Current target is not used downstream
 
 p2_lakes_tribs_targets_list <- list(
@@ -30,7 +30,7 @@ p2_lakes_tribs_targets_list <- list(
   # Basin Flowlines Processing #
   ## Get only tributaries of the Lakes using get_UT function
   tar_target(
-    p2_lake_tributaries, 
+    p2_lake_tributaries_so3, 
     scope_lake_tributaries(fline_network = p1_lake_flowlines_huc8_sf,
                            lakes_sf = p2_saline_lakes_sf,
                            buffer_dist = 10000,
