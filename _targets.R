@@ -13,7 +13,7 @@ source("1_fetch_nwis.R")
 
 source("2_process_lakes_tribs.R")
 source("2_process_watershed_boundary.R")
-source('2_process_sw_gw_site_data.R')
+source('2_process_site_data.R')
 
 source("3_viz_prep.R")
 source("3_visualize.R")
