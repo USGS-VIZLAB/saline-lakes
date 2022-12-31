@@ -1,6 +1,6 @@
 source('2_process/src/sites_along_waterbody.R')
 
-p2_sw_gw_site_targets_list <- list(
+p2_site_targets_list <- list(
   
   ## simplified vrn of all site in watersheds(regardless of whether there is relevant data at that site) + all site types
   tar_target(p2_site_in_watersheds_sf,
@@ -23,7 +23,7 @@ p2_sw_gw_site_targets_list <- list(
   ## getting all sites along lake 
   tar_target(p2_sw_streamorder3_sites,
              sites_along_waterbody(p2_site_in_watersheds_sf,
-                                   p2_lake_tributaries,
+                                   p2_lake_tributaries_so3,
                                    lake_waterbody = FALSE)
   ),
   
@@ -35,25 +35,27 @@ p2_sw_gw_site_targets_list <- list(
              
   ),
   
-  ## get just sw sites with outputed data for 2000-2020 (timeframe to change) with stream order category column
+  ## get just sw sites with outputed data for 2000-2022 with stream order category column
   tar_target(p2_nwis_dv_sw_data, 
-             p1_nwis_dv_sw_data %>%
-               left_join(p2_site_in_watersheds_sf, by = 'site_no') %>%
-               filter(site_tp_cd %in% c('LK','WE') | grepl('ST',site_tp_cd)) %>% 
-               mutate(stream_order_category = case_when(
-                 grepl(site_tp_cd,'^ST') & site_no %in% p2_sw_streamorder3_sites ~ 'along SO 3+',
-                 site_tp_cd == 'LK' | site_no %in% p2_sw_in_lake_sites ~ 'along lake',
-                 TRUE ~ 'not along SO 3+'
-                 )) %>% 
-               st_as_sf() %>% 
-               mutate(lon = st_coordinates(.)[,1], lat = st_coordinates(.)[,2]) %>% 
-               st_drop_geometry() %>% 
-               ## quickly re-organizing cols
+             add_stream_order(nwis_sw_data = p1_nwis_dv_sw_data,
+                              sites_sf = p2_site_in_watersheds_sf,
+                              join_site_col = 'site_no',
+                              sites_along_streamorder3 = p2_sw_streamorder3_sites,
+                              sites_along_lake = p2_sw_in_lake_sites) %>% 
+               ## quickly re-organizing cols so that measurements cols come after non-measurement cols
                select(!starts_with('X_'),starts_with('X_'))
              
-  )
+  ),
   
-
+  ##  add stream order to sw sites
+  tar_target(p2_nwis_meas_sw_data, 
+             add_stream_order(nwis_sw_data = p1_nwis_meas_sw_data,
+                              sites_sf = p2_site_in_watersheds_sf,
+                              join_site_col = 'site_no',
+                              sites_along_streamorder3 = p2_sw_streamorder3_sites,
+                              sites_along_lake = p2_sw_in_lake_sites)
+             )
+  
 )
 
   # # SW data -----------------------------------------------------------------
