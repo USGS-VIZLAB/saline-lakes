@@ -13,7 +13,7 @@ source("1_fetch_nwis.R")
 
 source("2_process_lakes_tribs.R")
 source("2_process_watershed_boundary.R")
-source('2_process_sw_gw_site_data.R')
+source('2_process_site_data.R')
 
 source("3_viz_prep.R")
 source("3_visualize.R")
@@ -27,7 +27,7 @@ dir.create('1_fetch/in/states_shp', showWarnings = FALSE)
 # Return the complete list of targets
 c(p0_targets_list,
   p1_sp_targets_list, p1_feeback_xlsx_targets_list, p1_nw_targets_list,
-  p2_watershed_boundary_targets_list, p2_lakes_tribs_targets_list, p2_sw_gw_site_targets_list,
+  p2_watershed_boundary_targets_list, p2_lakes_tribs_targets_list, p2_site_targets_list,
   p3_prep_viz_targets_list, p3_viz_targets_list,
   p4_output_targets_list
   )

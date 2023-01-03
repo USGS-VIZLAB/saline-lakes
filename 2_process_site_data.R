@@ -1,6 +1,6 @@
 source('2_process/src/process_nwis_data.R')
 
-p2_sw_gw_site_targets_list <- list(
+p2_site_targets_list <- list(
   
   ## simplified vrn of all site in watersheds(regardless of whether there is relevant data at that site) + all site types
   tar_target(p2_site_in_watersheds_sf,
