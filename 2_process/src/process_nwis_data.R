@@ -4,6 +4,7 @@
 
 sites_along_waterbody <- function(sites_sf, waterbody_sf, lake_waterbody = FALSE){
 
+  
   sites_sf <- sites_sf %>% 
     select(site_no)
   
