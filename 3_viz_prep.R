@@ -32,7 +32,7 @@ p3_prep_viz_targets_list <- list(
   ## This takes a long time because rmapshaper::ms_simplify() is very slow for me when simplifying flowlines
   tar_target(
     p3_lake_tributaries,
-    p2_lake_tributaries %>%
+    p2_lake_tributaries_so3 %>%
       rmapshaper::ms_simplify() %>%
       mutate(label = paste0("Stream: ",
                             ifelse(gnis_name == " ", "No GNIS name/ID",

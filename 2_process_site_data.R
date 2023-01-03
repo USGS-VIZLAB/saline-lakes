@@ -23,7 +23,7 @@ p2_sw_gw_site_targets_list <- list(
   ## getting all sites along lake 
   tar_target(p2_sw_streamorder3_sites,
              sites_along_waterbody(p2_site_in_watersheds_sf,
-                                   p2_lake_tributaries,
+                                   p2_lake_tributaries_so3,
                                    lake_waterbody = FALSE)
   ),
   
