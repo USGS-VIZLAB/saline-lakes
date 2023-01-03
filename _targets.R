@@ -18,8 +18,7 @@ source('2_process_site_data.R')
 source("3_viz_prep.R")
 source("3_visualize.R")
 
-source('4_export.R')
-source('4_reports.R')
+source('4_outputs.R')
 
 ## create dirs in `in` folder
 dir.create('1_fetch/in/nhdhr', showWarnings = FALSE)
@@ -30,4 +29,5 @@ c(p0_targets_list,
   p1_sp_targets_list, p1_feeback_xlsx_targets_list, p1_nw_targets_list,
   p2_watershed_boundary_targets_list, p2_lakes_tribs_targets_list, p2_site_targets_list,
   p3_prep_viz_targets_list, p3_viz_targets_list,
-  p4_export_csv_targets_list, p4_reports_targets_list)
+  p4_output_targets_list
+  )
