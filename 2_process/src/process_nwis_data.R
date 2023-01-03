@@ -11,7 +11,7 @@ sites_along_waterbody <- function(sites_sf, waterbody_sf, lake_waterbody = FALSE
   ## running st_union for the tributary shp because it smooths the buffer and polygons are overlap less. 
   ## Not feasible for lakes due to specific selection of columns
   if(lake_waterbody == TRUE){  
-  waterbody_buffered <- waterbody_sf %>% sf::st_buffer(dist = units::set_units(250, m))
+    waterbody_buffered <- waterbody_sf %>% sf::st_buffer(dist = units::set_units(250, m))
   }else{
     waterbody_buffered <- waterbody_sf %>%
       group_by(comid, streamorde) %>%
