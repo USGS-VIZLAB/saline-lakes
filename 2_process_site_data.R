@@ -68,10 +68,9 @@ p2_site_targets_list <- list(
     p2_nwis_meas_gw_data,
     join_site_spatial_info(nwis_data = p1_nwis_meas_gw_data,
                            sites_sf = p2_site_in_watersheds_sf,
-                           join_site_col = 'site_no') %>% 
-      ## both dfs have a site_tp_cd col so when joining, two versions are created. Resetti
-      mutate(site_tp_cd = site_tp_cd.y) %>% 
-      select(!contains(c('.x','.y'))) %>% 
+                           join_site_col = c('site_no', 'site_tp_cd')
+                           ) %>% 
+      ##  re-organizing cols so that lat lon cols come after other cols
       select(!c('lat','lon'), c('lat','lon'))
   )
 )
